@@ -25,7 +25,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 
-public class ValidationExceptionTest {
+public class ValidationErrorTest {
 
     public static final ResourceLoader loader = ResourceLoader.DEFAULT;
     private final Schema rootSchema = ObjectSchema.builder().build();
