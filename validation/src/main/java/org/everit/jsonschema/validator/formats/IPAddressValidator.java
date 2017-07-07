@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.json.schema.internal;
+package org.everit.jsonschema.validator.formats;
 
 import com.google.common.net.InetAddresses;
 

@@ -1,9 +1,7 @@
 package org.everit.json.schema.loader;
 
 import org.everit.json.schema.*;
-import org.everit.json.schema.internal.*;
 import org.everit.json.schema.loader.SchemaLoader.SchemaLoaderBuilder;
-import org.everit.json.schema.loader.internal.DefaultSchemaClient;
 import org.json.JSONObject;
 import org.json.JSONPointer;
 import org.junit.Assert;
@@ -12,7 +10,6 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;

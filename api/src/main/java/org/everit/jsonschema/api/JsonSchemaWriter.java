@@ -13,11 +13,11 @@ public interface JsonSchemaWriter {
 
     JsonSchemaWriter endObject();
 
-    <X> JsonSchemaWriter ifFalse(String key, X value);
+    JsonSchemaWriter ifFalse(String key, Boolean value);
 
     <X> JsonSchemaWriter ifPresent(String key, X value);
 
-    <X> JsonSchemaWriter ifTrue(String key, X value);
+    JsonSchemaWriter ifTrue(String key, Boolean value);
 
     JsonSchemaWriter key(String key);
 

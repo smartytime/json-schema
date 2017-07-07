@@ -1,9 +1,12 @@
 package org.everit.json.schema.loader;
 
+import org.everit.json.JsonApi;
+import org.everit.json.JsonElement;
 import org.everit.json.schema.SchemaException;
 import org.everit.json.schema.loader.internal.ReferenceResolver;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -18,9 +21,10 @@ import static java.util.Objects.requireNonNull;
 /**
  * @author erosb
  */
-final class JsonObject extends JsonValue {
+final class JsonObject extends JsonValue implements org.everit.json.JsonObject<JsonObject> {
 
     private final Map<String, Object> storage;
+    private final LegacyJsonObjectApi legacyApi = new LegacyJsonObjectApi();
 
     JsonObject(Map<String, Object> storage) {
         super(storage);
@@ -111,9 +115,9 @@ final class JsonObject extends JsonValue {
         return unmodifiableMap(storage);
     }
 
-    boolean isEmpty() {
-        return storage.isEmpty();
-    }
+    // boolean isEmpty() {
+    //     return storage.isEmpty();
+    // }
 
     public Set<String> keySet() {
         return unmodifiableSet(storage.keySet());
@@ -121,5 +125,25 @@ final class JsonObject extends JsonValue {
 
     public Object get(String name) {
         return storage.get(name);
+    }
+
+    @Override
+    public Set<String> properties() {
+        return keySet();
+    }
+
+    @Override
+    public JsonApi<?> api() {
+        return new LegacyJsonObjectApi();
+    }
+
+    @Override
+    public JsonObject unbox() {
+        return this;
+    }
+
+    @Override
+    public Optional<JsonElement<?>> find(String key) {
+        return this.maybe(key).map(legacyApi::of);
     }
 }

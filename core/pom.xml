@@ -134,6 +134,26 @@
     </build>
     <dependencies>
         <dependency>
+            <groupId>org.everit.json</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.everit.jsonschema</groupId>
+            <artifactId>jsonschema-loader</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.everit.jsonschema</groupId>
+            <artifactId>jsonschema-validation</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.everit.jsonschema.loaders</groupId>
+            <artifactId>jsonschema-loader-jsoniter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20170516</version>

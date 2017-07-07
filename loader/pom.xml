@@ -68,8 +68,9 @@
                         <Import-Package>*
                         </Import-Package>
                         <Export-Package>
-                            ${project.artifactId};version=${project.version},
-                            ${project.artifactId}.loader;version=${project.version}
+                            org.everit.jsonschema.loader;version=${project.version},
+                            org.everit.jsonschema.loader.exceptions;version=${project.version},
+                            org.everit.jsonschema.loader.internal;version=${project.version}
                         </Export-Package>
                     </instructions>
                 </configuration>

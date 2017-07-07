@@ -13,29 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.jsonschema.validator.internal;
-
-import com.google.common.net.InternetDomainName;
+package org.everit.jsonschema.validator.formats;
 
 import java.util.Optional;
 
 /**
- * Implementation of the "hostname" format value.
+ * Implementation of the "ipv6" format value.
  */
-public class HostnameFormatValidator implements FormatValidator {
+public class IPV6Validator extends IPAddressValidator implements FormatValidator {
+
+    private static final int IPV6_LENGTH = 16;
 
     @Override
     public Optional<String> validate(final String subject) {
-        try {
-            InternetDomainName.from(subject);
-            return Optional.empty();
-        } catch (IllegalArgumentException | NullPointerException e) {
-            return Optional.of(String.format("[%s] is not a valid hostname", subject));
-        }
+        return checkIpAddress(subject, IPV6_LENGTH, "[%s] is not a valid ipv6 address");
     }
 
     @Override
     public String formatName() {
-        return "hostname";
+        return "ipv6";
     }
 }

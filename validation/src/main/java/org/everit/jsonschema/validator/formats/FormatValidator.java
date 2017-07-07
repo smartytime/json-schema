@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.json.schema;
-
-import org.everit.json.schema.internal.*;
+package org.everit.jsonschema.validator.formats;
 
 import java.util.Optional;
 
@@ -84,7 +82,7 @@ public interface FormatValidator {
     /**
      * Provides the name of this format.
      *
-     * Unless specified otherwise the {@link org.everit.json.schema.loader.SchemaLoader} will use this
+     * Unless specified otherwise the {@link SchemaLoader} will use this
      * name to recognize string schemas using this format.
      *
      * The default implementation of this method returns {@code "unnamed-format"}. It is strongly

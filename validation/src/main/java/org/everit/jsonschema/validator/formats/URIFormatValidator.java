@@ -13,27 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.json.schema.loader.internal;
+package org.everit.jsonschema.validator.formats;
 
-import org.everit.json.schema.loader.SchemaClient;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 /**
- * A {@link SchemaClient} implementation which uses {@link URL} for reading the remote content.
+ * Implementation of the "uri" format value.
  */
-public class DefaultSchemaClient implements SchemaClient {
+public class URIFormatValidator implements FormatValidator {
 
     @Override
-    public InputStream get(final String url) {
+    public Optional<String> validate(final String subject) {
         try {
-            return (InputStream) new URL(url).getContent();
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+            new URI(subject);
+            return Optional.empty();
+        } catch (URISyntaxException | NullPointerException e) {
+            return Optional.of(String.format("[%s] is not a valid URI", subject));
         }
     }
 
+    @Override public String formatName() {
+        return "uri";
+    }
 }

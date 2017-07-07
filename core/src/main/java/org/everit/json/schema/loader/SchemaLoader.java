@@ -1,26 +1,50 @@
 package org.everit.json.schema.loader;
 
-import org.everit.json.schema.*;
-import org.everit.json.schema.internal.*;
-import org.everit.json.schema.loader.internal.DefaultSchemaClient;
+import org.everit.json.schema.ArraySchema;
+import org.everit.json.schema.BooleanSchema;
+import org.everit.json.schema.CombinedSchema;
+import org.everit.json.schema.EmptySchema;
+import org.everit.json.schema.EnumSchema;
+import org.everit.json.schema.NotSchema;
+import org.everit.json.schema.NullSchema;
+import org.everit.json.schema.NumberSchema;
+import org.everit.json.schema.ObjectSchema;
+import org.everit.json.schema.ReferenceSchema;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.SchemaException;
 import org.everit.json.schema.loader.internal.ReferenceResolver;
-import org.everit.json.schema.loader.internal.WrappingFormatValidator;
+import org.everit.jsonschema.loader.SchemaClient;
+import org.everit.jsonschema.loader.internal.DefaultSchemaClient;
+import org.everit.jsonschema.validator.formats.DateTimeFormatValidator;
+import org.everit.jsonschema.validator.formats.EmailFormatValidator;
+import org.everit.jsonschema.validator.formats.FormatValidator;
+import org.everit.jsonschema.validator.formats.HostnameFormatValidator;
+import org.everit.jsonschema.validator.formats.IPV4Validator;
+import org.everit.jsonschema.validator.formats.IPV6Validator;
+import org.everit.jsonschema.validator.formats.URIFormatValidator;
+import org.everit.jsonschema.validator.formats.WrappingFormatValidator;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONPointer;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Objects.requireNonNull;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Loads a JSON schema's JSON representation into schema validator instances.
  */
 public class SchemaLoader {
+
+    private org.everit.jsonschema.loader.SchemaLoader wrappedLoader;
+
 
     static JSONObject toOrgJSONObject(JsonObject value) {
         return new JSONObject(value.toMap());
@@ -31,17 +55,12 @@ public class SchemaLoader {
      */
     public static class SchemaLoaderBuilder {
 
-        SchemaClient httpClient = new DefaultSchemaClient();
+        private org.everit.jsonschema.loader.SchemaLoader.SchemaLoaderBuilder wrappedBuilder =
+                new org.everit.jsonschema.loader.SchemaLoader.SchemaLoaderBuilder();
 
-        JsonObject schemaJson;
 
-        JsonObject rootSchemaJson;
+        private JsonObject schemaJson;
 
-        Map<String, ReferenceSchema.Builder> pointerSchemas = new HashMap<>();
-
-        URI id;
-
-        List<String> pointerToCurrentObj = emptyList();
 
         Map<String, FormatValidator> formatValidators = new HashMap<>();
 
@@ -89,11 +108,16 @@ public class SchemaLoader {
 
         @Deprecated
         public JSONObject getRootSchemaJson() {
-            return toOrgJSONObject(rootSchemaJson == null ? schemaJson : rootSchemaJson);
+            org.everit.json.JsonObject rootSchemaJson = wrappedBuilder.getRootSchemaJson();
+            if (rootSchemaJson != null) {
+                return new JSONObject(((JsonObject) rootSchemaJson.unbox()).toMap());
+            } else {
+                return new JSONObject(schemaJson.toMap());
+            }
         }
 
         public SchemaLoaderBuilder httpClient(SchemaClient httpClient) {
-            this.httpClient = httpClient;
+            wrappedBuilder.httpClient(httpClient);
             return this;
         }
 
@@ -106,24 +130,27 @@ public class SchemaLoader {
          */
         public SchemaLoaderBuilder resolutionScope(String id) {
             try {
-                return resolutionScope(new URI(id));
+                wrappedBuilder.resolutionScope(new URI(id));
+                return this;
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             }
         }
 
         public SchemaLoaderBuilder resolutionScope(URI id) {
-            this.id = id;
+            wrappedBuilder.resolutionScope(id);
             return this;
         }
 
-        SchemaLoaderBuilder pointerSchemas(Map<String, ReferenceSchema.Builder> pointerSchemas) {
-            this.pointerSchemas = pointerSchemas;
-            return this;
-        }
-
+        // SchemaLoaderBuilder pointerSchemas(Map<String, ReferenceSchema.Builder> pointerSchemas) {
+        //
+        //     this.pointerSchemas = pointerSchemas;
+        //     return this;
+        // }
+        //
         @Deprecated
         SchemaLoaderBuilder rootSchemaJson(JSONObject rootSchemaJson) {
+            orgJsonApi.of(rootSchemaJson);
             return rootSchemaJson(new JsonObject(rootSchemaJson.toMap()));
         }
 
@@ -139,38 +166,23 @@ public class SchemaLoader {
 
         public SchemaLoaderBuilder schemaJson(JsonObject schemaJson) {
             this.schemaJson = schemaJson;
+            wrappedBuilder.schemaJson(this.schemaJson);
             return this;
         }
 
-        SchemaLoaderBuilder formatValidators(Map<String, FormatValidator> formatValidators) {
-            this.formatValidators = formatValidators;
-            return this;
-        }
-
-        SchemaLoaderBuilder pointerToCurrentObj(List<String> pointerToCurrentObj) {
-            this.pointerToCurrentObj = requireNonNull(pointerToCurrentObj);
-            return this;
-        }
+        // SchemaLoaderBuilder formatValidators(Map<String, FormatValidator> formatValidators) {
+        //     this.formatValidators = formatValidators;
+        //     return this;
+        // }
+        //
+        // SchemaLoaderBuilder pointerToCurrentObj(List<String> pointerToCurrentObj) {
+        //     this.pointerToCurrentObj = requireNonNull(pointerToCurrentObj);
+        //     return this;
+        // }
 
     }
 
-    private static final List<String> ARRAY_SCHEMA_PROPS = asList("items", "additionalItems",
-            "minItems",
-            "maxItems",
-            "uniqueItems");
 
-    private static final List<String> NUMBER_SCHEMA_PROPS = asList("minimum", "maximum",
-            "minimumExclusive", "maximumExclusive", "multipleOf");
-
-    private static final List<String> OBJECT_SCHEMA_PROPS = asList("properties", "required",
-            "minProperties",
-            "maxProperties",
-            "dependencies",
-            "patternProperties",
-            "additionalProperties");
-
-    private static final List<String> STRING_SCHEMA_PROPS = asList("minLength", "maxLength",
-            "pattern", "format");
 
     public static SchemaLoaderBuilder builder() {
         return new SchemaLoaderBuilder();

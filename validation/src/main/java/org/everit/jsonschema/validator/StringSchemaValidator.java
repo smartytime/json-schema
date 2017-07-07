@@ -3,7 +3,7 @@ package org.everit.jsonschema.validator;
 import org.everit.json.JsonElement;
 import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.StringSchema;
-import org.everit.jsonschema.validator.internal.FormatValidator;
+import org.everit.jsonschema.validator.formats.FormatValidator;
 
 import java.util.ArrayList;
 import java.util.List;

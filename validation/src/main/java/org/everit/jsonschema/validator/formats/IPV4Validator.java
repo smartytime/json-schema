@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.json.schema.internal;
-
-import org.everit.json.schema.FormatValidator;
+package org.everit.jsonschema.validator.formats;
 
 import java.util.Optional;
 

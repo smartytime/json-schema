@@ -1,6 +1,4 @@
-package org.everit.json.schema.loader.internal;
-
-import org.everit.json.schema.FormatValidator;
+package org.everit.jsonschema.validator.formats;
 
 import java.util.Optional;
 

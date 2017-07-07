@@ -349,5 +349,13 @@ public class SchemaLoader {
             this.pointerToCurrentObj = requireNonNull(pointerToCurrentObj);
             return this;
         }
+
+        public JsonObject getSchemaJson() {
+            return schemaJson;
+        }
+
+        public JsonObject getRootSchemaJson() {
+            return rootSchemaJson;
+        }
     }
 }

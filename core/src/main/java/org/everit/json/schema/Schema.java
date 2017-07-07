@@ -1,76 +1,31 @@
 package org.everit.json.schema;
 
+import org.everit.json.JsonValue;
 import org.everit.json.schema.internal.JSONPrinter;
-import org.json.JSONPointer;
+import org.everit.json.schema.loader.orgjson.OrgJsonApi;
+import org.everit.json.schema.loader.orgjson.WrappedJSONPrinter;
+import org.everit.jsonschema.validator.SchemaValidator;
+import org.everit.jsonschema.validator.SchemaValidatorFactory;
+import org.everit.jsonschema.validator.ValidationError;
+import org.json.JSONObject;
 import org.json.JSONWriter;
 
 import java.io.StringWriter;
-import java.util.Objects;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Superclass of all other schema validator classes of this package.
+ * Converted to wrap the modular schema, to include validation.
+ *
  */
-public abstract class Schema {
+public class Schema {
 
-    /**
-     * Abstract builder class for the builder classes of {@code Schema} subclasses. This builder is
-     * used to load the generic properties of all types of schemas like {@code title} or
-     * {@code description}.
-     *
-     * @param <S> the type of the schema being built by the builder subclass.
-     */
-    public abstract static class Builder<S extends Schema> {
+    private final org.everit.jsonschema.api.Schema wrappedSchema;
 
-        private String title;
-
-        private String description;
-
-        private String id;
-
-        private String schemaLocation;
-
-        public Builder<S> title(final String title) {
-            this.title = title;
-            return this;
-        }
-
-        public Builder<S> description(final String description) {
-            this.description = description;
-            return this;
-        }
-
-        public Builder<S> id(final String id) {
-            this.id = id;
-            return this;
-        }
-
-        public Builder<S> schemaLocation(String schemaLocation) {
-            this.schemaLocation = schemaLocation;
-            return this;
-        }
-
-        public abstract S build();
-
-    }
-
-    private final String title;
-
-    private final String description;
-
-    private final String id;
-
-    protected final String schemaLocation;
-
-    /**
-     * Constructor.
-     *
-     * @param builder the builder containing the optional title, description and id attributes of the schema
-     */
-    protected Schema(final Builder<?> builder) {
-        this.title = builder.title;
-        this.description = builder.description;
-        this.id = builder.id;
-        this.schemaLocation = builder.schemaLocation;
+    public Schema(org.everit.jsonschema.api.Schema wrappedSchema) {
+        this.wrappedSchema = checkNotNull(wrappedSchema);
     }
 
     /**
@@ -79,7 +34,24 @@ public abstract class Schema {
      * @param subject the object to be validated
      * @throws ValidationException if the {@code subject} is invalid against this schema.
      */
-    public abstract void validate(final Object subject);
+    public void validate(final Object subject) {
+        SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(wrappedSchema);
+        OrgJsonApi orgJsonApi = new OrgJsonApi();
+        JsonValue of = orgJsonApi.of((JSONObject) subject);
+        validator.validate(of).ifPresent(error -> {
+            throw copyError(error);
+        });
+    }
+
+    ValidationException copyError(ValidationError error) {
+        Schema violationSchema = new Schema(error.getViolatedSchema());
+        List<ValidationException> causingExceptions = error.getCausingExceptions().stream()
+                .map(this::copyError)
+                .collect(Collectors.toList());
+
+        return new ValidationException(violationSchema, new StringBuilder(error.getPointerToViolation()), error.getMessage(),
+                causingExceptions, error.getKeyword(), error.getSchemaLocation());
+    }
 
     /**
      * Determines if this {@code Schema} instance defines any restrictions for the object property
@@ -124,44 +96,28 @@ public abstract class Schema {
      * instance
      */
     public boolean definesProperty(final String field) {
-        return false;
+        return wrappedSchema.definesProperty(field);
     }
 
     @Override
     public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o instanceof Schema) {
-            Schema schema = (Schema) o;
-            return schema.canEqual(this) &&
-                    Objects.equals(title, schema.title) &&
-                    Objects.equals(description, schema.description) &&
-                    Objects.equals(id, schema.id);
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(title, description, id);
-    }
-
-    public String getTitle() {
-        return title;
+        return wrappedSchema.equals(o);
     }
 
     public String getDescription() {
-        return description;
+        return wrappedSchema.getDescription();
     }
 
     public String getId() {
-        return id;
+        return wrappedSchema.getId();
     }
 
     public String getSchemaLocation() {
-        return schemaLocation;
+        return wrappedSchema.getSchemaLocation();
+    }
+
+    public String getTitle() {
+        return wrappedSchema.getTitle();
     }
 
     /**
@@ -175,12 +131,7 @@ public abstract class Schema {
      * @param writer it will receive the schema description
      */
     public final void describeTo(final JSONPrinter writer) {
-        writer.object();
-        writer.ifPresent("title", title);
-        writer.ifPresent("description", description);
-        writer.ifPresent("id", id);
-        describePropertiesTo(writer);
-        writer.endObject();
+        wrappedSchema.describeTo(new WrappedJSONPrinter(writer));
     }
 
     /**
@@ -193,7 +144,8 @@ public abstract class Schema {
      * @param writer it will receive the schema description
      */
     void describePropertiesTo(final JSONPrinter writer) {
-
+        //todo:ericm Figure out
+        //wrappedSchema.describeTo(//);..
     }
 
     @Override
@@ -204,11 +156,11 @@ public abstract class Schema {
     }
 
     protected ValidationException failure(String message, String keyword) {
-        return new ValidationException(this, message, keyword, schemaLocation);
+        return new ValidationException(this, message, keyword, getSchemaLocation());
     }
 
     protected ValidationException failure(Class<?> expectedType, Object actualValue) {
-        return new ValidationException(this, expectedType, actualValue, "type", schemaLocation);
+        return new ValidationException(this, expectedType, actualValue, "type", getSchemaLocation());
     }
     /**
      * Since we add state in subclasses, but want those subclasses to be non final, this allows us to

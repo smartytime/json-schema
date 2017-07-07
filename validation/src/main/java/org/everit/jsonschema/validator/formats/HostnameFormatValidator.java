@@ -13,27 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.jsonschema.validator.internal;
+package org.everit.jsonschema.validator.formats;
 
-import org.apache.commons.validator.routines.EmailValidator;
+import com.google.common.net.InternetDomainName;
 
 import java.util.Optional;
 
 /**
- * Implementation of the "email" format value.
+ * Implementation of the "hostname" format value.
  */
-public class EmailFormatValidator implements FormatValidator {
+public class HostnameFormatValidator implements FormatValidator {
 
     @Override
     public Optional<String> validate(final String subject) {
-        if (EmailValidator.getInstance(false, true).isValid(subject)) {
+        try {
+            InternetDomainName.from(subject);
             return Optional.empty();
+        } catch (IllegalArgumentException | NullPointerException e) {
+            return Optional.of(String.format("[%s] is not a valid hostname", subject));
         }
-        return Optional.of(String.format("[%s] is not a valid email address", subject));
     }
 
     @Override
     public String formatName() {
-        return "email";
+        return "hostname";
     }
 }

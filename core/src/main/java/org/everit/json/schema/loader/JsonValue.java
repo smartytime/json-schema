@@ -1,9 +1,12 @@
 package org.everit.json.schema.loader;
 
+import org.everit.json.JsonApi;
 import org.everit.json.schema.SchemaException;
+import org.everit.jsonschema.api.JsonSchemaType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +18,7 @@ import static java.util.Objects.requireNonNull;
 /**
  * @author erosb
  */
-class JsonValue {
+class JsonValue implements org.everit.json.JsonValue<JsonValue> {
 
     class Multiplexer<R> {
 
@@ -202,5 +205,45 @@ class JsonValue {
             return mapper.apply((Integer) obj);
         }
         throw ls.createSchemaException(typeOfValue(), Integer.class);
+    }
+
+    @Override
+    public JsonSchemaType type() {
+        if (obj == null) {
+            return JsonSchemaType.Null;
+        } else if(obj instanceof Boolean) {
+            return JsonSchemaType.Boolean;
+        } else if (obj instanceof String) {
+            return JsonSchemaType.String;
+        } else if (obj instanceof Integer) {
+            return JsonSchemaType.Integer;
+        } else if (obj instanceof Number) {
+            return JsonSchemaType.Number;
+        } else if (obj instanceof Collection<?>) {
+            return JsonSchemaType.Array;
+        } else {
+            return JsonSchemaType.Object;
+        }
+    }
+
+    @Override
+    public Object raw() {
+        return value();
+    }
+
+    @Override
+    public JsonValue unbox() {
+        return this;
+    }
+
+    @Override
+    public JsonApi<?> api() {
+        return new LegacyJsonObjectApi();
+    }
+
+    //todo:Ericm Fix this
+    @Override
+    public List<String> path() {
+        return null;
     }
 }
