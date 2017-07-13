@@ -4,7 +4,7 @@ import com.jsoniter.JsonIterator;
 import com.jsoniter.any.Any;
 import org.everit.json.*;
 import org.everit.jsonschema.api.JsonSchemaType;
-import org.everit.jsonschema.api.JsonSchemaWriter;
+import org.everit.jsonschema.api.JsonWriter;
 
 import java.util.Map;
 
@@ -47,7 +47,7 @@ public class JsoniterApi implements JsonApi<Any> {
     }
 
     @Override
-    public JsonSchemaWriter getWriter() {
+    public JsonWriter getWriter() {
         return new AnyWriter();
     }
 

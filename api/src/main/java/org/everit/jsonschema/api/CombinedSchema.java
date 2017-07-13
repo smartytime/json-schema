@@ -15,6 +15,8 @@
  */
 package org.everit.jsonschema.api;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,20 +28,66 @@ import static java.util.Objects.requireNonNull;
 /**
  * Validator for {@code allOf}, {@code oneOf}, {@code anyOf} schemas.
  */
+@Getter
 public class CombinedSchema extends Schema {
 
     private final CombinedSchemaType combinedSchemaType;
-    private final Collection<Schema> subschemas;
+    private final Collection<Schema> subSchemas;
 
     /**
      * Constructor.
      *
-     * @param builder the builder containing the validation criterion and the subschemas to be checked
+     * @param builder the builder containing the validation criterion and the subSchemas to be checked
      */
     public CombinedSchema(final Builder builder) {
         super(builder);
         this.combinedSchemaType = requireNonNull(builder.combinedSchemaType, "criterion cannot be null");
-        this.subschemas = requireNonNull(builder.subschemas, "subschemas cannot be null");
+        this.subSchemas = requireNonNull(builder.subschemas, "subSchemas cannot be null");
+    }
+
+    @Override
+    public boolean definesProperty(final String field) {
+        List<Schema> matching = subSchemas.stream()
+                .filter(schema -> schema.definesProperty(field))
+                .collect(Collectors.toList());
+
+        //todo:ericm Figure this out
+        return false;
+        // return !getCriterion().validate(subSchemas.size(), matching.size()).isPresent();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), subSchemas, combinedSchemaType);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof CombinedSchema) {
+            CombinedSchema that = (CombinedSchema) o;
+            return that.canEqual(this) &&
+                    Objects.equals(subSchemas, that.subSchemas) &&
+                    Objects.equals(combinedSchemaType, that.combinedSchemaType) &&
+                    super.equals(that);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    protected boolean canEqual(Object other) {
+        return other instanceof CombinedSchema;
+    }
+
+    @Override
+    void describePropertiesTo(JsonWriter writer) {
+        writer.key(combinedSchemaType.toString());
+        writer.array();
+        subSchemas.forEach(subschema -> subschema.describeTo(writer));
+        writer.endArray();
     }
 
     public static Builder allOf(final Collection<Schema> schemas) {
@@ -60,59 +108,6 @@ public class CombinedSchema extends Schema {
 
     public static Builder oneOf(final Collection<Schema> schemas) {
         return builder(schemas).combinedSchemaType(CombinedSchemaType.OneOf);
-    }
-
-    @Override
-    public boolean definesProperty(final String field) {
-        List<Schema> matching = subschemas.stream()
-                .filter(schema -> schema.definesProperty(field))
-                .collect(Collectors.toList());
-
-        //todo:ericm Figure this out
-        return false;
-        // return !getCriterion().validate(subschemas.size(), matching.size()).isPresent();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), subschemas, combinedSchemaType);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o instanceof CombinedSchema) {
-            CombinedSchema that = (CombinedSchema) o;
-            return that.canEqual(this) &&
-                    Objects.equals(subschemas, that.subschemas) &&
-                    Objects.equals(combinedSchemaType, that.combinedSchemaType) &&
-                    super.equals(that);
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    protected boolean canEqual(Object other) {
-        return other instanceof CombinedSchema;
-    }
-
-    @Override
-    void describePropertiesTo(JsonSchemaWriter writer) {
-        writer.key(combinedSchemaType.toString());
-        writer.array();
-        subschemas.forEach(subschema -> subschema.describeTo(writer));
-        writer.endArray();
-    }
-
-    public CombinedSchemaType getCombinedSchemaType() {
-        return combinedSchemaType;
-    }
-
-    public Collection<Schema> getSubschemas() {
-        return subschemas;
     }
 
     /**

@@ -1,69 +1,51 @@
 package org.everit.jsonschema.loaders.jsoniter;
 
-import org.everit.jsonschema.api.Schema;
-import org.everit.jsonschema.api.JsonSchemaWriter;
+import org.everit.jsonschema.api.JsonWriter;
 
-import java.util.Map;
-import java.util.regex.Pattern;
+public class AnyWriter implements JsonWriter {
 
-public class AnyWriter implements JsonSchemaWriter {
     @Override
-    public JsonSchemaWriter array() {
+    public JsonWriter array() {
         return null;
     }
 
     @Override
-    public JsonSchemaWriter endArray() {
+    public JsonWriter endArray() {
         return null;
     }
 
     @Override
-    public JsonSchemaWriter object() {
+    public JsonWriter object() {
         return null;
     }
 
     @Override
-    public JsonSchemaWriter endObject() {
+    public JsonWriter endObject() {
         return null;
     }
 
     @Override
-    public <X> JsonSchemaWriter ifFalse(String key, X value) {
+    public JsonWriter ifFalse(String key, Boolean value) {
         return null;
     }
 
     @Override
-    public <X> JsonSchemaWriter ifPresent(String key, X value) {
+    public <X> JsonWriter ifPresent(String key, X value) {
         return null;
     }
 
     @Override
-    public <X> JsonSchemaWriter ifTrue(String key, X value) {
+    public JsonWriter ifTrue(String key, Boolean value) {
         return null;
     }
 
     @Override
-    public JsonSchemaWriter key(String key) {
+    public JsonWriter key(String key) {
         return null;
     }
 
     @Override
-    public JsonSchemaWriter printSchemaMap(Map<String, Schema> schemas) {
-        return null;
-    }
-
-    @Override
-    public JsonSchemaWriter printPatternMap(Map<Pattern, Schema> schemas) {
-        return null;
-    }
-
-    @Override
-    public <X> JsonSchemaWriter value(X value) {
-        return null;
-    }
-
-    @Override
-    public JsonSchemaWriter start() {
+    public <X> JsonWriter value(X value) {
         return null;
     }
 }

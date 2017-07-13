@@ -2,14 +2,7 @@ package org.everit.jsonschema.api;
 
 import org.everit.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -58,6 +51,10 @@ public class ObjectSchema extends Schema {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    private static <K, V> Map<K, V> copyMap(final Map<K, V> original) {
+        return Collections.unmodifiableMap(new HashMap<>(original));
     }
 
     public boolean definesProperty(String field) {
@@ -112,13 +109,18 @@ public class ObjectSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonSchemaWriter writer) {
+    void describePropertiesTo(JsonWriter writer) {
         if (requiresObject) {
             writer.key("type").value("object");
         }
         if (!propertySchemas.isEmpty()) {
             writer.key("properties");
-            writer.printSchemaMap(propertySchemas);
+            writer.object();
+            propertySchemas.forEach((k,schema)->{
+                writer.key(k);
+                schema.describeTo(writer);
+            });
+            writer.endObject();
         }
         writer.ifPresent("minProperties", minProperties);
         writer.ifPresent("maxProperties", maxProperties);
@@ -134,11 +136,21 @@ public class ObjectSchema extends Schema {
         }
         if (!schemaDependencies.isEmpty()) {
             writer.key("dependencies");
-            writer.printSchemaMap(schemaDependencies);
+            writer.object();
+            schemaDependencies.forEach((k,schema)->{
+                writer.key(k);
+                schema.describeTo(writer);
+            });
+            writer.endObject();
         }
         if (!patternProperties.isEmpty()) {
             writer.key("patternProperties");
-            writer.printPatternMap(patternProperties);
+            writer.object();
+            patternProperties.forEach((pattern, schema)->{
+                writer.key(schema.toString());
+                schema.describeTo(writer);
+            });
+            writer.endObject();
         }
         writer.ifFalse("additionalProperties", additionalProperties);
     }
@@ -194,16 +206,12 @@ public class ObjectSchema extends Schema {
         return requiresObject;
     }
 
-    private static <K, V> Map<K, V> copyMap(final Map<K, V> original) {
-        return Collections.unmodifiableMap(new HashMap<>(original));
-    }
-
     private boolean matchesAnyPattern(final String key) {
         return patternProperties.keySet().stream()
                 .anyMatch(pattern -> pattern.matcher(key).find());
     }
 
-    private void describePropertyDependenciesTo(JsonSchemaWriter writer) {
+    private void describePropertyDependenciesTo(JsonWriter writer) {
         writer.key("dependencies");
         writer.object();
         propertyDependencies.entrySet().forEach(entry -> {

@@ -20,25 +20,14 @@ package org.everit.jsonschema.api;
  */
 public class NullSchema extends Schema {
 
-    /**
-     * Builder class for {@link NullSchema}.
-     */
-    public static class Builder extends Schema.Builder<NullSchema> {
-
-        @Override
-        public NullSchema build() {
-            return new NullSchema(this);
-        }
-    }
-
     public static final NullSchema INSTANCE = new NullSchema(builder());
-
-    public static Builder builder() {
-        return new Builder();
-    }
 
     public NullSchema(final Builder builder) {
         super(builder);
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -64,8 +53,19 @@ public class NullSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonSchemaWriter writer) {
+    void describePropertiesTo(JsonWriter writer) {
         writer.key("type");
         writer.value("null");
+    }
+
+    /**
+     * Builder class for {@link NullSchema}.
+     */
+    public static class Builder extends Schema.Builder<NullSchema> {
+
+        @Override
+        public NullSchema build() {
+            return new NullSchema(this);
+        }
     }
 }

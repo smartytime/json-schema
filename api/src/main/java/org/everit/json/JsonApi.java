@@ -1,7 +1,7 @@
 package org.everit.json;
 
 import org.everit.jsonschema.api.JsonSchemaType;
-import org.everit.jsonschema.api.JsonSchemaWriter;
+import org.everit.jsonschema.api.JsonWriter;
 
 import java.util.Map;
 
@@ -9,7 +9,7 @@ public interface JsonApi<X> {
 
     JsonObject<X> readJson(String jsonValue);
 
-    JsonSchemaWriter getWriter();
+    JsonWriter getWriter();
 
     JsonSchemaType schemaType(X x);
 

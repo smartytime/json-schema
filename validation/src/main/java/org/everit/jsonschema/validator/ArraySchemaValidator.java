@@ -25,12 +25,12 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
     public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
 
         List<ValidationError> failures = new ArrayList<>();
-        if (toBeValidated.schemaType() != JsonSchemaType.Array && schema.requiresArray()) {
+        if (toBeValidated.schemaType() != JsonSchemaType.Array && schema.isRequiresArray()) {
             return Optional.of(failure(JsonSchemaType.Array, toBeValidated.schemaType()));
         } else {
             JsonArray arrSubject = (JsonArray) toBeValidated;
             testItemCount(arrSubject).ifPresent(failures::add);
-            if (schema.needsUniqueItems()) {
+            if (schema.isNeedsUniqueItems()) {
                 testUniqueness(arrSubject).ifPresent(failures::add);
             }
             failures.addAll(testItems(arrSubject));
@@ -59,7 +59,7 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         List<ValidationError> rval = new ArrayList<>();
         Schema allItemSchema = schema.getAllItemSchema();
         List<Schema> itemSchemas = schema.getItemSchemas();
-        boolean additionalItems = schema.permitsAdditionalItems();
+        boolean additionalItems = schema.isNeedsAdditionalItems();
         Schema schemaOfAdditionalItems = schema.getSchemaOfAdditionalItems();
         if (allItemSchema != null) {
             validateItemsAgainstSchema(IntStream.range(0, subject.length()),

@@ -29,6 +29,58 @@ import static java.util.stream.Collectors.toSet;
  */
 public class EnumSchema extends Schema {
 
+    private final Set<Object> possibleValues;
+
+    public EnumSchema(final Builder builder) {
+        super(builder);
+        possibleValues = Collections.unmodifiableSet(builder.possibleValues.stream()
+                .map(JsonElement::raw)
+                .collect(toSet()));
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public Set<Object> getPossibleValues() {
+        return possibleValues;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), possibleValues);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof EnumSchema) {
+            EnumSchema that = (EnumSchema) o;
+            return that.canEqual(this) &&
+                    Objects.equals(possibleValues, that.possibleValues) &&
+                    super.equals(that);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof EnumSchema;
+    }
+
+    @Override
+    void describePropertiesTo(final JsonWriter writer) {
+        writer.key("type");
+        writer.value("enum");
+        writer.key("enum");
+        writer.array();
+        possibleValues.forEach(writer::value);
+        writer.endArray();
+    }
+
     /**
      * Builder class for {@link EnumSchema}.
      */
@@ -51,57 +103,4 @@ public class EnumSchema extends Schema {
             return this;
         }
     }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    private final Set<Object> possibleValues;
-
-    public EnumSchema(final Builder builder) {
-        super(builder);
-        possibleValues = Collections.unmodifiableSet(builder.possibleValues.stream()
-                .map(JsonElement::raw)
-                .collect(toSet()));
-    }
-
-    public Set<Object> getPossibleValues() {
-        return possibleValues;
-    }
-
-    @Override
-    void describePropertiesTo(final JsonSchemaWriter writer) {
-        writer.key("type");
-        writer.value("enum");
-        writer.key("enum");
-        writer.array();
-        possibleValues.forEach(writer::value);
-        writer.endArray();
-    }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o instanceof EnumSchema) {
-            EnumSchema that = (EnumSchema) o;
-            return that.canEqual(this) &&
-                    Objects.equals(possibleValues, that.possibleValues) &&
-                    super.equals(that);
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), possibleValues);
-    }
-
-    @Override
-    protected boolean canEqual(final Object other) {
-        return other instanceof EnumSchema;
-    }
-
 }

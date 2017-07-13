@@ -20,32 +20,24 @@ package org.everit.jsonschema.api;
  */
 public class EmptySchema extends Schema {
 
-    public static final EmptySchema INSTANCE = new EmptySchema(builder());
-
-    /**
-     * Builder class for {@link EmptySchema}.
-     */
-    public static class Builder extends Schema.Builder<EmptySchema> {
-
-        @Override
-        public EmptySchema build() {
-            return new EmptySchema(this);
-        }
-
+    public EmptySchema(final Builder builder) {
+        super(builder);
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public EmptySchema(final Builder builder) {
-        super(builder);
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
+        }
         if (o instanceof EmptySchema) {
             EmptySchema that = (EmptySchema) o;
             return that.canEqual(this) && super.equals(that);
@@ -59,8 +51,14 @@ public class EmptySchema extends Schema {
         return other instanceof EmptySchema;
     }
 
-    @Override
-    public int hashCode() {
-        return super.hashCode();
+    /**
+     * Builder class for {@link EmptySchema}.
+     */
+    public static class Builder extends Schema.Builder<EmptySchema> {
+
+        @Override
+        public EmptySchema build() {
+            return new EmptySchema(this);
+        }
     }
 }

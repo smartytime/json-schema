@@ -58,7 +58,7 @@ public class ReferenceSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonSchemaWriter writer) {
+    void describePropertiesTo(JsonWriter writer) {
         writer.key("$ref");
         writer.value(refValue);
     }

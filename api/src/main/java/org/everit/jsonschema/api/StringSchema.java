@@ -92,7 +92,7 @@ public class StringSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonSchemaWriter writer) {
+    void describePropertiesTo(JsonWriter writer) {
         if (requiresString) {
             writer.key("type").value("string");
         }
@@ -121,14 +121,11 @@ public class StringSchema extends Schema {
      */
     public static class Builder extends Schema.Builder<StringSchema> {
 
-        private Integer minLength;
-
-        private Integer maxLength;
-
-        private String pattern;
-
-        private boolean requiresString = true;
         public String format;
+        private Integer minLength;
+        private Integer maxLength;
+        private String pattern;
+        private boolean requiresString = true;
 
         // private FormatValidator formatValidator = FormatValidator.NONE;
 

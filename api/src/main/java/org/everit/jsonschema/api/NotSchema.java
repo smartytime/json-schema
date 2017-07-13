@@ -24,34 +24,15 @@ import static java.util.Objects.requireNonNull;
  */
 public class NotSchema extends Schema {
 
-    /**
-     * Builder class for {@link NotSchema}.
-     */
-    public static class Builder extends Schema.Builder<NotSchema> {
-
-        private Schema mustNotMatch;
-
-        @Override
-        public NotSchema build() {
-            return new NotSchema(this);
-        }
-
-        public Builder mustNotMatch(final Schema mustNotMatch) {
-            this.mustNotMatch = mustNotMatch;
-            return this;
-        }
-
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
     private final Schema mustNotMatch;
 
     public NotSchema(final Builder builder) {
         super(builder);
         this.mustNotMatch = requireNonNull(builder.mustNotMatch, "mustNotMatch cannot be null");
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public Schema getMustNotMatch() {
@@ -83,8 +64,27 @@ public class NotSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonSchemaWriter writer) {
+    void describePropertiesTo(JsonWriter writer) {
         writer.key("not");
         mustNotMatch.describeTo(writer);
+    }
+
+    /**
+     * Builder class for {@link NotSchema}.
+     */
+    public static class Builder extends Schema.Builder<NotSchema> {
+
+        private Schema mustNotMatch;
+
+        @Override
+        public NotSchema build() {
+            return new NotSchema(this);
+        }
+
+        public Builder mustNotMatch(final Schema mustNotMatch) {
+            this.mustNotMatch = mustNotMatch;
+            return this;
+        }
+
     }
 }

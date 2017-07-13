@@ -20,8 +20,6 @@ package org.everit.jsonschema.api;
  */
 public class BooleanSchema extends Schema {
 
-    public static final BooleanSchema INSTANCE = new BooleanSchema(builder());
-
     public BooleanSchema(final Builder builder) {
         super(builder);
     }
@@ -54,7 +52,7 @@ public class BooleanSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(final JsonSchemaWriter writer) {
+    void describePropertiesTo(final JsonWriter writer) {
         writer.key("type");
         writer.value("boolean");
     }

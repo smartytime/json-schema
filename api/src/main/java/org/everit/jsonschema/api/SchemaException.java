@@ -18,6 +18,48 @@ import static java.util.stream.Collectors.joining;
 public class SchemaException extends RuntimeException {
 
     private static final long serialVersionUID = 5987489689035036987L;
+    private final String schemaLocation;
+
+    public SchemaException(String schemaLocation, String message) {
+        super(schemaLocation == null
+                ? "<unknown location>: " + message
+                : schemaLocation + ": " + message);
+        this.schemaLocation = schemaLocation;
+    }
+
+    public SchemaException(String schemaLocation, Class<?> actualType, Class<?> expectedType, Class<?>... furtherExpectedTypes) {
+        super(buildMessage(schemaLocation, actualType, expectedType, furtherExpectedTypes));
+        this.schemaLocation = schemaLocation;
+    }
+
+    public SchemaException(String schemaLocation, Class<?> actualType, Collection<Class<?>> expectedTypes) {
+        super(buildMessage(schemaLocation, actualType, expectedTypes));
+        this.schemaLocation = schemaLocation;
+    }
+
+    @Deprecated
+    public SchemaException(String message) {
+        this((String) null, message);
+    }
+
+    @Deprecated
+    public SchemaException(String key, Class<?> expectedType, Object actualValue) {
+        this(format("key %s : expected type: %s , found : %s", key, expectedType
+                .getSimpleName(), typeOfValue(actualValue)));
+    }
+
+    @Deprecated
+    public SchemaException(String key, List<Class<?>> expectedTypes,
+                           final Object actualValue) {
+        this(format("key %s: expected type is one of %s, found: %s",
+                key, joinClassNames(expectedTypes), typeOfValue(actualValue)));
+    }
+
+    @Deprecated
+    public SchemaException(String message, Throwable cause) {
+        super(message, cause);
+        this.schemaLocation = null;
+    }
 
     private static Object typeOfValue(final Object actualValue) {
         return actualValue == null ? "null" : actualValue.getClass().getSimpleName();
@@ -56,49 +98,6 @@ public class SchemaException extends RuntimeException {
 
     private static String joinClassNames(final List<Class<?>> expectedTypes) {
         return expectedTypes.stream().map(Class::getSimpleName).collect(joining(", "));
-    }
-
-    private final String schemaLocation;
-
-    public SchemaException(String schemaLocation, String message) {
-        super(schemaLocation == null
-                ? "<unknown location>: " + message
-                : schemaLocation + ": " + message);
-        this.schemaLocation = schemaLocation;
-    }
-
-    public SchemaException(String schemaLocation, Class<?> actualType, Class<?> expectedType, Class<?>... furtherExpectedTypes) {
-        super(buildMessage(schemaLocation, actualType, expectedType, furtherExpectedTypes));
-        this.schemaLocation = schemaLocation;
-    }
-
-    public SchemaException(String schemaLocation, Class<?> actualType, Collection<Class<?>> expectedTypes) {
-        super(buildMessage(schemaLocation, actualType, expectedTypes));
-        this.schemaLocation = schemaLocation;
-    }
-
-    @Deprecated
-    public SchemaException(String message) {
-        this((String) null, message);
-    }
-
-    @Deprecated
-    public SchemaException(String key, Class<?> expectedType, Object actualValue) {
-        this(format("key %s : expected type: %s , found : %s", key, expectedType
-                .getSimpleName(), typeOfValue(actualValue)));
-    }
-
-    @Deprecated
-    public SchemaException(String key, List<Class<?>> expectedTypes,
-            final Object actualValue) {
-        this(format("key %s: expected type is one of %s, found: %s",
-                key, joinClassNames(expectedTypes), typeOfValue(actualValue)));
-    }
-
-    @Deprecated
-    public SchemaException(String message, Throwable cause) {
-        super(message, cause);
-        this.schemaLocation = null;
     }
 
     public String getSchemaLocation() {

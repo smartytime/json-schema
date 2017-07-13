@@ -50,7 +50,7 @@ public class CombinedSchemaValidator extends SchemaValidator<CombinedSchema> {
 
     @Override
     public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
-        Collection<Schema> subschemas = schema.getSubschemas();
+        Collection<Schema> subschemas = schema.getSubSchemas();
         CombinedSchemaValidator.ValidationCriterion criterion = this.getCriterion();
         List<ValidationError> failures = subschemas.stream()
                 .map(schema -> SchemaValidatorFactory

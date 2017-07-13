@@ -1,8 +1,6 @@
 package org.everit.jsonschema.api;
 
-import static com.google.common.base.CaseFormat.LOWER_HYPHEN;
-import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
+import static com.google.common.base.CaseFormat.*;
 
 public enum FormatType {
     DATE_TIME, EMAIL, HOSTNAME, IPV4, IPV6, URI;

@@ -15,6 +15,8 @@
  */
 package org.everit.jsonschema.api;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +26,103 @@ import static java.util.Objects.requireNonNull;
 /**
  * Array schema validator.
  */
+@Getter
 public class ArraySchema extends Schema {
+
+    private final Integer minItems;
+    private final Integer maxItems;
+    private final boolean needsUniqueItems;
+    private final Schema allItemSchema;
+    private final boolean needsAdditionalItems;
+    private final List<Schema> itemSchemas;
+    private final boolean requiresArray;
+    private final Schema schemaOfAdditionalItems;
+
+    /**
+     * Constructor.
+     *
+     * @param builder contains validation criteria.
+     */
+    public ArraySchema(final Builder builder) {
+        super(builder);
+        this.minItems = builder.minItems;
+        this.maxItems = builder.maxItems;
+        this.needsUniqueItems = builder.uniqueItems;
+        this.allItemSchema = builder.allItemSchema;
+        this.itemSchemas = builder.itemSchemas;
+        if (!builder.additionalItems && allItemSchema != null) {
+            needsAdditionalItems = true;
+        } else {
+            needsAdditionalItems = builder.schemaOfAdditionalItems != null || builder.additionalItems;
+        }
+        this.schemaOfAdditionalItems = builder.schemaOfAdditionalItems;
+        if (!(allItemSchema == null || itemSchemas == null)) {
+            throw new SchemaException("cannot perform both tuple and list validation");
+        }
+        this.requiresArray = builder.requiresArray;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof ArraySchema) {
+            ArraySchema that = (ArraySchema) o;
+            return that.canEqual(this) &&
+                    needsUniqueItems == that.needsUniqueItems &&
+                    needsAdditionalItems == that.needsAdditionalItems &&
+                    requiresArray == that.requiresArray &&
+                    Objects.equals(minItems, that.minItems) &&
+                    Objects.equals(maxItems, that.maxItems) &&
+                    Objects.equals(allItemSchema, that.allItemSchema) &&
+                    Objects.equals(itemSchemas, that.itemSchemas) &&
+                    Objects.equals(schemaOfAdditionalItems, that.schemaOfAdditionalItems) &&
+                    super.equals(o);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    void describePropertiesTo(final JsonWriter writer) {
+        if (requiresArray) {
+            writer.key("type").value("array");
+        }
+        writer.ifTrue("needsUniqueItems", needsUniqueItems);
+        writer.ifPresent("minItems", minItems);
+        writer.ifPresent("maxItems", maxItems);
+        writer.ifFalse("needsAdditionalItems", needsAdditionalItems);
+        if (allItemSchema != null) {
+            writer.key("items");
+            allItemSchema.describeTo(writer);
+        }
+        if (itemSchemas != null) {
+            writer.key("items");
+            writer.array();
+            itemSchemas.forEach(schema -> schema.describeTo(writer));
+            writer.endArray();
+        }
+        if (schemaOfAdditionalItems != null) {
+            writer.key("needsAdditionalItems");
+            schemaOfAdditionalItems.describeTo(writer);
+        }
+    }
+
+    @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof ArraySchema;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), minItems, maxItems, needsUniqueItems, allItemSchema,
+                needsAdditionalItems, itemSchemas, requiresArray, schemaOfAdditionalItems);
+    }
 
     /**
      * Builder class for {@link ArraySchema}.
@@ -103,141 +201,5 @@ public class ArraySchema extends Schema {
             this.uniqueItems = uniqueItems;
             return this;
         }
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    private final Integer minItems;
-
-    private final Integer maxItems;
-
-    private final boolean uniqueItems;
-
-    private final Schema allItemSchema;
-
-    private final boolean additionalItems;
-
-    private final List<Schema> itemSchemas;
-
-    private final boolean requiresArray;
-
-    private final Schema schemaOfAdditionalItems;
-
-    /**
-     * Constructor.
-     *
-     * @param builder contains validation criteria.
-     */
-    public ArraySchema(final Builder builder) {
-        super(builder);
-        this.minItems = builder.minItems;
-        this.maxItems = builder.maxItems;
-        this.uniqueItems = builder.uniqueItems;
-        this.allItemSchema = builder.allItemSchema;
-        this.itemSchemas = builder.itemSchemas;
-        if (!builder.additionalItems && allItemSchema != null) {
-            additionalItems = true;
-        } else {
-            additionalItems = builder.schemaOfAdditionalItems != null || builder.additionalItems;
-        }
-        this.schemaOfAdditionalItems = builder.schemaOfAdditionalItems;
-        if (!(allItemSchema == null || itemSchemas == null)) {
-            throw new SchemaException("cannot perform both tuple and list validation");
-        }
-        this.requiresArray = builder.requiresArray;
-    }
-
-    public Schema getAllItemSchema() {
-        return allItemSchema;
-    }
-
-    public List<Schema> getItemSchemas() {
-        return itemSchemas;
-    }
-
-    public Integer getMaxItems() {
-        return maxItems;
-    }
-
-    public Integer getMinItems() {
-        return minItems;
-    }
-
-    public Schema getSchemaOfAdditionalItems() {
-        return schemaOfAdditionalItems;
-    }
-
-    public boolean needsUniqueItems() {
-        return uniqueItems;
-    }
-
-    public boolean permitsAdditionalItems() {
-        return additionalItems;
-    }
-
-    public boolean requiresArray() {
-        return requiresArray;
-    }
-
-
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o instanceof ArraySchema) {
-            ArraySchema that = (ArraySchema) o;
-            return that.canEqual(this) &&
-                    uniqueItems == that.uniqueItems &&
-                    additionalItems == that.additionalItems &&
-                    requiresArray == that.requiresArray &&
-                    Objects.equals(minItems, that.minItems) &&
-                    Objects.equals(maxItems, that.maxItems) &&
-                    Objects.equals(allItemSchema, that.allItemSchema) &&
-                    Objects.equals(itemSchemas, that.itemSchemas) &&
-                    Objects.equals(schemaOfAdditionalItems, that.schemaOfAdditionalItems) &&
-                    super.equals(o);
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    void describePropertiesTo(final JsonSchemaWriter writer) {
-        if (requiresArray) {
-            writer.key("type").value("array");
-        }
-        writer.ifTrue("uniqueItems", uniqueItems);
-        writer.ifPresent("minItems", minItems);
-        writer.ifPresent("maxItems", maxItems);
-        writer.ifFalse("additionalItems", additionalItems);
-        if (allItemSchema != null) {
-            writer.key("items");
-            allItemSchema.describeTo(writer);
-        }
-        if (itemSchemas != null) {
-            writer.key("items");
-            writer.array();
-            itemSchemas.forEach(schema -> schema.describeTo(writer));
-            writer.endArray();
-        }
-        if (schemaOfAdditionalItems != null) {
-            writer.key("additionalItems");
-            schemaOfAdditionalItems.describeTo(writer);
-        }
-    }
-
-    @Override
-    protected boolean canEqual(final Object other) {
-        return other instanceof ArraySchema;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), minItems, maxItems, uniqueItems, allItemSchema,
-                additionalItems, itemSchemas, requiresArray, schemaOfAdditionalItems);
     }
 }

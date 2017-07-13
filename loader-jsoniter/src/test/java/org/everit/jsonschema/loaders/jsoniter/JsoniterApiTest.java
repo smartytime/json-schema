@@ -1,5 +1,7 @@
 package org.everit.jsonschema.loaders.jsoniter;
 
+import org.everit.jsonschema.api.JsonStringWriter;
+import org.everit.jsonschema.api.JsonWriter;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.loader.SchemaLoader;
 import org.junit.Test;
@@ -77,7 +79,8 @@ public class JsoniterApiTest {
                 "}\n";
 
         Schema loadedSchema = SchemaLoader.load(jsonSchema, new JsoniterApi());
-        System.out.println(loadedSchema);
+        final JsonWriter jsonWriter = loadedSchema.describeTo(new JsonStringWriter());
+        System.out.println(jsonWriter.toString());
     }
 
 }
