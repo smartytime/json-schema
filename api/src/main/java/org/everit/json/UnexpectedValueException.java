@@ -9,11 +9,7 @@ public class UnexpectedValueException extends RuntimeException {
         super(message);
     }
 
-    public UnexpectedValueException(Class<?> found, Class<?> expected) {
-        super(String.format("Found %s, but was expecting %s", found, expected));
-    }
-
     public UnexpectedValueException(JsonElement<?> element, JsonSchemaType... wanted) {
-        super(String.format("Found %s, but was expecting %s", element.type(), Arrays.toString(wanted)));
+        super(String.format("Found %s, but was expecting %s", element.schemaType(), Arrays.toString(wanted)));
     }
 }

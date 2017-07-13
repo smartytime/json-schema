@@ -1,7 +1,5 @@
 package org.everit.json;
 
-import org.everit.jsonschema.api.JsonSchemaType;
-
 /**
  * @author erosb
  */
@@ -110,39 +108,4 @@ public interface JsonValue<X> extends JsonElement<X> {
                 '}';
     }
 
-    default Class<?> javaType() {
-        if(raw() == null) {
-            return null;
-        } else {
-            return raw().getClass();
-        }
-    }
-
-    default String asString() {
-        if (type() == JsonSchemaType.String) {
-            return (String) raw();
-        }
-        throw new UnexpectedValueException(javaType(), String.class);
-    }
-
-    default Boolean asBoolean() {
-        if (type() == JsonSchemaType.Boolean) {
-            return (Boolean) raw();
-        }
-        throw new UnexpectedValueException(javaType(), Boolean.class);
-    }
-
-    default Number asNumber() {
-        if (type() == JsonSchemaType.Number) {
-            return (Number) raw();
-        }
-        throw new UnexpectedValueException(javaType(), Number.class);
-    }
-
-    default Integer asInteger() {
-        if (type() == JsonSchemaType.Number) {
-            return (Integer) raw();
-        }
-        throw new UnexpectedValueException(javaType(), Integer.class);
-    }
 }

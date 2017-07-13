@@ -77,6 +77,7 @@ public class JsoniterApiTest {
                 "}\n";
 
         Schema loadedSchema = SchemaLoader.load(jsonSchema, new JsoniterApi());
+        System.out.println(loadedSchema);
     }
 
 }

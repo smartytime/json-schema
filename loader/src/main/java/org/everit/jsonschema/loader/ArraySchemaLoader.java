@@ -36,7 +36,7 @@ class ArraySchemaLoader {
         ls.schemaJson.find(MAX_ITEMS).map(JsonElement::asInteger).ifPresent(builder::maxItems);
         ls.schemaJson.find(UNIQUE_ITEMS).map(JsonElement::asBoolean).ifPresent(builder::uniqueItems);
         ls.schemaJson.find(ADDITIONAL_ITEMS).ifPresent(maybe -> {
-            switch (maybe.type()) {
+            switch (maybe.schemaType()) {
                 case Boolean:
                     builder.additionalItems(maybe.asBoolean());
                     break;
@@ -49,7 +49,7 @@ class ArraySchemaLoader {
             }
         });
         ls.schemaJson.find(ITEMS).ifPresent(items -> {
-            switch (items.type()) {
+            switch (items.schemaType()) {
                 case Object:
                     Schema childSchema = defaultLoader.loadChild(items.asObject()).build();
                     builder.allItemSchema(childSchema);

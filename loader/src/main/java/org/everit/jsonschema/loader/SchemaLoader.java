@@ -1,52 +1,17 @@
 package org.everit.jsonschema.loader;
 
-import org.everit.json.JsonApi;
-import org.everit.json.JsonArray;
-import org.everit.json.JsonElement;
-import org.everit.json.JsonObject;
-import org.everit.jsonschema.api.ArraySchema;
-import org.everit.jsonschema.api.BooleanSchema;
-import org.everit.jsonschema.api.CombinedSchema;
-import org.everit.jsonschema.api.EmptySchema;
-import org.everit.jsonschema.api.EnumSchema;
-import org.everit.jsonschema.api.JsonSchemaProperty;
-import org.everit.jsonschema.api.JsonSchemaType;
-import org.everit.jsonschema.api.NotSchema;
-import org.everit.jsonschema.api.NullSchema;
-import org.everit.jsonschema.api.NumberSchema;
-import org.everit.jsonschema.api.ObjectSchema;
-import org.everit.jsonschema.api.ReferenceSchema;
-import org.everit.jsonschema.api.Schema;
-import org.everit.jsonschema.api.SchemaException;
+import org.everit.json.*;
+import org.everit.jsonschema.api.*;
 import org.everit.jsonschema.loader.exceptions.JsonException;
 import org.everit.jsonschema.loader.internal.DefaultSchemaClient;
 import org.everit.jsonschema.loader.internal.ReferenceResolver;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
-import static org.everit.jsonschema.api.JsonSchemaProperty.$REF;
-import static org.everit.jsonschema.api.JsonSchemaProperty.DESCRIPTION;
-import static org.everit.jsonschema.api.JsonSchemaProperty.ENUM;
-import static org.everit.jsonschema.api.JsonSchemaProperty.EXCLUSIVE_MAXIMUM;
-import static org.everit.jsonschema.api.JsonSchemaProperty.EXCLUSIVE_MINIMUM;
-import static org.everit.jsonschema.api.JsonSchemaProperty.ID;
-import static org.everit.jsonschema.api.JsonSchemaProperty.MAXIMUM;
-import static org.everit.jsonschema.api.JsonSchemaProperty.MINIMUM;
-import static org.everit.jsonschema.api.JsonSchemaProperty.MULTIPLE_OF;
-import static org.everit.jsonschema.api.JsonSchemaProperty.NOT;
-import static org.everit.jsonschema.api.JsonSchemaProperty.TITLE;
-import static org.everit.jsonschema.api.JsonSchemaProperty.TYPE;
+import static org.everit.jsonschema.api.JsonSchemaProperty.*;
 
 /**
  * Loads a JSON schema's JSON representation into schema validator instances.
@@ -159,7 +124,7 @@ public class SchemaLoader {
     }
 
     Schema.Builder loadForType(JsonElement<?> element) {
-        if (element.type() == JsonSchemaType.Array) {
+        if (element.schemaType() == JsonSchemaType.Array) {
             return buildAnyOfSchemaForMultipleTypes();
         } else {
             return loadForExplicitType(element.asString());
@@ -294,7 +259,7 @@ public class SchemaLoader {
 
         URI id;
 
-        List<String> pointerToCurrentObj = emptyList();
+        JsonPath pointerToCurrentObj = JsonPath.rootPath();
 
         public SchemaLoader build() {
             return new SchemaLoader(this);
@@ -345,7 +310,7 @@ public class SchemaLoader {
             return this;
         }
 
-        SchemaLoaderBuilder pointerToCurrentObj(List<String> pointerToCurrentObj) {
+        SchemaLoaderBuilder pointerToCurrentObj(JsonPath pointerToCurrentObj) {
             this.pointerToCurrentObj = requireNonNull(pointerToCurrentObj);
             return this;
         }

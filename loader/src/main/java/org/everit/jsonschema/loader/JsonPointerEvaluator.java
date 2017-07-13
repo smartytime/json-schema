@@ -1,20 +1,18 @@
 package org.everit.jsonschema.loader;
 
-import org.everit.jsonschema.api.SchemaException;
 import org.everit.json.JsonApi;
 import org.everit.json.JsonObject;
+import org.everit.json.JsonPath;
+import org.everit.jsonschema.api.SchemaException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
+import static org.everit.json.JsonPath.jsonPath;
 
 /**
  * @author erosb
@@ -143,14 +141,14 @@ class JsonPointerEvaluator {
         if ((path[0] == null) || !path[0].startsWith("#")) {
             throw new IllegalArgumentException("JSON pointers must start with a '#'");
         }
-        String[] trimmedPath = Arrays.copyOfRange(path, 1, path.length);
+        JsonPath trimmedPath = jsonPath(Arrays.copyOfRange(path, 1, path.length));
 
         return queryFrom(document, trimmedPath)
                 .map(object -> new QueryResult(document, object))
                 .orElseThrow(() -> new SchemaException(fragment, "Couldn't load fragment"));
     }
 
-    private Optional<JsonObject<?>> queryFrom(JsonObject<?> document, String... path) {
+    private Optional<JsonObject<?>> queryFrom(JsonObject<?> document, JsonPath path) {
         return jsonApi.pointer(path).queryFrom(document);
     }
 

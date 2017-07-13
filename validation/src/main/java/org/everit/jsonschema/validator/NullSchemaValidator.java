@@ -16,8 +16,8 @@ public class NullSchemaValidator extends SchemaValidator<NullSchema> {
     @Override
     public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
         checkNotNull(toBeValidated, "toBeValidated must not be null");
-        if (toBeValidated.type() != JsonSchemaType.Null) {
-            return Optional.of(failure("expected: null, found: " + toBeValidated.type(), "type"));
+        if (toBeValidated.schemaType() != JsonSchemaType.Null) {
+            return Optional.of(failure("expected: null, found: " + toBeValidated.schemaType(), "type"));
         }
         return Optional.empty();
     }

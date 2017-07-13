@@ -25,8 +25,8 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
     public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
 
         List<ValidationError> failures = new ArrayList<>();
-        if (toBeValidated.type() != JsonSchemaType.Array && schema.requiresArray()) {
-            return Optional.of(failure(JsonSchemaType.Array, toBeValidated.type()));
+        if (toBeValidated.schemaType() != JsonSchemaType.Array && schema.requiresArray()) {
+            return Optional.of(failure(JsonSchemaType.Array, toBeValidated.schemaType()));
         } else {
             JsonArray arrSubject = (JsonArray) toBeValidated;
             testItemCount(arrSubject).ifPresent(failures::add);

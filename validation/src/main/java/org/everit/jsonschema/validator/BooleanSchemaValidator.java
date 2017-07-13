@@ -15,8 +15,8 @@ public class BooleanSchemaValidator extends SchemaValidator<BooleanSchema> {
     @Override
     public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
 
-        if (toBeValidated.type() != JsonSchemaType.Boolean) {
-            return Optional.of(failure(JsonSchemaType.Boolean, toBeValidated.type()));
+        if (toBeValidated.schemaType() != JsonSchemaType.Boolean) {
+            return Optional.of(failure(JsonSchemaType.Boolean, toBeValidated.schemaType()));
         }
 
         return Optional.empty();

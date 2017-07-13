@@ -2,21 +2,16 @@ package org.everit.jsonschema.loader;
 
 import org.everit.json.JsonApi;
 import org.everit.json.JsonObject;
+import org.everit.json.JsonPath;
 import org.everit.jsonschema.api.ReferenceSchema;
 import org.everit.jsonschema.api.SchemaException;
 import org.everit.jsonschema.loader.internal.ReferenceResolver;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.collections.ListUtils.unmodifiableList;
 
 /**
  * @author erosb
@@ -28,7 +23,7 @@ public class LoadingState {
 
     URI id = null;
 
-    final List<String> pointerToCurrentObj;
+    final JsonPath pointerToCurrentObj;
 
     final Map<String, ReferenceSchema.Builder> pointerSchemas;
 
@@ -44,15 +39,14 @@ public class LoadingState {
             JsonObject rootSchemaJson,
             JsonObject schemaJson,
             URI id,
-            List<String> pointerToCurrentObj) {
+            JsonPath pointerToCurrentObj) {
         this.httpClient = requireNonNull(httpClient, "httpClient cannot be null");
         this.pointerSchemas = requireNonNull(pointerSchemas, "pointerSchemas cannot be null");
         this.rootSchemaJson = requireNonNull(rootSchemaJson, "rootSchemaJson cannot be null");
         this.jsonApi = checkNotNull(jsonApi);
         this.schemaJson = requireNonNull(schemaJson, "schemaJson cannot be null");
         this.id = id;
-        this.pointerToCurrentObj = unmodifiableList(new ArrayList<>(
-                requireNonNull(pointerToCurrentObj, "pointerToCurrentObj cannot be null")));
+        this.pointerToCurrentObj = pointerToCurrentObj;
     }
 
     LoadingState(SchemaLoader.SchemaLoaderBuilder builder) {
@@ -78,10 +72,7 @@ public class LoadingState {
     }
 
     public LoadingState childFor(String key) {
-        List<String> newPtr = new ArrayList<>(pointerToCurrentObj.size() + 1);
-        newPtr.addAll(pointerToCurrentObj);
-        newPtr.add(key);
-        return new LoadingState(httpClient, pointerSchemas, jsonApi, rootSchemaJson, schemaJson, id, newPtr);
+        return new LoadingState(httpClient, pointerSchemas, jsonApi, rootSchemaJson, schemaJson, id, pointerToCurrentObj.child(key));
     }
 
     public LoadingState childFor(int arrayIndex) {

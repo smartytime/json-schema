@@ -18,8 +18,8 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
 
     @Override
     public Optional<ValidationError> validate(JsonElement<?> subject) {
-        if (subject.type() != JsonSchemaType.String && schema.requiresString()) {
-            return Optional.of(failure(JsonSchemaType.String, subject.type()));
+        if (subject.schemaType() != JsonSchemaType.String && schema.requiresString()) {
+            return Optional.of(failure(JsonSchemaType.String, subject.schemaType()));
         } else {
             String stringSubject = subject.asString();
             List<ValidationError> allErrors = new ArrayList<>();

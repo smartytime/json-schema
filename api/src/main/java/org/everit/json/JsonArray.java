@@ -24,7 +24,7 @@ public interface JsonArray<X> extends JsonValue<X>, Iterable<JsonElement<?>> {
     List<JsonElement<?>> toList();
 
     @Override
-    default JsonSchemaType type() {
+    default JsonSchemaType schemaType() {
         return JsonSchemaType.Array;
     }
 

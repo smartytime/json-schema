@@ -100,7 +100,7 @@ public interface JsonObject<X> extends JsonValue<X> {
     //     return mapper.apply(this);
     // }
 
-    default JsonSchemaType type() {
+    default JsonSchemaType schemaType() {
         return JsonSchemaType.Object;
     }
 }

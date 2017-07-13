@@ -1,24 +1,23 @@
 package org.everit.json;
 
+import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.JsonSchemaWriter;
 
-import java.util.List;
 import java.util.Map;
 
 public interface JsonApi<X> {
-    JsonObject readJson(String jsonValue);
+
+    JsonObject<X> readJson(String jsonValue);
 
     JsonSchemaWriter getWriter();
 
+    JsonSchemaType schemaType(X x);
+
     // boolean isNull(X subject);
 
-    JsonValue of(X raw);
+    JsonValue<?> of(X raw, JsonPath path);
 
-    JsonPointer pointer(List<String> path);
-    JsonPointer pointer(String... path);
+    JsonPointer pointer(JsonPath path);
 
-    JsonObject fromMap(Map<String, Object> map);
-
-    void handleException(Exception e);
-
+    JsonObject<?> fromMap(Map<String, Object> map, JsonPath path);
 }

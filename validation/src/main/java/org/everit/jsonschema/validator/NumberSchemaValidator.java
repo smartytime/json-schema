@@ -17,10 +17,10 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
 
     @Override
     public Optional<ValidationError> validate(JsonElement<?> subject) {
-            if (subject.type() != JsonSchemaType.Number && schema.requiresNumber()) {
-                return Optional.of(failure(JsonSchemaType.Number, subject.type()));
-            } else if (subject.type() != JsonSchemaType.Integer && schema.requiresInteger()) {
-                return Optional.of(failure(JsonSchemaType.Integer, subject.type()));
+            if (subject.schemaType() != JsonSchemaType.Number && schema.requiresNumber()) {
+                return Optional.of(failure(JsonSchemaType.Number, subject.schemaType()));
+            } else if (subject.schemaType() != JsonSchemaType.Integer && schema.requiresInteger()) {
+                return Optional.of(failure(JsonSchemaType.Integer, subject.schemaType()));
             } else {
                 List<ValidationError> errors = new ArrayList<>();
 

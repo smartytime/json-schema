@@ -38,7 +38,7 @@ class ObjectSchemaLoader {
                 .ifPresent(propertyDefs -> populatePropertySchemas(propertyDefs, builder));
         ls.schemaJson.find(ADDITIONAL_PROPERTIES).ifPresent(rawAddProps -> {
 
-            switch (rawAddProps.type()) {
+            switch (rawAddProps.schemaType()) {
                 case Boolean:
                     builder.additionalProperties(rawAddProps.asBoolean());
                     break;
@@ -47,7 +47,7 @@ class ObjectSchemaLoader {
                     builder.schemaOfAdditionalProperties(childSchema);
                     break;
                 default:
-                    String errorMessage = format("Looking for boolean or object but found: %s", rawAddProps.type());
+                    String errorMessage = format("Looking for boolean or object but found: %s", rawAddProps.schemaType());
                     throw new UnexpectedValueException(errorMessage);
             }
         });
@@ -81,7 +81,7 @@ class ObjectSchemaLoader {
     }
 
     private void addDependency(ObjectSchema.Builder builder, String ifPresent, JsonElement<?> deps) {
-        switch (deps.type()) {
+        switch (deps.schemaType()) {
             case Object:
                 builder.schemaDependency(ifPresent, defaultLoader.loadChild(deps.asObject()).build());
                 break;
@@ -89,7 +89,7 @@ class ObjectSchemaLoader {
                 deps.asArray().forEach(entry -> builder.propertyDependency(ifPresent, entry.asString()));
                 break;
             default:
-                String errorMessage = format("Looking for Object or Array but found: %s", deps.type());
+                String errorMessage = format("Looking for Object or Array but found: %s", deps.schemaType());
                 throw new UnexpectedValueException(errorMessage);
         }
     }

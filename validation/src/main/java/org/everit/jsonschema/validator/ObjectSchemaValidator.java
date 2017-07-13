@@ -29,9 +29,9 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     @Override
     public Optional<ValidationError> validate(JsonElement<?> subject) {
 
-        if (subject.type() != JsonSchemaType.Object && schema.requiresObject()) {
-            return Optional.of(failure(JsonSchemaType.Object, subject.type()));
-        } else if(subject.type() == JsonSchemaType.Object) {
+        if (subject.schemaType() != JsonSchemaType.Object && schema.requiresObject()) {
+            return Optional.of(failure(JsonSchemaType.Object, subject.schemaType()));
+        } else if(subject.schemaType() == JsonSchemaType.Object) {
             List<ValidationError> failures = new ArrayList<>();
             JsonObject objSubject = subject.asObject();
             failures.addAll(testProperties(objSubject));
