@@ -1,18 +1,17 @@
 package org.everit.jsonschema.loader;
 
-import org.everit.json.JsonApi;
-import org.everit.json.JsonObject;
-import org.everit.json.JsonPath;
+import lombok.SneakyThrows;
 import org.everit.jsonschema.api.SchemaException;
+import org.everit.jsonschema.api.UnexpectedValueException;
 
-import java.io.*;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Optional;
+import javax.json.JsonObject;
+import javax.json.JsonPointer;
+import javax.json.JsonValue;
+import javax.json.spi.JsonProvider;
+import java.io.InputStream;
 import java.util.function.Supplier;
 
 import static java.util.Objects.requireNonNull;
-import static org.everit.json.JsonPath.jsonPath;
 
 /**
  * @author erosb
@@ -62,44 +61,18 @@ class JsonPointerEvaluator {
 
     }
 
-    private static JsonObject executeWith(final SchemaClient client, final String url, final JsonApi jsonApi) {
-        String resp = null;
-        BufferedReader buffReader = null;
-        InputStreamReader reader = null;
-        try {
-            InputStream responseStream = client.get(url);
-            reader = new InputStreamReader(responseStream, Charset.defaultCharset());
-            buffReader = new BufferedReader(reader);
-            String line;
-            StringBuilder strBuilder = new StringBuilder();
-            while ((line = buffReader.readLine()) != null) {
-                strBuilder.append(line);
-            }
-            resp = strBuilder.toString();
-            return jsonApi.readJson(resp);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        } catch (Exception e) {
-            throw new SchemaException(e.getMessage(), e);
-        } finally {
-            try {
-                if (buffReader != null) {
-                    buffReader.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+    @SneakyThrows
+    private static JsonObject executeWith(final SchemaClient client, final String url, final JsonProvider provider) {
+        try (InputStream responseStream = client.get(url)) {
+            return provider.createReader(responseStream).readObject();
         }
     }
 
-    static final JsonPointerEvaluator forDocument(JsonObject document, String fragment, JsonApi jsonApi) {
-        return new JsonPointerEvaluator(() -> document, fragment, jsonApi);
+    static final JsonPointerEvaluator forDocument(JsonObject document, String fragment, JsonProvider provider) {
+        return new JsonPointerEvaluator(() -> document, fragment, provider);
     }
 
-    static final JsonPointerEvaluator forURL(SchemaClient schemaClient, String url, JsonApi jsonApi) {
+    static final JsonPointerEvaluator forURL(SchemaClient schemaClient, String url, JsonProvider provider) {
         int poundIdx = url.indexOf('#');
         String fragment;
         String toBeQueried;
@@ -110,19 +83,19 @@ class JsonPointerEvaluator {
             fragment = url.substring(poundIdx);
             toBeQueried = url.substring(0, poundIdx);
         }
-        return new JsonPointerEvaluator(() -> executeWith(schemaClient, toBeQueried, jsonApi), fragment, jsonApi);
+        return new JsonPointerEvaluator(() -> executeWith(schemaClient, toBeQueried, provider), fragment, provider);
     }
 
     private final Supplier<JsonObject> documentProvider;
 
     private final String fragment;
 
-    private final JsonApi<?> jsonApi;
+    private final JsonProvider provider;
 
-    JsonPointerEvaluator(Supplier<JsonObject> documentProvider, String fragment, JsonApi jsonApi) {
+    JsonPointerEvaluator(Supplier<JsonObject> documentProvider, String fragment, JsonProvider provider) {
         this.documentProvider = documentProvider;
         this.fragment = fragment;
-        this.jsonApi = jsonApi;
+        this.provider = provider;
     }
 
     /**
@@ -133,23 +106,19 @@ class JsonPointerEvaluator {
      *         if the pointer does not start with {@code '#'}.
      */
     public QueryResult query() {
-        JsonObject<?> document = documentProvider.get();
+        JsonObject document = documentProvider.get();
         if (fragment.isEmpty()) {
             return new QueryResult(document, document);
         }
-        String[] path = fragment.split("/");
-        if ((path[0] == null) || !path[0].startsWith("#")) {
-            throw new IllegalArgumentException("JSON pointers must start with a '#'");
+        JsonPointer pointer = provider.createPointer(fragment);
+        if (!pointer.containsValue(document)) {
+            throw new SchemaException(fragment, "Couldn't load fragment");
+        } else {
+            JsonValue pointerValue = pointer.getValue(document);
+            if (pointerValue.getValueType() != JsonValue.ValueType.OBJECT) {
+                throw new UnexpectedValueException(pointerValue, JsonValue.ValueType.OBJECT);
+            }
+            return new QueryResult(document, (JsonObject) pointerValue);
         }
-        JsonPath trimmedPath = jsonPath(Arrays.copyOfRange(path, 1, path.length));
-
-        return queryFrom(document, trimmedPath)
-                .map(object -> new QueryResult(document, object))
-                .orElseThrow(() -> new SchemaException(fragment, "Couldn't load fragment"));
     }
-
-    private Optional<JsonObject<?>> queryFrom(JsonObject<?> document, JsonPath path) {
-        return jsonApi.pointer(path).queryFrom(document);
-    }
-
 }

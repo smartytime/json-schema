@@ -3,6 +3,7 @@ package org.everit.jsonschema.api;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
+import static org.everit.jsonschema.api.JsonSchemaProperty.*;
 
 /**
  * This class is used to resolve JSON pointers.
@@ -58,9 +59,8 @@ public class ReferenceSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonWriter writer) {
-        writer.key("$ref");
-        writer.value(refValue);
+    void describePropertiesTo(JsonSchemaGenerator writer) {
+        writer.write($REF, refValue);
     }
 
     public Schema getReferredSchema() {

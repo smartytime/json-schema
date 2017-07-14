@@ -20,8 +20,8 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
     public Optional<ValidationError> validate(JsonElement<?> subject) {
         if (subject.schemaType() != JsonSchemaType.String && schema.requiresString()) {
             return Optional.of(failure(JsonSchemaType.String, subject.schemaType()));
-        } else {
-            String stringSubject = subject.asString();
+        } else if (subject.schemaType() == JsonSchemaType.String) {
+            String stringSubject = subject.coerceToString();
             List<ValidationError> allErrors = new ArrayList<>();
             allErrors.addAll(testLength(stringSubject));
             testPattern(stringSubject).ifPresent(allErrors::add);
@@ -31,6 +31,8 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
                     .map(error -> failure(error, "format"))
                     .ifPresent(allErrors::add);
             return ValidationError.collectErrors(schema, allErrors);
+        } else {
+            return Optional.empty();
         }
     }
 

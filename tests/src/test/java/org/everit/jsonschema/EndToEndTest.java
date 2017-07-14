@@ -33,7 +33,7 @@ public class EndToEndTest {
         final String jsonData = readResource("/org/everit/jsonschema/account-data.json");
         final JsoniterApi jsonApi = new JsoniterApi();
         Schema loadedSchema = SchemaLoader.load(jsonSchema, jsonApi);
-        final JsonObject jsonObject = jsonApi.readJson(jsonData);
+        final JsonObject jsonObject = jsonApi.readJson(jsonData).asObject();
         final SchemaValidator<?> validator = findValidator(loadedSchema);
         final Optional<ValidationError> errors = validator.validate(jsonObject);
         System.out.println();

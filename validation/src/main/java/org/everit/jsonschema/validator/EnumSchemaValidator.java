@@ -16,10 +16,9 @@ public class EnumSchemaValidator extends SchemaValidator<EnumSchema> {
 
     @Override
     public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
-        Object effectiveSubject = toBeValidated.raw();
         boolean foundMatch = schema.getPossibleValues()
                 .stream()
-                .anyMatch(val -> ObjectComparator.deepEquals(val, effectiveSubject));
+                .anyMatch(val -> ObjectComparator.deepEquals(val, toBeValidated));
         if (!foundMatch) {
             return Optional.of(failure(format("%s is not a valid enum value", toBeValidated), "enum"));
         }

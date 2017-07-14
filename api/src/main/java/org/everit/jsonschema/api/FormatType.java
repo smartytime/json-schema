@@ -9,7 +9,7 @@ public enum FormatType {
         if (format == null) {
             return null;
         }
-        final String potentialMatch = LOWER_HYPHEN.to(UPPER_CAMEL, format);
+        final String potentialMatch = LOWER_HYPHEN.to(UPPER_UNDERSCORE, format);
         try {
             return FormatType.valueOf(potentialMatch);
         } catch (IllegalArgumentException e) {

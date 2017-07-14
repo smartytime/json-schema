@@ -61,6 +61,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
             additionalPropNames.stream()
                     .map(getValidationErrors(addtlSchema, subject))
                     .forEach(addErrorIfExists(allErrors));
+            return allErrors;
         }
         return emptyList();
     }

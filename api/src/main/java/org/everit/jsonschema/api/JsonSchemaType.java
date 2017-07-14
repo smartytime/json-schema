@@ -7,5 +7,10 @@ public enum JsonSchemaType {
     Integer,
     Null,
     Object,
-    Array
+    Array;
+
+    @Override
+    public String toString() {
+        return name().toLowerCase();
+    }
 }

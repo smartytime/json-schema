@@ -7,6 +7,7 @@ import org.everit.jsonschema.api.EmptySchema;
 import org.everit.jsonschema.api.EnumSchema;
 import org.everit.jsonschema.api.NotSchema;
 import org.everit.jsonschema.api.NullSchema;
+import org.everit.jsonschema.api.NumberSchema;
 import org.everit.jsonschema.api.ObjectSchema;
 import org.everit.jsonschema.api.ReferenceSchema;
 import org.everit.jsonschema.api.Schema;
@@ -30,6 +31,8 @@ public class SchemaValidatorFactory {
             return new NotSchemaValidator((NotSchema) schema);
         } else if (schema instanceof NullSchema) {
             return new NullSchemaValidator((NullSchema) schema);
+        } else if (schema instanceof NumberSchema) {
+            return new NumberSchemaValidator((NumberSchema) schema);
         } else if (schema instanceof ReferenceSchema) {
             return new ReferenceSchemaValidator((ReferenceSchema) schema);
         } else if (schema instanceof StringSchema) {

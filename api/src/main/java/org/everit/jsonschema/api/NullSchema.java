@@ -53,9 +53,8 @@ public class NullSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonWriter writer) {
-        writer.key("type");
-        writer.value("null");
+    void describePropertiesTo(JsonSchemaGenerator writer) {
+        writer.writeType(JsonSchemaType.Null, true);
     }
 
     /**

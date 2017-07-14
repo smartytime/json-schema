@@ -1,20 +1,27 @@
 package org.everit.jsonschema.loaders.jsoniter;
 
+import com.google.common.io.CharStreams;
 import com.jsoniter.JsonIterator;
+import com.jsoniter.ValueType;
 import com.jsoniter.any.Any;
-import org.everit.json.*;
+import lombok.SneakyThrows;
+import org.everit.json.JsonApi;
+import org.everit.json.JsonElement;
+import org.everit.json.JsonObject;
+import org.everit.json.JsonPath;
+import org.everit.json.JsonPointer;
+import org.everit.json.JsonValue;
+import org.everit.json.UnexpectedValueException;
 import org.everit.jsonschema.api.JsonSchemaType;
-import org.everit.jsonschema.api.JsonWriter;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Optional;
 
 public class JsoniterApi implements JsonApi<Any> {
-
-    // @Override
-    // public boolean isNull(Object subject) {
-    //     return subject == null || (subject instanceof Any && ((Any) subject).valueType() == ValueType.NULL);
-    // }
-
 
     @Override
     public JsonSchemaType schemaType(Any any) {
@@ -26,7 +33,14 @@ public class JsoniterApi implements JsonApi<Any> {
             case NULL:
                 return JsonSchemaType.Null;
             case NUMBER:
-                return JsonSchemaType.Number;
+                Number number = (Number) any.object();
+                if(number instanceof Long || number instanceof Integer || number instanceof Short) {
+                    return JsonSchemaType.Integer;
+                } else if(number instanceof Double || number instanceof Float || number instanceof BigDecimal) {
+                    return JsonSchemaType.Number;
+                } else {
+                    throw new UnexpectedValueException("Unrecognized number type: " + number.getClass());
+                }
             case OBJECT:
                 return JsonSchemaType.Object;
             case STRING:
@@ -42,8 +56,10 @@ public class JsoniterApi implements JsonApi<Any> {
     }
 
     @Override
-    public JsonObject readJson(String jsonValue) {
-        return new JsoniterObject(JsonIterator.deserialize(jsonValue), JsonPath.rootPath());
+    @SneakyThrows
+    public JsonElement<?> readJson(InputStream stream, Charset charset) {
+        String string = CharStreams.toString( new InputStreamReader( stream, charset ) );
+        return of(JsonIterator.deserialize(string), JsonPath.rootPath());
     }
 
     @Override
@@ -73,7 +89,15 @@ public class JsoniterApi implements JsonApi<Any> {
     }
 
     @Override
-    public JsonPointer pointer(JsonPath path) {
-        return new JsoniterPointer(path);
+    public Optional<JsonObject<?>> query(JsonObject<?> toBeQueried, JsonPointer pointer) {
+        Any source = (Any) toBeQueried.unbox();
+        JsonPath pointerPath = pointer.jsonPath();
+        Any any = source.get((Object[]) pointerPath.toArray());
+        if (any.valueType() == ValueType.INVALID) {
+            return Optional.empty();
+        } else {
+            JsonValue<?> newValue = of(any, pointerPath);
+            return Optional.of(newValue.asObject());
+        }
     }
 }

@@ -1,16 +1,19 @@
 package org.everit.jsonschema.loader;
 
-import org.everit.json.JsonApi;
-import org.everit.json.JsonObject;
-import org.everit.json.JsonPath;
+import org.everit.jsonschema.api.JsonPointerPath;
 import org.everit.jsonschema.api.ReferenceSchema;
 import org.everit.jsonschema.api.SchemaException;
 import org.everit.jsonschema.loader.internal.ReferenceResolver;
 
+import javax.json.JsonObject;
+import javax.json.spi.JsonProvider;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -23,47 +26,44 @@ public class LoadingState {
 
     URI id = null;
 
-    final JsonPath pointerToCurrentObj;
+    final JsonPointerPath pointerToCurrentObj;
 
     final Map<String, ReferenceSchema.Builder> pointerSchemas;
 
-    final JsonObject<?> rootSchemaJson;
+    final SchemaJsonWrapper rootSchemaJson;
 
-    final JsonObject<?> schemaJson;
+    final SchemaJsonWrapper schemaJson;
 
-    final JsonApi jsonApi;
+    final JsonProvider provider;
+
 
     LoadingState(SchemaClient httpClient,
-            Map<String, ReferenceSchema.Builder> pointerSchemas,
-            JsonApi jsonApi,
-            JsonObject rootSchemaJson,
-            JsonObject schemaJson,
-            URI id,
-            JsonPath pointerToCurrentObj) {
+                 Map<String, ReferenceSchema.Builder> pointerSchemas,
+                 JsonObject rootSchemaJson,
+                 JsonObject schemaJson,
+                 URI id,
+                 JsonPointerPath pointerPath, JsonProvider provider) {
         this.httpClient = requireNonNull(httpClient, "httpClient cannot be null");
         this.pointerSchemas = requireNonNull(pointerSchemas, "pointerSchemas cannot be null");
-        this.rootSchemaJson = requireNonNull(rootSchemaJson, "rootSchemaJson cannot be null");
-        this.jsonApi = checkNotNull(jsonApi);
-        this.schemaJson = requireNonNull(schemaJson, "schemaJson cannot be null");
+        this.rootSchemaJson = new SchemaJsonWrapper(rootSchemaJson, pointerPath);
+        this.schemaJson = new SchemaJsonWrapper(schemaJson, pointerPath);
         this.id = id;
-        this.pointerToCurrentObj = pointerToCurrentObj;
+        this.pointerToCurrentObj = pointerPath;
+        this.provider = provider;
     }
 
     LoadingState(SchemaLoader.SchemaLoaderBuilder builder) {
         this(builder.httpClient,
                 builder.pointerSchemas,
-                builder.jsonApi,
                 builder.rootSchemaJson == null ? builder.schemaJson : builder.rootSchemaJson,
                 builder.schemaJson,
                 builder.id,
-                builder.pointerToCurrentObj);
+                builder.pointerToCurrentObj, builder.provider);
     }
 
     SchemaLoader.SchemaLoaderBuilder initChildLoader() {
-//        System.out.println("initChildLoader() " + pointerToCurrentObj.stream().collect(joining(", ")));
         return SchemaLoader.builder()
                 .resolutionScope(id)
-                .jsonApi(jsonApi)
                 .schemaJson(schemaJson)
                 .rootSchemaJson(rootSchemaJson)
                 .pointerSchemas(pointerSchemas)
@@ -72,7 +72,8 @@ public class LoadingState {
     }
 
     public LoadingState childFor(String key) {
-        return new LoadingState(httpClient, pointerSchemas, jsonApi, rootSchemaJson, schemaJson, id, pointerToCurrentObj.child(key));
+        return new LoadingState(httpClient, pointerSchemas, rootSchemaJson, schemaJson, id, pointerToCurrentObj
+                .child(key), provider);
     }
 
     public LoadingState childFor(int arrayIndex) {
@@ -87,7 +88,7 @@ public class LoadingState {
     }
 
     String locationOfCurrentObj() {
-        return jsonApi.pointer(pointerToCurrentObj).toURIFragment();
+        return pointerToCurrentObj.toURIFragment();
     }
 
     public SchemaException createSchemaException(String message) {

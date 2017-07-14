@@ -1,9 +1,11 @@
 package org.everit.jsonschema.api;
 
-import org.everit.json.JsonApi;
-
-import java.io.StringWriter;
+import javax.json.spi.JsonProvider;
 import java.util.Objects;
+
+import static org.everit.jsonschema.api.JsonSchemaProperty.DESCRIPTION;
+import static org.everit.jsonschema.api.JsonSchemaProperty.ID;
+import static org.everit.jsonschema.api.JsonSchemaProperty.TITLE;
 
 /**
  * Superclass of all other schema validator classes of this package.
@@ -14,6 +16,7 @@ public abstract class Schema {
     private final String title;
     private final String description;
     private final String id;
+    protected JsonProvider provider;
 
     /**
      * Constructor.
@@ -77,17 +80,16 @@ public abstract class Schema {
      * Describes the instance as a JSONObject to {@code writer}.
      * <p>
      * First it adds the {@code "title} , {@code "description"} and {@code "id"} properties then calls
-     * {@link #describePropertiesTo(JsonWriter)}, which will add the subclass-specific properties.
      * <p>
      * It is used by {@link #toString()} to serialize the schema instance into its JSON representation.
      *
      * @param writer it will receive the schema description
      */
-    public final JsonWriter describeTo(final JsonWriter writer) {
+    public final JsonSchemaGenerator describeTo(final JsonSchemaGenerator writer) {
         writer.object();
-        writer.ifPresent("title", title);
-        writer.ifPresent("description", description);
-        writer.ifPresent("id", id);
+        writer.optionalWrite(TITLE, title);
+        writer.optionalWrite(DESCRIPTION, description);
+        writer.optionalWrite(ID, id);
         describePropertiesTo(writer);
         writer.endObject();
         return writer;
@@ -130,27 +132,10 @@ public abstract class Schema {
         }
     }
 
-    public String toString(JsonWriter jsonWriter) {
-        StringWriter w = new StringWriter();
+    public String toString(JsonSchemaGenerator jsonWriter) {
         describeTo(jsonWriter);
-        return w.getBuffer().toString();
+        return jsonWriter.getWrapped().toString();
     }
-
-    /**
-     * Performs the schema validation.
-     *
-     * @param subject the object to be validated
-     * @throws ValidationError if the {@code subject} is invalid against this schema.
-     */
-    // public abstract void validate(final Object subject);
-
-    // protected ValidationError failure(String message, String keyword) {
-    //     return new ValidationError(this, message, keyword, schemaLocation);
-    // }
-
-    // protected ValidationError failure(Class<?> expectedType, Object actualValue) {
-    //     return new ValidationError(this, expectedType, actualValue, "type", schemaLocation);
-    // }
 
     /**
      * Since we add state in subclasses, but want those subclasses to be non final, this allows us to
@@ -166,15 +151,9 @@ public abstract class Schema {
     }
 
     /**
-     * Subclasses are supposed to override this method to describe the subclass-specific attributes.
-     * This method is called by {@link #describeTo(JsonWriter)} after adding the generic properties if
-     * they are present ({@code id}, {@code title} and {@code description}). As a side effect,
-     * overriding subclasses don't have to open and close the object with {@link JsonWriter#object()}
-     * and {@link JsonWriter#endObject()}.
      *
-     * @param writer it will receive the schema description
      */
-    void describePropertiesTo(final JsonWriter writer) {
+    void describePropertiesTo(final JsonSchemaGenerator writer) {
 
     }
 
@@ -195,17 +174,10 @@ public abstract class Schema {
 
         private String schemaLocation;
 
-        private JsonApi jsonApi;
-
         public abstract S build();
 
         public Builder<S> description(final String description) {
             this.description = description;
-            return this;
-        }
-
-        public Builder<S> id(final JsonApi jsonApi) {
-            this.jsonApi = jsonApi;
             return this;
         }
 

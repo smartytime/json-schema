@@ -18,6 +18,7 @@ package org.everit.jsonschema.api;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
+import static org.everit.jsonschema.api.JsonSchemaProperty.NOT;
 
 /**
  * {@code Not} schema validator.
@@ -64,9 +65,8 @@ public class NotSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonWriter writer) {
-        writer.key("not");
-        mustNotMatch.describeTo(writer);
+    void describePropertiesTo(JsonSchemaGenerator writer) {
+        writer.write(NOT, mustNotMatch);
     }
 
     /**

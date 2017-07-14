@@ -1,8 +1,10 @@
 package org.everit.jsonschema.loaders.jsoniter;
 
-import org.everit.jsonschema.api.JsonWriter;
+import com.jsoniter.any.Any;
 
 public class AnyWriter implements JsonWriter {
+
+    private Any any;
 
     @Override
     public JsonWriter array() {

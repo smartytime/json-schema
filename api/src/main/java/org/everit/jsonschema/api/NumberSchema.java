@@ -2,6 +2,8 @@ package org.everit.jsonschema.api;
 
 import java.util.Objects;
 
+import static org.everit.jsonschema.api.JsonSchemaProperty.*;
+
 /**
  * Number schema validator.
  */
@@ -88,17 +90,14 @@ public class NumberSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonWriter writer) {
-        if (requiresInteger) {
-            writer.key("type").value("integer");
-        } else if (requiresNumber) {
-            writer.key("type").value("number");
-        }
-        writer.ifPresent("minimum", minimum);
-        writer.ifPresent("maximum", maximum);
-        writer.ifPresent("multipleOf", multipleOf);
-        writer.ifTrue("exclusiveMinimum", exclusiveMinimum);
-        writer.ifTrue("exclusiveMaximum", exclusiveMaximum);
+    void describePropertiesTo(JsonSchemaGenerator writer) {
+        writer.writeType(JsonSchemaType.Integer, requiresInteger)
+                .writeType(JsonSchemaType.Number, requiresNumber)
+                .optionalWrite(MINIMUM, minimum)
+                .optionalWrite(MAXIMUM, maximum)
+                .optionalWrite(MULTIPLE_OF, multipleOf)
+                .writeIfTrue(EXCLUSIVE_MINIMUM, exclusiveMinimum)
+                .writeIfTrue(EXCLUSIVE_MAXIMUM, exclusiveMinimum);
     }
 
     @Override

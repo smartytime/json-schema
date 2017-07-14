@@ -59,7 +59,7 @@ public enum JsonSchemaProperty {
     EXCLUSIVE_MINIMUM,
     ALL_OF,
     ANY_OF,
-    ONE_OF;
+    ONE_OF, NEEDS_UNIQUE_ITEMS, NEEDS_ADDITIONAL_ITEMS;
 
     private final String key;
     private final Set<JsonSchemaType> appliesTo;
@@ -78,7 +78,7 @@ public enum JsonSchemaProperty {
         return appliesTo.contains(type);
     }
 
-    public String getKey() {
+    public String key() {
         return key;
     }
 

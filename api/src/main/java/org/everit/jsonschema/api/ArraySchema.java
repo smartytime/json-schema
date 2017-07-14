@@ -22,6 +22,11 @@ import java.util.List;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
+import static org.everit.jsonschema.api.JsonSchemaProperty.ITEMS;
+import static org.everit.jsonschema.api.JsonSchemaProperty.MAX_ITEMS;
+import static org.everit.jsonschema.api.JsonSchemaProperty.MIN_ITEMS;
+import static org.everit.jsonschema.api.JsonSchemaProperty.NEEDS_ADDITIONAL_ITEMS;
+import static org.everit.jsonschema.api.JsonSchemaProperty.NEEDS_UNIQUE_ITEMS;
 
 /**
  * Array schema validator.
@@ -67,6 +72,12 @@ public class ArraySchema extends Schema {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), minItems, maxItems, needsUniqueItems, allItemSchema,
+                needsAdditionalItems, itemSchemas, requiresArray, schemaOfAdditionalItems);
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -89,39 +100,20 @@ public class ArraySchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(final JsonWriter writer) {
-        if (requiresArray) {
-            writer.key("type").value("array");
-        }
-        writer.ifTrue("needsUniqueItems", needsUniqueItems);
-        writer.ifPresent("minItems", minItems);
-        writer.ifPresent("maxItems", maxItems);
-        writer.ifFalse("needsAdditionalItems", needsAdditionalItems);
-        if (allItemSchema != null) {
-            writer.key("items");
-            allItemSchema.describeTo(writer);
-        }
-        if (itemSchemas != null) {
-            writer.key("items");
-            writer.array();
-            itemSchemas.forEach(schema -> schema.describeTo(writer));
-            writer.endArray();
-        }
-        if (schemaOfAdditionalItems != null) {
-            writer.key("needsAdditionalItems");
-            schemaOfAdditionalItems.describeTo(writer);
-        }
-    }
-
-    @Override
     protected boolean canEqual(final Object other) {
         return other instanceof ArraySchema;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), minItems, maxItems, needsUniqueItems, allItemSchema,
-                needsAdditionalItems, itemSchemas, requiresArray, schemaOfAdditionalItems);
+    void describePropertiesTo(final JsonSchemaGenerator writer) {
+        writer.writeType(JsonSchemaType.Array, requiresArray)
+                .writeIfTrue(NEEDS_UNIQUE_ITEMS, needsUniqueItems)
+                .optionalWrite(MIN_ITEMS, minItems)
+                .optionalWrite(MAX_ITEMS, maxItems)
+                .writeIfFalse(NEEDS_ADDITIONAL_ITEMS, needsAdditionalItems)
+                .optionalWrite(ITEMS, allItemSchema)
+                .optionalWrite(ITEMS, itemSchemas)
+                .optionalWrite(NEEDS_ADDITIONAL_ITEMS, schemaOfAdditionalItems);
     }
 
     /**

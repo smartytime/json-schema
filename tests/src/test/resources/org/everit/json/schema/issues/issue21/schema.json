@@ -1,6 +1,7 @@
 {
   "type": "object",
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "This test (issue21) was marked as should-be-invalid, but its actually a valid schema.  You have to use the allOf property to enforce both the language_object and minProperties values.  Adding a 21B test case to check the correct version",
   "definitions": {
     "language_object": {
       "type": "object",

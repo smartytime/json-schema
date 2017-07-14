@@ -44,8 +44,6 @@ public class StringSchema extends Schema {
         return new Builder();
     }
 
-    // private final FormatValidator formatValidator;
-
     public FormatType getFormatType() {
         return formatType;
     }
@@ -92,16 +90,13 @@ public class StringSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonWriter writer) {
-        if (requiresString) {
-            writer.key("type").value("string");
-        }
-        writer.ifPresent("minLength", minLength);
-        writer.ifPresent("maxLength", maxLength);
-        writer.ifPresent("pattern", pattern);
-        if (formatType != null) {
-            writer.key("format").value(formatType.toString());
-        }
+    void describePropertiesTo(JsonSchemaGenerator writer) {
+        writer.writeType(JsonSchemaType.String, requiresString)
+                .optionalWrite(JsonSchemaProperty.MIN_LENGTH, minLength)
+                .optionalWrite(JsonSchemaProperty.MAX_LENGTH, maxLength)
+                .optionalWrite(pattern)
+                .optionalWrite(formatType);
+
     }
 
     public boolean requiresString() {

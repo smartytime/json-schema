@@ -1,13 +1,15 @@
 package org.everit.jsonschema.validator;
 
+import org.everit.json.JsonElement;
 import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.NumberSchema;
-import org.everit.json.JsonElement;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static org.everit.jsonschema.api.JsonSchemaType.*;
 
 public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
 
@@ -16,21 +18,24 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> subject) {
-            if (subject.schemaType() != JsonSchemaType.Number && schema.requiresNumber()) {
-                return Optional.of(failure(JsonSchemaType.Number, subject.schemaType()));
-            } else if (subject.schemaType() != JsonSchemaType.Integer && schema.requiresInteger()) {
-                return Optional.of(failure(JsonSchemaType.Integer, subject.schemaType()));
-            } else {
-                List<ValidationError> errors = new ArrayList<>();
+    public Optional<ValidationError> validate(final JsonElement<?> subject) {
+        JsonSchemaType schemaType = subject.schemaType();
+        if (!subject.isNumber() && schema.requiresNumber()) {
+            return Optional.of(failure(Number, schemaType));
+        } else if (!subject.isAnyOf(Integer) && schema.requiresInteger()) {
+            return Optional.of(failure(Integer, schemaType));
+        } else if (schemaType == Integer || schemaType == Number) {
+            List<ValidationError> errors = new ArrayList<>();
 
-                double intSubject = ((Number) subject).doubleValue();
-                checkMinimum(intSubject).ifPresent(errors::add);
-                checkMaximum(intSubject).ifPresent(errors::add);
-                checkMultipleOf(intSubject).ifPresent(errors::add);
-                return errors.stream().findFirst();
-            }
+            double intSubject = subject.asNumber().doubleValue();
+            checkMinimum(intSubject).ifPresent(errors::add);
+            checkMaximum(intSubject).ifPresent(errors::add);
+            checkMultipleOf(intSubject).ifPresent(errors::add);
+            return errors.stream().findFirst();
+        } else {
+            return Optional.empty();
         }
+    }
 
     private Optional<ValidationError> checkMaximum(final double subject) {
         Number maximum = schema.getMaximum();
@@ -71,5 +76,4 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
         }
         return Optional.empty();
     }
-
 }

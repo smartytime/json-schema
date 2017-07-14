@@ -4,6 +4,7 @@ import org.everit.jsonschema.api.CombinedSchema;
 import org.everit.jsonschema.api.JsonSchemaProperty;
 import org.everit.jsonschema.api.Schema;
 
+import javax.json.JsonObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,9 +58,10 @@ class CombinedSchemaLoader {
         } else if (presentKeys.size() == 1) {
             JsonSchemaProperty key = presentKeys.get(0);
             Collection<Schema> subschemas = new ArrayList<>();
-            ls.schemaJson.get(key).asArray()
+            ls.schemaJson.expectArray(key)
+                    .getValuesAs(JsonObject.class)
                     .forEach(subschema -> {
-                        subschemas.add(defaultLoader.loadChild(subschema.asObject()).build());
+                        subschemas.add(defaultLoader.loadChild(subschema).build());
                     });
             CombinedSchema.Builder combinedSchema = COMB_SCHEMA_PROVIDERS.get(key).apply(
                     subschemas);

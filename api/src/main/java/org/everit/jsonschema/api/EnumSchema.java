@@ -15,34 +15,30 @@
  */
 package org.everit.jsonschema.api;
 
-import org.everit.json.JsonElement;
-
-import java.util.Collections;
-import java.util.HashSet;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
 import java.util.Objects;
-import java.util.Set;
 
-import static java.util.stream.Collectors.toSet;
+import static org.everit.jsonschema.api.JsonSchemaProperty.ENUM;
+import static org.everit.jsonschema.api.JsonSchemaProperty.TYPE;
 
 /**
  * Enum schema validator.
  */
 public class EnumSchema extends Schema {
 
-    private final Set<Object> possibleValues;
+    private final JsonArray possibleValues;
 
     public EnumSchema(final Builder builder) {
         super(builder);
-        possibleValues = Collections.unmodifiableSet(builder.possibleValues.stream()
-                .map(JsonElement::raw)
-                .collect(toSet()));
+        possibleValues = builder.possibleValues;
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public Set<Object> getPossibleValues() {
+    public JsonArray getPossibleValues() {
         return possibleValues;
     }
 
@@ -71,14 +67,9 @@ public class EnumSchema extends Schema {
         return other instanceof EnumSchema;
     }
 
-    @Override
-    void describePropertiesTo(final JsonWriter writer) {
-        writer.key("type");
-        writer.value("enum");
-        writer.key("enum");
-        writer.array();
-        possibleValues.forEach(writer::value);
-        writer.endArray();
+    void appendPropertiesTo(final JsonObject properties) {
+        properties.put(TYPE.key(), provider.createValue(ENUM.key()));
+        properties.put(ENUM.key(), possibleValues);
     }
 
     /**
@@ -86,19 +77,14 @@ public class EnumSchema extends Schema {
      */
     public static class Builder extends Schema.Builder<EnumSchema> {
 
-        private Set<JsonElement<?>> possibleValues = new HashSet<>();
+        private JsonArray possibleValues;
 
         @Override
         public EnumSchema build() {
             return new EnumSchema(this);
         }
 
-        public Builder possibleValue(final JsonElement<?> possibleValue) {
-            possibleValues.add(possibleValue);
-            return this;
-        }
-
-        public Builder possibleValues(final Set<JsonElement<?>> possibleValues) {
+        public Builder possibleValues(final JsonArray possibleValues) {
             this.possibleValues = possibleValues;
             return this;
         }

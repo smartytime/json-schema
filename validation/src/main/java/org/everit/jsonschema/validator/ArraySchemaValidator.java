@@ -27,7 +27,7 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         List<ValidationError> failures = new ArrayList<>();
         if (toBeValidated.schemaType() != JsonSchemaType.Array && schema.isRequiresArray()) {
             return Optional.of(failure(JsonSchemaType.Array, toBeValidated.schemaType()));
-        } else {
+        } else if(toBeValidated.schemaType() == JsonSchemaType.Array) {
             JsonArray arrSubject = (JsonArray) toBeValidated;
             testItemCount(arrSubject).ifPresent(failures::add);
             if (schema.isNeedsUniqueItems()) {
@@ -106,14 +106,14 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         }
     }
 
-    private Optional<ValidationError> testUniqueness(final JsonArray subject) {
+    private Optional<ValidationError> testUniqueness(final JsonArray<?> subject) {
         if (subject.length() == 0) {
             return Optional.empty();
         }
-        Collection<Object> uniqueItems = new ArrayList<Object>(subject.length());
-        for (int i = 0; i < subject.length(); ++i) {
-            Object item = subject.get(i);
-            for (Object contained : uniqueItems) {
+        Collection<JsonElement<?>> uniqueItems = new ArrayList<>(subject.length());
+
+        for (JsonElement<?> item : subject) {
+            for (JsonElement<?> contained : uniqueItems) {
                 if (ObjectComparator.deepEquals(contained, item)) {
                     return Optional.of(
                             failure("array items are not unique", "uniqueItems"));

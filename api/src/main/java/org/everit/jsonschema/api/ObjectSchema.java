@@ -1,12 +1,24 @@
 package org.everit.jsonschema.api;
 
-import org.everit.json.JsonObject;
-
-import java.util.*;
+import javax.json.JsonObject;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
+import static org.everit.jsonschema.api.JsonSchemaProperty.ADDITIONAL_PROPERTIES;
+import static org.everit.jsonschema.api.JsonSchemaProperty.DEPENDENCIES;
+import static org.everit.jsonschema.api.JsonSchemaProperty.MAX_PROPERTIES;
+import static org.everit.jsonschema.api.JsonSchemaProperty.MIN_PROPERTIES;
+import static org.everit.jsonschema.api.JsonSchemaProperty.PROPERTIES;
+import static org.everit.jsonschema.api.JsonSchemaProperty.REQUIRED;
 
 /**
  * Object schema validator.
@@ -108,62 +120,26 @@ public class ObjectSchema extends Schema {
         return other instanceof ObjectSchema;
     }
 
-    @Override
-    void describePropertiesTo(JsonWriter writer) {
-        if (requiresObject) {
-            writer.key("type").value("object");
-        }
-        if (!propertySchemas.isEmpty()) {
-            writer.key("properties");
-            writer.object();
-            propertySchemas.forEach((k,schema)->{
-                writer.key(k);
-                schema.describeTo(writer);
-            });
-            writer.endObject();
-        }
-        writer.ifPresent("minProperties", minProperties);
-        writer.ifPresent("maxProperties", maxProperties);
-        if (!requiredProperties.isEmpty()) {
-            writer.key("required").value(requiredProperties);
-        }
-        if (schemaOfAdditionalProperties != null) {
-            writer.key("additionalProperties");
-            schemaOfAdditionalProperties.describeTo(writer);
-        }
-        if (!propertyDependencies.isEmpty()) {
-            describePropertyDependenciesTo(writer);
-        }
-        if (!schemaDependencies.isEmpty()) {
-            writer.key("dependencies");
-            writer.object();
-            schemaDependencies.forEach((k,schema)->{
-                writer.key(k);
-                schema.describeTo(writer);
-            });
-            writer.endObject();
-        }
-        if (!patternProperties.isEmpty()) {
-            writer.key("patternProperties");
-            writer.object();
-            patternProperties.forEach((pattern, schema)->{
-                writer.key(schema.toString());
-                schema.describeTo(writer);
-            });
-            writer.endObject();
-        }
-        writer.ifFalse("additionalProperties", additionalProperties);
+    void describePropertiesTo(JsonSchemaGenerator writer) {
+
+        writer.writeType(JsonSchemaType.Object, requiresObject)
+                .optionalWrite(PROPERTIES, propertySchemas)
+                .optionalWrite(MIN_PROPERTIES, minProperties)
+                .optionalWrite(MAX_PROPERTIES, maxProperties)
+                .optionalWrite(REQUIRED, requiredProperties)
+                .optionalWrite(ADDITIONAL_PROPERTIES, schemaOfAdditionalProperties)
+                .optionalWrite(DEPENDENCIES, schemaDependencies)
+                .optionalWritePatternProperties(patternProperties)
+                .writeIfFalse(ADDITIONAL_PROPERTIES, additionalProperties);
+
+        describePropertyDependenciesTo(writer);
     }
 
-    public Stream<String> getAdditionalProperties(final JsonObject<?> subject) {
-        Set<String> names = subject.properties();
-        if (names == null) {
-            return Stream.empty();
-        } else {
-            return names.stream()
-                    .filter(key -> !propertySchemas.containsKey(key))
-                    .filter(key -> !matchesAnyPattern(key));
-        }
+    public Stream<String> getAdditionalProperties(final JsonObject subject) {
+        Set<String> names = subject.keySet();
+        return names.stream()
+                .filter(key -> !propertySchemas.containsKey(key))
+                .filter(key -> !matchesAnyPattern(key));
     }
 
     public Integer getMaxProperties() {
@@ -211,13 +187,13 @@ public class ObjectSchema extends Schema {
                 .anyMatch(pattern -> pattern.matcher(key).find());
     }
 
-    private void describePropertyDependenciesTo(JsonWriter writer) {
-        writer.key("dependencies");
+    private void describePropertyDependenciesTo(JsonSchemaGenerator writer) {
+        writer.writeKey(DEPENDENCIES);
         writer.object();
-        propertyDependencies.entrySet().forEach(entry -> {
-            writer.key(entry.getKey());
+        propertyDependencies.forEach((k,v) -> {
+            writer.writePropertyName(k);
             writer.array();
-            entry.getValue().forEach(writer::value);
+            v.forEach(writer::write);
             writer.endArray();
         });
         writer.endObject();

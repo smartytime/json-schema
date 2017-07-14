@@ -52,9 +52,8 @@ public class BooleanSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(final JsonWriter writer) {
-        writer.key("type");
-        writer.value("boolean");
+    void describePropertiesTo(final JsonSchemaGenerator writer) {
+        writer.writeType(JsonSchemaType.Boolean, true);
     }
 
     /**

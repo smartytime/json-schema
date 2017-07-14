@@ -42,7 +42,7 @@ public class ValidationError {
      * <li>If {@code failures} is empty, then it doesn't do anything</li>
      * <li>If {@code failures} contains 1 exception instance, then that will be thrown</li>
      * <li>Otherwise a new exception instance will be created, its {@link #getViolatedSchema()
-     * violated schema} will be {@code rootFailingSchema}, and its {@link #getCausingExceptions()
+     * violated schema} will be {@code rootFailingSchema}, and its {@link #getCauses()
      * causing exceptions} will be the {@code failures} list</li>
      * </ul>
      *
@@ -180,7 +180,7 @@ public class ValidationError {
         }
     }
 
-    public List<ValidationError> getCausingExceptions() {
+    public List<ValidationError> getCauses() {
         return causingExceptions;
     }
 
@@ -280,7 +280,7 @@ public class ValidationError {
                 .collect(Collectors.toList());
         messages.addAll(causes.stream()
                 .filter(cause -> !cause.causingExceptions.isEmpty())
-                .flatMap(cause -> getAllMessages(cause.getCausingExceptions()).stream())
+                .flatMap(cause -> getAllMessages(cause.getCauses()).stream())
                 .collect(Collectors.toList()));
         return messages;
     }
@@ -298,7 +298,7 @@ public class ValidationError {
      * document to the invalid fragment of it. This value is a non-nullable string. See
      * {@link #getPointerToViolation()}</li>
      * <li>{@code "causingExceptions"}: is a (possibly empty) array of violations which caused this
-     * exception. See {@link #getCausingExceptions()}</li>
+     * exception. See {@link #getCauses()}</li>
      * <li>{@code "schemaLocation"}: a string denoting the path to the violated schema keyword in the schema
      * JSON (since version 1.6.0)</li>
      * </ul>

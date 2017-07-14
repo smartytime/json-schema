@@ -83,11 +83,8 @@ public class CombinedSchema extends Schema {
     }
 
     @Override
-    void describePropertiesTo(JsonWriter writer) {
-        writer.key(combinedSchemaType.toString());
-        writer.array();
-        subSchemas.forEach(subschema -> subschema.describeTo(writer));
-        writer.endArray();
+    void describePropertiesTo(JsonSchemaGenerator writer) {
+        writer.optionalWrite(combinedSchemaType.getProperty(), subSchemas);
     }
 
     public static Builder allOf(final Collection<Schema> schemas) {

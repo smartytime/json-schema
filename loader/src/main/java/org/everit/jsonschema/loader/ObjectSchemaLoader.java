@@ -1,13 +1,19 @@
 package org.everit.jsonschema.loader;
 
-import org.everit.json.JsonElement;
-import org.everit.json.JsonObject;
-import org.everit.json.UnexpectedValueException;
 import org.everit.jsonschema.api.ObjectSchema;
 import org.everit.jsonschema.api.Schema;
+import org.everit.jsonschema.api.UnexpectedValueException;
+
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonString;
+import javax.json.JsonValue;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
+import static javax.json.JsonValue.ValueType.ARRAY;
+import static javax.json.JsonValue.ValueType.FALSE;
+import static javax.json.JsonValue.ValueType.OBJECT;
+import static javax.json.JsonValue.ValueType.TRUE;
 import static org.everit.jsonschema.api.JsonSchemaProperty.ADDITIONAL_PROPERTIES;
 import static org.everit.jsonschema.api.JsonSchemaProperty.DEPENDENCIES;
 import static org.everit.jsonschema.api.JsonSchemaProperty.MAX_PROPERTIES;
@@ -32,65 +38,62 @@ class ObjectSchemaLoader {
 
     ObjectSchema.Builder load() {
         ObjectSchema.Builder builder = ObjectSchema.builder();
-        ls.schemaJson.find(MIN_PROPERTIES).map(JsonElement::asInteger).ifPresent(builder::minProperties);
-        ls.schemaJson.find(MAX_PROPERTIES).map(JsonElement::asInteger).ifPresent(builder::maxProperties);
-        ls.schemaJson.find(PROPERTIES).map(JsonElement::asObject)
-                .ifPresent(propertyDefs -> populatePropertySchemas(propertyDefs, builder));
+        ls.schemaJson.findInt(MIN_PROPERTIES).ifPresent(builder::minProperties);
+        ls.schemaJson.findInt(MAX_PROPERTIES).ifPresent(builder::maxProperties);
+        ls.schemaJson.findObject(PROPERTIES).ifPresent(propertyDefs -> populatePropertySchemas(propertyDefs, builder));
         ls.schemaJson.find(ADDITIONAL_PROPERTIES).ifPresent(rawAddProps -> {
-
-            switch (rawAddProps.schemaType()) {
-                case Boolean:
-                    builder.additionalProperties(rawAddProps.asBoolean());
+            switch (rawAddProps.getValueType()) {
+                case FALSE:
+                    builder.additionalProperties(false);
                     break;
-                case Object:
-                    Schema childSchema = defaultLoader.loadChild(rawAddProps.asObject()).build();
+                case TRUE:
+                    builder.additionalProperties(true);
+                    break;
+                case OBJECT:
+                    Schema childSchema = defaultLoader.loadChild((JsonObject) rawAddProps).build();
                     builder.schemaOfAdditionalProperties(childSchema);
                     break;
                 default:
-                    String errorMessage = format("Looking for boolean or object but found: %s", rawAddProps.schemaType());
-                    throw new UnexpectedValueException(errorMessage);
+                    throw new UnexpectedValueException(rawAddProps, TRUE, FALSE, OBJECT);
             }
         });
 
-        ls.schemaJson.find(REQUIRED)
-                .map(JsonElement::asArray)
-                .ifPresent(arr -> arr.forEach(val -> builder.addRequiredProperty(val.asString())));
-        ls.schemaJson.find(PATTERN_PROPERTIES)
-                .map(JsonElement::asObject)
+        ls.schemaJson.findArray(REQUIRED).ifPresent(arr -> arr.getValuesAs(JsonString.class)
+                .forEach(val -> builder.addRequiredProperty(val.getString())));
+        ls.schemaJson.findObject(PATTERN_PROPERTIES)
                 .ifPresent(patternProps -> {
-                    patternProps.properties().forEach(pattern -> {
-                        Schema patternSchema = defaultLoader.loadChild(patternProps.git(pattern).asObject()).build();
+                    patternProps.keySet().forEach(pattern -> {
+                        Schema patternSchema = defaultLoader.loadChild(patternProps.getJsonObject(pattern)).build();
                         builder.patternProperty(pattern, patternSchema);
                     });
                 });
-        ls.schemaJson.find(DEPENDENCIES).map(JsonElement::asObject)
-                .ifPresent(deps -> addDependencies(builder, deps));
+        ls.schemaJson.findObject(DEPENDENCIES).ifPresent(deps -> addDependencies(builder, deps));
         return builder;
     }
 
-    private void populatePropertySchemas(JsonObject<?> propertyDefs, ObjectSchema.Builder builder) {
-        propertyDefs.forEach((key, value) -> addPropertySchemaDefinition(key, value.asObject(), builder));
+    private void populatePropertySchemas(JsonObject propertyDefs, ObjectSchema.Builder builder) {
+        propertyDefs.forEach((key, value) -> addPropertySchemaDefinition(key, (JsonObject) value, builder));
     }
 
-    private void addPropertySchemaDefinition(String keyOfObj, JsonObject<?> definition, ObjectSchema.Builder builder) {
+    private void addPropertySchemaDefinition(String keyOfObj, JsonObject definition, ObjectSchema.Builder builder) {
         builder.addPropertySchema(keyOfObj, defaultLoader.loadChild(definition).build());
     }
 
-    private void addDependencies(ObjectSchema.Builder builder, JsonObject<?> deps) {
+    private void addDependencies(ObjectSchema.Builder builder, JsonObject deps) {
         deps.forEach((ifPresent, mustBePresent) -> addDependency(builder, ifPresent, mustBePresent));
     }
 
-    private void addDependency(ObjectSchema.Builder builder, String ifPresent, JsonElement<?> deps) {
-        switch (deps.schemaType()) {
-            case Object:
-                builder.schemaDependency(ifPresent, defaultLoader.loadChild(deps.asObject()).build());
+    private void addDependency(ObjectSchema.Builder builder, String ifPresent, JsonValue deps) {
+        switch (deps.getValueType()) {
+            case OBJECT:
+                builder.schemaDependency(ifPresent, defaultLoader.loadChild((JsonObject) deps).build());
                 break;
-            case Array:
-                deps.asArray().forEach(entry -> builder.propertyDependency(ifPresent, entry.asString()));
+            case ARRAY:
+                ((JsonArray)deps).getValuesAs(JsonString.class)
+                        .forEach(entry -> builder.propertyDependency(ifPresent, entry.getString()));
                 break;
             default:
-                String errorMessage = format("Looking for Object or Array but found: %s", deps.schemaType());
-                throw new UnexpectedValueException(errorMessage);
+                throw new UnexpectedValueException(deps, OBJECT, ARRAY);
         }
     }
 }

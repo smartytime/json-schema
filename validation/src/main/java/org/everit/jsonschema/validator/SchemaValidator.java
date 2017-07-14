@@ -27,8 +27,8 @@ public abstract class SchemaValidator<S extends Schema> {
     }
 
     protected ValidationError failure(JsonSchemaType expectedType, JsonSchemaType foundType) {
-        //todo:ericm Fix thsi
-        return new ValidationError(schema(), "Wrong type", "typeMismatch", schema().getSchemaLocation());
+        String message = String.format("expected type: %s, found: %s", expectedType, foundType);
+        return new ValidationError(schema(), message, "typeMismatch", schema().getSchemaLocation());
     }
 
 }

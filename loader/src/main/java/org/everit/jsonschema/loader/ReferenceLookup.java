@@ -1,15 +1,15 @@
 package org.everit.jsonschema.loader;
 
+import org.everit.jsonschema.api.JsonPointerPath;
 import org.everit.jsonschema.api.ReferenceSchema;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.loader.internal.ReferenceResolver;
-import org.everit.json.JsonApi;
-import org.everit.json.JsonObject;
 
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
+import javax.json.spi.JsonProvider;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
@@ -20,25 +20,26 @@ import static org.everit.jsonschema.api.JsonSchemaProperty.$REF;
  */
 class ReferenceLookup {
 
-    static JsonObject<?> extend(JsonApi<?> jsonApi, JsonObject<?> additional, JsonObject<?> original) {
-        if (additional.properties().isEmpty()) {
+    private static JsonObject combineWithRefSchema(JsonProvider provider, JsonObject additional, JsonObject original) {
+        if (additional.keySet().isEmpty()) {
             return original;
         }
-        if (original.properties().isEmpty()) {
+        if (original.keySet().isEmpty()) {
             return additional;
         }
-        Map<String, Object> rawObj = new HashMap<>();
-        original.properties().forEach(name -> rawObj.put(name, original.git(name)));
-        additional.properties().forEach(name -> rawObj.put(name, additional.git(name)));
-        return jsonApi.fromMap(rawObj, original.path());
+        JsonObjectBuilder b = provider.createObjectBuilder();
+
+        original.forEach(b::add);
+        additional.forEach(b::add);
+        return b.build();
     }
 
     private LoadingState loadingState;
-    private JsonApi jsonApi;
+    private JsonProvider provider;
 
     public ReferenceLookup(LoadingState loadingState) {
         this.loadingState = requireNonNull(loadingState, "ls cannot eb null");
-        this.jsonApi = checkNotNull(loadingState.jsonApi);
+        this.provider = checkNotNull(loadingState.provider);
     }
 
     /**
@@ -62,35 +63,38 @@ class ReferenceLookup {
         }
     }
 
-    JsonObject<?> withoutRef(JsonObject<?> original) {
-        Map<String, Object> rawObj = new HashMap<>();
-        original.properties().stream()
-                .filter(name -> !$REF.getKey().equals(name))
-                .forEach(name -> rawObj.put(name, original.git(name)));
-        return jsonApi.fromMap(rawObj, original.path());
+    JsonObject withoutRef(JsonObject original) {
+        JsonObjectBuilder b = provider.createObjectBuilder(original);
+        b.remove($REF.key());
+
+        //todo:ericm Need a path here??
+        return b.build();
     }
 
     /**
      * Returns a schema builder instance after looking up the JSON pointer.
      */
-    Schema.Builder<?> lookup(String relPointerString, JsonObject<?> ctx) {
-        String absPointerString = ReferenceResolver.resolve(loadingState.id, relPointerString).toString();
+    Schema.Builder<?> lookup(String jsonPointerVal, JsonObject document) {
+
+        String absPointerString = ReferenceResolver.resolve(loadingState.id, jsonPointerVal).toString();
         if (loadingState.pointerSchemas.containsKey(absPointerString)) {
             return loadingState.pointerSchemas.get(absPointerString);
         }
         boolean isExternal = !absPointerString.startsWith("#");
         JsonPointerEvaluator pointer = isExternal
-                ? JsonPointerEvaluator.forURL(loadingState.httpClient, absPointerString, jsonApi)
-                : JsonPointerEvaluator.forDocument(loadingState.rootSchemaJson, absPointerString, jsonApi);
+                ? JsonPointerEvaluator.forURL(loadingState.httpClient, absPointerString, provider)
+                : JsonPointerEvaluator.forDocument(loadingState.rootSchemaJson, absPointerString, provider);
         ReferenceSchema.Builder refBuilder = ReferenceSchema.builder()
-                .refValue(relPointerString);
+                .refValue(jsonPointerVal);
         loadingState.pointerSchemas.put(absPointerString, refBuilder);
-        JsonPointerEvaluator.QueryResult result = pointer.query();
-        JsonObject resultObject = extend(jsonApi, withoutRef(ctx), result.getQueryResult());
+
+        JsonPointerEvaluator.QueryResult queryResult = pointer.query();
+        JsonObject resultObject = combineWithRefSchema(provider, withoutRef(document), queryResult.getQueryResult());
+        JsonPointerPath schemaPath = new JsonPointerPath(absPointerString);
         SchemaLoader childLoader = loadingState.initChildLoader()
-                        .resolutionScope(isExternal ? withoutFragment(absPointerString) : loadingState.id)
-                        .schemaJson(resultObject)
-                        .rootSchemaJson(result.getContainingDocument()).build();
+                .resolutionScope(isExternal ? withoutFragment(absPointerString) : loadingState.id)
+                .schemaJson(new SchemaJsonWrapper(resultObject, schemaPath))
+                .rootSchemaJson(queryResult.getContainingDocument()).build();
         Schema referredSchema = childLoader.load().build();
         refBuilder.build().setReferredSchema(referredSchema);
         return refBuilder;
