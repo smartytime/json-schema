@@ -1,11 +1,10 @@
 package org.everit.jsonschema.validator;
 
-import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.ObjectSchema;
 import org.everit.jsonschema.api.Schema;
-import org.everit.json.JsonElement;
-import org.everit.json.JsonObject;
 
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +26,13 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> subject) {
+    public Optional<ValidationError> validate(JsonValue subject) {
 
-        if (subject.schemaType() != JsonSchemaType.Object && schema.requiresObject()) {
-            return Optional.of(failure(JsonSchemaType.Object, subject.schemaType()));
-        } else if(subject.schemaType() == JsonSchemaType.Object) {
+        if (subject.getValueType() != JsonValue.ValueType.OBJECT && schema.requiresObject()) {
+            return Optional.of(failure(JsonValue.ValueType.OBJECT, subject.getValueType()));
+        } else if (subject.getValueType() == JsonValue.ValueType.OBJECT) {
             List<ValidationError> failures = new ArrayList<>();
-            JsonObject objSubject = subject.asObject();
+            JsonObject objSubject = (JsonObject) subject;
             failures.addAll(testProperties(objSubject));
             failures.addAll(testRequiredProperties(objSubject));
             failures.addAll(testAdditionalProperties(objSubject));
@@ -47,7 +46,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         return Optional.empty();
     }
 
-    private List<ValidationError> testAdditionalProperties(final JsonObject<?> subject) {
+    private List<ValidationError> testAdditionalProperties(final JsonObject subject) {
         if (!schema.permitsAdditionalProperties()) {
             return schema.getAdditionalProperties(subject)
                     .map(unneeded -> String.format("extraneous key [%s] is not permitted", unneeded))
@@ -66,9 +65,9 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         return emptyList();
     }
 
-    private List<ValidationError> testPatternProperties(final JsonObject<?> subject) {
-        Set<String> subjectProperties = subject.properties();
-        if (subjectProperties == null || subjectProperties.size() == 0) {
+    private List<ValidationError> testPatternProperties(final JsonObject subject) {
+        Set<String> subjectProperties = subject.keySet();
+        if (subjectProperties.isEmpty()) {
             return emptyList();
         }
         List<ValidationError> allErrors = new ArrayList<>();
@@ -90,9 +89,9 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         return string -> regex.matcher(string).find();
     }
 
-    private Function<String, Optional<ValidationError>> getValidationErrors(Schema validateAgainst, JsonObject<?> sourceObject) {
+    private Function<String, Optional<ValidationError>> getValidationErrors(Schema validateAgainst, JsonObject sourceObject) {
         return propertyName -> SchemaValidatorFactory.findValidator(validateAgainst)
-                .validate(sourceObject.git(propertyName))
+                .validate(sourceObject.getValue(propertyName))
                 .map(prependPropertyToError(propertyName));
     }
 
@@ -109,9 +108,9 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         if (schema.getPropertySchemas() != null) {
             List<ValidationError> errors = new ArrayList<>();
             schema.getPropertySchemas().forEach((propertyName, schema) -> {
-                if (subject.hasKey(propertyName)) {
+                if (subject.containsKey(propertyName)) {
                     SchemaValidatorFactory.findValidator(schema)
-                            .validate(subject.git(propertyName))
+                            .validate(subject.getValue(propertyName))
                             .map(prependPropertyToError(propertyName))
                             .ifPresent(errors::add);
                 }
@@ -123,9 +122,9 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
 
     private List<ValidationError> testPropertyDependencies(final JsonObject subject) {
         return schema.getPropertyDependencies().keySet().stream()
-                .filter(subject::hasKey)
+                .filter(subject::containsKey)
                 .flatMap(ifPresent -> schema.getPropertyDependencies().get(ifPresent).stream())
-                .filter(mustBePresent -> !subject.hasKey(mustBePresent))
+                .filter(mustBePresent -> !subject.containsKey(mustBePresent))
                 .map(missingKey -> String.format("property [%s] is required", missingKey))
                 .map(excMessage -> failure(excMessage, "dependencies"))
                 .collect(Collectors.toList());
@@ -133,7 +132,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
 
     private List<ValidationError> testRequiredProperties(final JsonObject subject) {
         return schema.getRequiredProperties().stream()
-                .filter(key -> !subject.hasKey(key))
+                .filter(key -> !subject.containsKey(key))
                 .map(missingKey -> String.format("required key [%s] not found", missingKey))
                 .map(excMessage -> failure(excMessage, "required"))
                 .collect(Collectors.toList());
@@ -142,7 +141,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     private List<ValidationError> testSchemaDependencies(final JsonObject subject) {
         List<ValidationError> rval = new ArrayList<>();
         schema.getSchemaDependencies().forEach((propName, schema) -> {
-            if (subject.hasKey(propName)) {
+            if (subject.containsKey(propName)) {
                 SchemaValidatorFactory.findValidator(schema)
                         .validate(subject)
                         .ifPresent(rval::add);
@@ -152,7 +151,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     }
 
     private Optional<ValidationError> testSize(final JsonObject subject) {
-        int actualSize = subject.numberOfProperties();
+        int actualSize = subject.size();
         if (schema.getMinProperties() != null && actualSize < schema.getMinProperties()) {
             return Optional.of(failure(String.format("minimum size: [%d], found: [%d]", schema.getMinProperties(), actualSize),
                     "minProperties"));

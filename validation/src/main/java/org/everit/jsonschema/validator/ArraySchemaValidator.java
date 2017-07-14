@@ -1,12 +1,11 @@
 package org.everit.jsonschema.validator;
 
 import org.everit.jsonschema.api.ArraySchema;
-import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.ObjectComparator;
 import org.everit.jsonschema.api.Schema;
-import org.everit.json.JsonArray;
-import org.everit.json.JsonElement;
 
+import javax.json.JsonArray;
+import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +14,8 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.stream.IntStream;
 
+import static javax.json.JsonValue.ValueType;
+
 public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
 
     public ArraySchemaValidator(ArraySchema schema) {
@@ -22,24 +23,25 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
+    public Optional<ValidationError> validate(JsonValue subject) {
 
         List<ValidationError> failures = new ArrayList<>();
-        if (toBeValidated.schemaType() != JsonSchemaType.Array && schema.isRequiresArray()) {
-            return Optional.of(failure(JsonSchemaType.Array, toBeValidated.schemaType()));
-        } else if(toBeValidated.schemaType() == JsonSchemaType.Array) {
-            JsonArray arrSubject = (JsonArray) toBeValidated;
-            testItemCount(arrSubject).ifPresent(failures::add);
+        final ValueType valueType = subject.getValueType();
+        if (valueType != ValueType.ARRAY && schema.isRequiresArray()) {
+            return Optional.of(failure(ValueType.ARRAY, valueType));
+        } else if(valueType == ValueType.ARRAY) {
+            JsonArray array = (JsonArray) subject;
+            testItemCount(array).ifPresent(failures::add);
             if (schema.isNeedsUniqueItems()) {
-                testUniqueness(arrSubject).ifPresent(failures::add);
+                testUniqueness(array).ifPresent(failures::add);
             }
-            failures.addAll(testItems(arrSubject));
+            failures.addAll(testItems(array));
         }
         return ValidationError.collectErrors(schema, failures);
     }
 
     private Optional<ValidationError> testItemCount(final JsonArray subject) {
-        int actualLength = subject.length();
+        int actualLength = subject.size();
         Integer minItems = schema.getMinItems();
         Integer maxItems = schema.getMaxItems();
 
@@ -62,22 +64,22 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         boolean additionalItems = schema.isNeedsAdditionalItems();
         Schema schemaOfAdditionalItems = schema.getSchemaOfAdditionalItems();
         if (allItemSchema != null) {
-            validateItemsAgainstSchema(IntStream.range(0, subject.length()),
+            validateItemsAgainstSchema(IntStream.range(0, subject.size()),
                     subject,
                     allItemSchema,
                     rval::add);
         } else if (itemSchemas != null) {
-            if (!additionalItems && subject.length() > itemSchemas.size()) {
+            if (!additionalItems && subject.size() > itemSchemas.size()) {
                 rval.add(failure(String.format("expected: [%d] array items, found: [%d]",
-                        itemSchemas.size(), subject.length()), "items"));
+                        itemSchemas.size(), subject.size()), "items"));
             }
-            int itemValidationUntil = Math.min(subject.length(), itemSchemas.size());
+            int itemValidationUntil = Math.min(subject.size(), itemSchemas.size());
             validateItemsAgainstSchema(IntStream.range(0, itemValidationUntil),
                     subject,
                     itemSchemas::get,
                     rval::add);
             if (schemaOfAdditionalItems != null) {
-                validateItemsAgainstSchema(IntStream.range(itemValidationUntil, subject.length()),
+                validateItemsAgainstSchema(IntStream.range(itemValidationUntil, subject.size()),
                         subject,
                         schemaOfAdditionalItems,
                         rval::add);
@@ -106,14 +108,14 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         }
     }
 
-    private Optional<ValidationError> testUniqueness(final JsonArray<?> subject) {
-        if (subject.length() == 0) {
+    private Optional<ValidationError> testUniqueness(final JsonArray subject) {
+        if (subject.size() == 0) {
             return Optional.empty();
         }
-        Collection<JsonElement<?>> uniqueItems = new ArrayList<>(subject.length());
+        Collection<JsonValue> uniqueItems = new ArrayList<>(subject.size());
 
-        for (JsonElement<?> item : subject) {
-            for (JsonElement<?> contained : uniqueItems) {
+        for (JsonValue item : subject) {
+            for (JsonValue contained : uniqueItems) {
                 if (ObjectComparator.deepEquals(contained, item)) {
                     return Optional.of(
                             failure("array items are not unique", "uniqueItems"));

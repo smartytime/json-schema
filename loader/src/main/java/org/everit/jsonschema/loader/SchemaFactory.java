@@ -38,7 +38,7 @@ public class SchemaFactory {
 
     private final Map<String, ReferenceSchema.Builder> referenceSchemas;
 
-    public SchemaFactory schemaFactory() {
+    public static SchemaFactory schemaFactory() {
         return new SchemaFactory(JsonProvider.provider(), new DefaultSchemaClient(), UTF8, null, new HashMap<>());
     }
 

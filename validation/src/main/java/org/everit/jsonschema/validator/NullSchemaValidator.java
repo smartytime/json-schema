@@ -2,8 +2,8 @@ package org.everit.jsonschema.validator;
 
 import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.NullSchema;
-import org.everit.json.JsonElement;
 
+import javax.json.JsonValue;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -14,10 +14,10 @@ public class NullSchemaValidator extends SchemaValidator<NullSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
+    public Optional<ValidationError> validate(JsonValue toBeValidated) {
         checkNotNull(toBeValidated, "toBeValidated must not be null");
-        if (toBeValidated.schemaType() != JsonSchemaType.Null) {
-            return Optional.of(failure("expected: null, found: " + toBeValidated.schemaType(), "type"));
+        if (toBeValidated.getValueType() != JsonValue.ValueType.NULL) {
+            return Optional.of(failure("expected: null, found: " + toBeValidated.getValueType(), "type"));
         }
         return Optional.empty();
     }

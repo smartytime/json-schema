@@ -1,10 +1,10 @@
 package org.everit.jsonschema.validator;
 
-import org.everit.json.JsonElement;
-import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.StringSchema;
 import org.everit.jsonschema.validator.internal.FormatValidator;
 
+import javax.json.JsonString;
+import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -17,11 +17,11 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> subject) {
-        if (subject.schemaType() != JsonSchemaType.String && schema.requiresString()) {
-            return Optional.of(failure(JsonSchemaType.String, subject.schemaType()));
-        } else if (subject.schemaType() == JsonSchemaType.String) {
-            String stringSubject = subject.coerceToString();
+    public Optional<ValidationError> validate(JsonValue subject) {
+        if (subject.getValueType() != JsonValue.ValueType.STRING && schema.requiresString()) {
+            return Optional.of(failure(JsonValue.ValueType.STRING, subject.getValueType()));
+        } else if (subject.getValueType() == JsonValue.ValueType.STRING) {
+            String stringSubject = ((JsonString) subject).getString();
             List<ValidationError> allErrors = new ArrayList<>();
             allErrors.addAll(testLength(stringSubject));
             testPattern(stringSubject).ifPresent(allErrors::add);

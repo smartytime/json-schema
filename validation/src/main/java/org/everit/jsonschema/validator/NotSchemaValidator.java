@@ -2,8 +2,8 @@ package org.everit.jsonschema.validator;
 
 import org.everit.jsonschema.api.NotSchema;
 import org.everit.jsonschema.api.Schema;
-import org.everit.json.JsonElement;
 
+import javax.json.JsonValue;
 import java.util.Optional;
 
 public class NotSchemaValidator extends SchemaValidator<NotSchema> {
@@ -13,7 +13,7 @@ public class NotSchemaValidator extends SchemaValidator<NotSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
+    public Optional<ValidationError> validate(JsonValue toBeValidated) {
         Schema mustNotMatch = schema.getMustNotMatch();
         Optional<ValidationError> validated = SchemaValidatorFactory.findValidator(mustNotMatch)
                 .validate(toBeValidated);

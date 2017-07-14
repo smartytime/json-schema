@@ -1,15 +1,18 @@
 package org.everit.jsonschema.validator;
 
-import org.everit.json.JsonElement;
 import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.NumberSchema;
 
+import javax.json.JsonNumber;
+import javax.json.JsonValue;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.everit.jsonschema.api.JsonSchemaType.*;
+import static javax.json.JsonValue.ValueType;
+import static org.everit.jsonschema.api.JsonSchemaType.Integer;
+import static org.everit.jsonschema.api.JsonSchemaType.Number;
 
 public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
 
@@ -18,16 +21,24 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(final JsonElement<?> subject) {
-        JsonSchemaType schemaType = subject.schemaType();
-        if (!subject.isNumber() && schema.requiresNumber()) {
-            return Optional.of(failure(Number, schemaType));
-        } else if (!subject.isAnyOf(Integer) && schema.requiresInteger()) {
-            return Optional.of(failure(Integer, schemaType));
-        } else if (schemaType == Integer || schemaType == Number) {
+    public Optional<ValidationError> validate(final JsonValue subject) {
+        ValueType schemaType = subject.getValueType();
+        if (schemaType != ValueType.NUMBER && schema.requiresNumber()) {
+            return Optional.of(failure(ValueType.NUMBER, schemaType));
+        } else if (schemaType != ValueType.NUMBER && schema.requiresInteger()) {
+            return Optional.of(failure(Integer, JsonSchemaType.fromJsonType(schemaType)));
+        } else if (schemaType == ValueType.NUMBER) {
+
+            //One more check with integer to make sure the data isn't actually a double.
+            //todo:ericm Make sure there's a test case
+            JsonNumber num = (JsonNumber) subject;
+            if (!num.isIntegral() && schema.requiresInteger()) {
+                return Optional.of(failure(Integer, Number));
+            }
+
             List<ValidationError> errors = new ArrayList<>();
 
-            double intSubject = subject.asNumber().doubleValue();
+            double intSubject = num.doubleValue();
             checkMinimum(intSubject).ifPresent(errors::add);
             checkMaximum(intSubject).ifPresent(errors::add);
             checkMultipleOf(intSubject).ifPresent(errors::add);

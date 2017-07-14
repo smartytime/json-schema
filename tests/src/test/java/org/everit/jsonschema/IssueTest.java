@@ -16,12 +16,8 @@
 package org.everit.jsonschema;
 
 import lombok.SneakyThrows;
-import org.everit.json.JsonArray;
-import org.everit.json.JsonElement;
-import org.everit.json.JsonObject;
 import org.everit.jsonschema.api.Schema;
-import org.everit.jsonschema.loader.SchemaLoader;
-import org.everit.jsonschema.loaders.jsoniter.JsoniterApi;
+import org.everit.jsonschema.utils.JsonUtils;
 import org.everit.jsonschema.validator.SchemaValidator;
 import org.everit.jsonschema.validator.SchemaValidatorFactory;
 import org.everit.jsonschema.validator.ValidationError;
@@ -32,25 +28,27 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonStructure;
+import javax.json.JsonValue;
+import javax.json.spi.JsonProvider;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
-import static org.everit.jsonschema.api.JsonSchemaType.Array;
-import static org.everit.jsonschema.api.JsonSchemaType.Object;
+import static org.everit.jsonschema.loader.SchemaFactory.schemaFactory;
 
 @RunWith(Parameterized.class)
 public class IssueTest {
 
     private final File issueDir;
     private ServletSupport servletSupport;
-    private JsoniterApi jsoniterApi = new JsoniterApi();
     private List<String> validationFailureList;
     private List<String> expectedFailureList;
 
@@ -98,9 +96,9 @@ public class IssueTest {
     private Schema loadSchema() {
         Optional<File> schemaFile = fileByName("schema.json");
         if (schemaFile.isPresent()) {
-            JsoniterApi api = new JsoniterApi();
-            FileInputStream schemaStream = new FileInputStream(schemaFile.get());
-            return SchemaLoader.load(schemaStream, api);
+            try (FileInputStream schemaStream = new FileInputStream(schemaFile.get())) {
+                return schemaFactory().load(schemaStream);
+            }
         }
         throw new RuntimeException(issueDir.getCanonicalPath() + "/schema.json is not found");
     }
@@ -112,9 +110,9 @@ public class IssueTest {
     }
 
     private void validate(final File file, final Schema schema, final boolean shouldBeValid) {
-        JsonElement<?> subject = loadJsonFile(file);
+        JsonValue subject = loadJsonFile(file);
 
-        SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
+        SchemaValidator validator = SchemaValidatorFactory.findValidator(schema);
         Optional<ValidationError> errors = validator.validate(subject);
 
         if (shouldBeValid && errors.isPresent()) {
@@ -142,16 +140,15 @@ public class IssueTest {
     // TODO - it would be nice to see this moved out of tests to the main
     // source so that it cann be used as a convenience method by users also...
     @SneakyThrows
-    private JsonElement<?> loadJsonFile(final File file) {
-        JsonElement<?> subject = null;
-        JsonElement<?> jsonElement = jsoniterApi.readJson(new FileInputStream(file), Charset.forName("UTF-8"));
-        if (jsonElement.isAnyOf(Object, Array)) {
-            subject = jsonElement;
-        } else {
-            throw new IllegalStateException("Unable to load tests of type: " + jsonElement.schemaType());
+    private JsonValue loadJsonFile(final File file) {
+        JsonStructure subject = null;
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            subject = JsonProvider.provider().createReader(fileInputStream).read();
         }
         return subject;
     }
+
+
 
     /**
      * Allow users to provide expected values for validation failures. This method reads and parses
@@ -168,11 +165,11 @@ public class IssueTest {
                                         final ValidationError ve) {
 
         // Read the expected values from user supplied file
-        JsonElement<?> expected = loadJsonFile(expectedExceptionsFile);
+        JsonObject expected = JsonUtils.readObject(expectedExceptionsFile);
         expectedFailureList = new ArrayList<>();
 
         // NOTE: readExpectedValues() will update expectedFailureList
-        readExpectedValues(expected.asObject());
+        readExpectedValues(expected);
 
         // Read the actual validation failures into a list
         validationFailureList = new ArrayList<>();
@@ -204,12 +201,12 @@ public class IssueTest {
     }
 
     // Recursively process the expected values, which can contain nested arrays
-    private void readExpectedValues(final JsonObject<?> expected) {
-        expectedFailureList.add(expected.git("message").coerceToString());
-        if (expected.hasKey("causingExceptions")) {
-            JsonArray<?> causingEx = expected.git("causingExceptions").asArray();
-            for (JsonElement<?> subJson : causingEx) {
-                readExpectedValues(subJson.asObject());
+    private void readExpectedValues(final JsonObject expected) {
+        expectedFailureList.add(expected.getString("message"));
+        if (expected.containsKey("causingExceptions")) {
+            JsonArray causingEx = expected.getJsonArray("causingExceptions");
+            for (JsonObject subJson : causingEx.getValuesAs(JsonObject.class)) {
+                readExpectedValues(subJson);
             }
         }
     }

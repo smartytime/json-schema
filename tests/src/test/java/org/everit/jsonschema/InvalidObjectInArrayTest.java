@@ -15,37 +15,32 @@
  */
 package org.everit.jsonschema;
 
-import org.everit.json.JsonObject;
 import org.everit.jsonschema.api.Schema;
-import org.everit.jsonschema.loader.SchemaLoader;
-import org.everit.jsonschema.loader.internal.DefaultSchemaClient;
-import org.everit.jsonschema.loaders.jsoniter.JsoniterApi;
+import org.everit.jsonschema.utils.JsonUtils;
 import org.everit.jsonschema.validator.SchemaValidator;
 import org.everit.jsonschema.validator.SchemaValidatorFactory;
 import org.everit.jsonschema.validator.ValidationError;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.nio.charset.Charset;
+import javax.json.JsonObject;
 import java.util.Optional;
+
+import static org.everit.jsonschema.loader.SchemaFactory.schemaFactory;
 
 public class InvalidObjectInArrayTest {
 
-    private JsonObject<?> readObject(final String fileName) {
-        return new JsoniterApi()
-                .readJson(getClass().getResourceAsStream("/org/everit/json/schema/invalidobjectinarray/" + fileName), Charset.forName("UTF-8"))
-                .asObject();
-    }
-
     @Test
     public void test() {
-        Schema schema = SchemaLoader.load(readObject("schema.json"), new DefaultSchemaClient(), new JsoniterApi());
-        JsonObject<?> subject = readObject("subject.json");
+        Schema schema = schemaFactory().load(readObject("schema.json"));
+        JsonObject subject = readObject("subject.json");
         SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
         Optional<ValidationError> errors = validator.validate(subject);
         Assert.assertTrue("did not throw exception", errors.isPresent());
         Assert.assertEquals("#/notification/target/apps/0/id", errors.get().getPointerToViolation());
-
     }
 
+    private JsonObject readObject(final String fileName) {
+        return JsonUtils.readObject(getClass().getResourceAsStream("/org/everit/json/schema/invalidobjectinarray/" + fileName));
+    }
 }

@@ -2,8 +2,7 @@ package org.everit.jsonschema.validator;
 
 import org.everit.jsonschema.api.EnumSchema;
 import org.everit.jsonschema.api.ObjectComparator;
-import org.everit.json.JsonElement;
-
+import javax.json.JsonValue;
 import java.util.Optional;
 
 import static java.lang.String.format;
@@ -15,7 +14,7 @@ public class EnumSchemaValidator extends SchemaValidator<EnumSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
+    public Optional<ValidationError> validate(JsonValue toBeValidated) {
         boolean foundMatch = schema.getPossibleValues()
                 .stream()
                 .anyMatch(val -> ObjectComparator.deepEquals(val, toBeValidated));
@@ -24,5 +23,4 @@ public class EnumSchemaValidator extends SchemaValidator<EnumSchema> {
         }
         return Optional.empty();
     }
-
 }

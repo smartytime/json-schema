@@ -19,17 +19,10 @@ import com.google.common.base.Preconditions;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.everit.json.JsonApi;
-import org.everit.json.JsonArray;
-import org.everit.json.JsonElement;
-import org.everit.json.JsonObject;
 import org.everit.json.schema.IssueServlet;
 import org.everit.json.schema.ServletSupport;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.api.SchemaException;
-import org.everit.jsonschema.loader.SchemaLoader;
-import org.everit.jsonschema.loader.internal.DefaultSchemaClient;
-import org.everit.jsonschema.loaders.jsoniter.JsoniterApi;
 import org.everit.jsonschema.validator.SchemaValidator;
 import org.everit.jsonschema.validator.SchemaValidatorFactory;
 import org.everit.jsonschema.validator.ValidationError;
@@ -43,28 +36,32 @@ import org.junit.runners.Parameterized.Parameters;
 import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.spi.JsonProvider;
 import java.io.File;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static org.everit.jsonschema.loader.SchemaFactory.schemaFactory;
+
 @RunWith(Parameterized.class)
 public class TestSuiteTest {
 
     private static Server server;
-    private static JsonApi<?> jsonApi = new JsoniterApi();
     private final String schemaDescription;
     private final JsonObject schemaJson;
     private final String inputDescription;
-    private final JsonElement<?> input;
+    private final JsonValue input;
     private final boolean expectedToBeValid;
 
-    public TestSuiteTest(final String schemaDescription, final JsonObject<?> schemaJson,
-                         final String inputDescription, final JsonElement<?> input,
+    public TestSuiteTest(final String schemaDescription, final JsonObject schemaJson,
+                         final String inputDescription, final JsonValue input,
                          final Boolean expectedToBeValid) {
         this.schemaDescription = schemaDescription;
         this.schemaJson = schemaJson;
@@ -75,7 +72,7 @@ public class TestSuiteTest {
 
     @Parameters(name = "{2}")
     public static List<Object[]> params() {
-        Preconditions.checkNotNull( "jsonApi must not be null");
+        Preconditions.checkNotNull("jsonApi must not be null");
         List<Object[]> rval = new ArrayList<>();
         Reflections refs = new Reflections("org.everit.json.schema.draft4",
                 new ResourcesScanner());
@@ -85,18 +82,17 @@ public class TestSuiteTest {
                 continue;
             }
             String fileName = path.substring(path.lastIndexOf('/') + 1);
-            JsonArray<?> arr = loadTests(jsonApi, TestSuiteTest.class.getResourceAsStream("/" + path));
-            for (int i = 0; i < arr.length(); ++i) {
-                JsonObject<?> schemaTest = arr.get(i).asObject();
-                JsonArray<?> testcaseInputs = schemaTest.git("tests").asArray();
-                for (int j = 0; j < testcaseInputs.length(); ++j) {
-                    JsonObject<?> input = testcaseInputs.get(j).asObject();
+            JsonArray arr = loadTests(TestSuiteTest.class.getResourceAsStream("/" + path));
+            for (JsonObject schemaTest : arr.getValuesAs(JsonObject.class)) {
+                JsonArray testInputs = schemaTest.getJsonArray("tests");
+                for (JsonObject input : testInputs.getValuesAs(JsonObject.class)) {
+
                     Object[] params = new Object[5];
-                    params[0] = "[" + fileName + "]/" + schemaTest.git("description").asString();
-                    params[1] = schemaTest.git("schema").asObject();
-                    params[2] = "[" + fileName + "]/" + input.git("description").asString();
-                    params[3] = input.git("data");
-                    params[4] = input.git("valid").asBoolean();
+                    params[0] = "[" + fileName + "]/" + schemaTest.getString("description");
+                    params[1] = schemaTest.getJsonObject("schema");
+                    params[2] = "[" + fileName + "]/" + input.getString("description");
+                    params[3] = input.getJsonObject("data");
+                    params[4] = input.getBoolean("valid");
                     rval.add(params);
                 }
             }
@@ -124,7 +120,7 @@ public class TestSuiteTest {
     @Test
     public void test() {
         try {
-            Schema schema = SchemaLoader.load(schemaJson, new DefaultSchemaClient(), jsonApi);
+            Schema schema = schemaFactory().load(schemaJson);
             SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
             Optional<ValidationError> validationErrors = validator.validate(input);
             boolean failed = validationErrors.isPresent();
@@ -141,7 +137,7 @@ public class TestSuiteTest {
         }
     }
 
-    private static JsonArray<?> loadTests(JsonApi<?> jsonApi, final InputStream input) {
-        return jsonApi.readJson(input, Charset.forName("UTF-8")).asArray();
+    private static JsonArray loadTests(final InputStream input) {
+        return JsonProvider.provider().createReader(input).readArray();
     }
 }

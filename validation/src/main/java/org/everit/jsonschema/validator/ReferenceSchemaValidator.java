@@ -1,8 +1,8 @@
 package org.everit.jsonschema.validator;
 
 import org.everit.jsonschema.api.ReferenceSchema;
-import org.everit.json.JsonElement;
 
+import javax.json.JsonValue;
 import java.util.Optional;
 
 public class ReferenceSchemaValidator extends SchemaValidator<ReferenceSchema> {
@@ -12,7 +12,7 @@ public class ReferenceSchemaValidator extends SchemaValidator<ReferenceSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
+    public Optional<ValidationError> validate(JsonValue toBeValidated) {
         if (schema.getReferredSchema() == null) {
             throw new IllegalStateException("referredSchema must be injected before validation");
         }

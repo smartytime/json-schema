@@ -37,9 +37,9 @@
         <module>api</module>
         <module>loader</module>
         <module>validation</module>
-        <module>loader-jsoniter</module>
         <module>core</module>
         <module>tests</module>
+        <module>jsoniter-jsr353</module>
     </modules>
 
 </project>

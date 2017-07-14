@@ -1,8 +1,8 @@
 package org.everit.jsonschema.validator;
 
 import org.everit.jsonschema.api.EmptySchema;
-import org.everit.json.JsonElement;
 
+import javax.json.JsonValue;
 import java.util.Optional;
 
 public class EmptySchemaValidator extends SchemaValidator<EmptySchema> {
@@ -11,7 +11,7 @@ public class EmptySchemaValidator extends SchemaValidator<EmptySchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonElement<?> toBeValidated) {
+    public Optional<ValidationError> validate(JsonValue toBeValidated) {
         return Optional.empty();
     }
 
