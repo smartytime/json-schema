@@ -1,0 +1,18 @@
+{
+  "string": "test string",
+  "number": 1.45432,
+  "integer": 1432,
+  "boolean": true,
+  "null": null,
+  "array": [
+    "1",
+    2,
+    3.3,
+    true
+  ],
+  "object": {
+    "a": "a",
+    "b": 2,
+    "c": true
+  }
+}
