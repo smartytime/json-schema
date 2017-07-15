@@ -20,19 +20,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.everit.jsonschema</groupId>
-    <artifactId>jsoniter-jsr353</artifactId>
+    <artifactId>jsr353-helpers</artifactId>
     <version>1.6.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <projectpath>json-schema-api</projectpath>
+        <projectpath>jsr353-helpers</projectpath>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <jacoco.version>0.7.9</jacoco.version>
     </properties>
-    <name>everit-org/jsoniter-jsr353</name>
-    <url>https://github.com/everit-org/json-schema</url>
+    <name>everit-org/jsr353-helpers</name>
+    <url>https://github.com/everit-org/jsr353-helpers</url>
     <description>Implementation of the JSON Schema Core Draft v4 specification built with the org.json API</description>
     <licenses>
         <license>
@@ -57,6 +57,7 @@
     </scm>
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -68,7 +69,6 @@
                             <goal>prepare-agent</goal>
                         </goals>
                         <configuration>
-                            <includes>/</includes>
                             <propertyName>surefireArgLine</propertyName>
                         </configuration>
                     </execution>
@@ -106,8 +106,7 @@
                         </goals>
                         <configuration>
                             <rules>
-                                <requireBackwardCompatibility
-                                        implementation="org.semver.enforcer.RequireBackwardCompatibility">
+                                <requireBackwardCompatibility implementation="org.semver.enforcer.RequireBackwardCompatibility">
                                     <compatibilityType>BACKWARD_COMPATIBLE_USER</compatibilityType>
                                 </requireBackwardCompatibility>
                             </rules>
@@ -120,28 +119,15 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.16</version>
+        </dependency>
+
+        <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
             <version>1.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.jsoniter</groupId>
-            <artifactId>jsoniter</artifactId>
-            <version>0.9.15</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.everit.jsonschema</groupId>
-            <artifactId>jsr353-helpers</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.16.18</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -154,11 +140,6 @@
             <artifactId>junit</artifactId>
             <version>4.12</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-validator</groupId>
-            <artifactId>commons-validator</artifactId>
-            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
@@ -178,5 +159,6 @@
             <version>1.0.5</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>

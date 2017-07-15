@@ -103,7 +103,7 @@ class SchemaLoader {
                         if (!loadingState.schemaJson.has(TYPE) || loadingState.schemaJson.has($REF)) {
                             return buildSchemaWithoutExplicitType();
                         } else {
-                            return loadForType(loadingState.schemaJson.getValue(TYPE.key()));
+                            return loadForType(loadingState.schemaJson.get(TYPE.key()));
                         }
                     });
         }
@@ -130,7 +130,7 @@ class SchemaLoader {
     }
 
     Schema.Builder<?> loadChild(JsonObject json) {
-        SchemaJsonWrapper childJson = new SchemaJsonWrapper(json, loadingState.pointerToCurrentObj);
+        SchemaJsonWrapper childJson = new SchemaJsonWrapper(json);
 
         SchemaLoaderBuilder childBuilder = loadingState.initChildLoader()
                 .schemaJson(childJson)
@@ -171,7 +171,7 @@ class SchemaLoader {
 
     private NotSchema.Builder buildNotSchema() {
         JsonObject notSchema = loadingState.schemaJson.expectObject(NOT);
-        SchemaJsonWrapper childSchema = new SchemaJsonWrapper(notSchema, loadingState.pointerToCurrentObj);
+        SchemaJsonWrapper childSchema = new SchemaJsonWrapper(notSchema);
         Schema mustNotMatch = loadChild(childSchema).build();
         return NotSchema.builder().mustNotMatch(mustNotMatch);
     }

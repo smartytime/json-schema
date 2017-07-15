@@ -1,5 +1,6 @@
 package org.everit.jsonschema.validator;
 
+import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.StringSchema;
 import org.everit.jsonschema.validator.internal.FormatValidator;
 
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static org.everit.jsonschema.validator.ChainedValidator.firstCheck;
+
 public class StringSchemaValidator extends SchemaValidator<StringSchema> {
 
     public StringSchemaValidator(StringSchema schema) {
@@ -18,22 +21,20 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
 
     @Override
     public Optional<ValidationError> validate(JsonValue subject) {
-        if (subject.getValueType() != JsonValue.ValueType.STRING && schema.requiresString()) {
-            return Optional.of(failure(JsonValue.ValueType.STRING, subject.getValueType()));
-        } else if (subject.getValueType() == JsonValue.ValueType.STRING) {
-            String stringSubject = ((JsonString) subject).getString();
-            List<ValidationError> allErrors = new ArrayList<>();
-            allErrors.addAll(testLength(stringSubject));
-            testPattern(stringSubject).ifPresent(allErrors::add);
+        return firstCheck(subject, s -> verifyType(s, JsonSchemaType.String, schema.requiresString()))
+                .thenIf(s -> subject.getValueType() == JsonValue.ValueType.STRING)
+                .thenCheckAs(JsonString.class, s -> {
+                    String stringSubject = s.getString();
+                    List<ValidationError> allErrors = new ArrayList<>();
+                    allErrors.addAll(testLength(stringSubject));
+                    testPattern(stringSubject).ifPresent(allErrors::add);
 
-            getFormatValidator()
-                    .map(validator -> validator.validate(stringSubject).orElse(null))
-                    .map(error -> failure(error, "format"))
-                    .ifPresent(allErrors::add);
-            return ValidationError.collectErrors(schema, allErrors);
-        } else {
-            return Optional.empty();
-        }
+                    getFormatValidator()
+                            .map(validator -> validator.validate(stringSubject).orElse(null))
+                            .map(error -> failure(error, "format"))
+                            .ifPresent(allErrors::add);
+                    return ValidationError.collectErrors(schema, allErrors);
+                }).getError();
     }
 
     private Optional<FormatValidator> getFormatValidator() {

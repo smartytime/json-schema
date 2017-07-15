@@ -1,8 +1,6 @@
-package org.everit.jsoniter.jsr353;
+package org.everit.json;
 
-import com.jsoniter.any.Any;
 import lombok.experimental.var;
-import org.everit.json.InvalidKeyException;
 
 import javax.json.JsonValue;
 import java.util.List;
@@ -11,53 +9,51 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.jsoniter.ValueType.BOOLEAN;
-import static com.jsoniter.ValueType.INVALID;
-import static com.jsoniter.ValueType.NUMBER;
-import static com.jsoniter.ValueType.STRING;
-
-public abstract class JsoniterStructure<K> extends JsoniterValue {
+public abstract class BaseJsonStructure<T, K> {
 
     /**
      * We use the same structure whether it's a map or list internally.  This just caches any of the jsr353 stuff.
      */
-    private final ConcurrentHashMap<K, JsonValue> internal;
+    private final Map<K, JsonValue> internal;
     private final List<JsonValue> internalList;
     private final AtomicBoolean loaded;
 
-    public JsoniterStructure(Any wrapped) {
-        super(wrapped);
+    public BaseJsonStructure(Map<K, JsonValue> internal) {
+        this.internal = internal;
+        internalList = new CopyOnWriteArrayList<>();
+        loaded = new AtomicBoolean(false);
+    }
+
+    public BaseJsonStructure() {
         internal = new ConcurrentHashMap<>();
         internalList = new CopyOnWriteArrayList<>();
         loaded = new AtomicBoolean(false);
     }
 
-    public static javax.json.JsonValue jsonValueOf(Any next) {
-        checkNotNull(next, "next must not be null");
+    public abstract JsonValue jsonValueOf(T next);
 
-        switch (next.valueType()) {
-            case ARRAY:
-                return new JsoniterArray(next);
-            case BOOLEAN:
-                return next.toBoolean() ? javax.json.JsonValue.TRUE : javax.json.JsonValue.FALSE;
-            case NULL:
-                return javax.json.JsonValue.NULL;
-            case NUMBER:
-                return new JsoniterNumber(next);
-            case OBJECT:
-                return new JsoniterObject(next);
-            case STRING:
-                return new JsoniterString(next);
-            default:
-                throw new IllegalStateException("Unable to process type: " + next.valueType());
-        }
-    }
-
+    /**
+     * Returns a stream of keys that represents the keys in the underlying store you wish to cache.
+     *
+     * @return
+     */
     protected abstract Stream<K> cacheKeyStream();
+
+    public abstract JsonValue.ValueType jsonTypeOf(T t);
+
+    public abstract Function<T, String> getString();
+
+    public abstract Function<T, Number> getNumber();
+
+    public abstract Function<T, Boolean> getBoolean();
+
+    public boolean isNull(K index) {
+        return jsonTypeOf(fetch(index)) == JsonValue.ValueType.NULL;
+    }
 
     /**
      * This method is a little wonky because we want to prevent data that's masquerading
@@ -68,30 +64,30 @@ public abstract class JsoniterStructure<K> extends JsoniterValue {
      * @param validTypes Optional.  If passed, will validate that the referenced instance is one of these types
      * @return The referenced Any.  Will be empty if it's not found, null, or the wrong type.
      */
-    protected Optional<Any> any(K key, com.jsoniter.ValueType... validTypes) {
-        final Any any = wrapped.get(key);
-        final com.jsoniter.ValueType anyType = any.valueType();
-        if ((anyType == INVALID) || (anyType == com.jsoniter.ValueType.NULL)) {
+    protected Optional<T> any(K key, JsonValue.ValueType... validTypes) {
+        final T t = fetch(key);
+        final JsonValue.ValueType tType = jsonTypeOf(t);
+        if ((tType == null) || (tType == JsonValue.ValueType.NULL)) {
             return Optional.empty();
         } else {
             if (validTypes != null && validTypes.length > 0) {
-                for (com.jsoniter.ValueType validType : validTypes) {
-                    if (anyType == validType) {
-                        return Optional.of(any);
+                for (JsonValue.ValueType validType : validTypes) {
+                    if (tType == validType) {
+                        return Optional.of(t);
                     }
                 }
                 return Optional.empty();
             }
-            return Optional.of(any);
+            return Optional.of(t);
         }
     }
 
     protected List<JsonValue> internalList() {
-        internal();
+        internalMap();
         return internalList;
     }
 
-    protected Map<K, JsonValue> internal() {
+    protected Map<K, JsonValue> internalMap() {
         if (!loaded.get()) {
             synchronized (loaded) {
                 if (!loaded.get()) {
@@ -111,16 +107,18 @@ public abstract class JsoniterStructure<K> extends JsoniterValue {
     }
 
     protected Optional<String> findString(K key) {
-        return any(key, STRING).map(Any::toString);
+        return any(key, JsonValue.ValueType.STRING).map(getString());
     }
 
     protected Optional<Number> findNumber(K key) {
-        return any(key, NUMBER).map(Any::toDouble);
+        return any(key, JsonValue.ValueType.NUMBER).map(this.getNumber());
     }
 
     protected Optional<Boolean> findBoolean(K key) {
-        return any(key, BOOLEAN).map(Any::toBoolean);
+        return any(key, JsonValue.ValueType.TRUE, JsonValue.ValueType.FALSE).map(this.getBoolean());
     }
+
+    protected abstract T fetch(K k);
 
     /**
      * This method looks up the object by key, computes it if not already processed, and returns the
@@ -130,7 +128,7 @@ public abstract class JsoniterStructure<K> extends JsoniterValue {
      * @param expected The class expected to be returned.  ClassCastException will be thrown if mismatched.
      * @return Optional JsonValue to be returned.
      */
-    <X extends javax.json.JsonValue> Optional<X> find(K key, Class<X> expected) {
+    <X extends JsonValue> Optional<X> find(K key, Class<X> expected) {
         final JsonValue jsonValue;
         try {
             jsonValue = getOrLoadByKey(key);
@@ -145,28 +143,26 @@ public abstract class JsoniterStructure<K> extends JsoniterValue {
         }
     }
 
-    <X extends javax.json.JsonValue> X get(K key, Class<X> expected, Supplier<? extends RuntimeException> exception) {
+    <X extends JsonValue> X get(K key, Class<X> expected, Supplier<? extends RuntimeException> exception) {
         return find(key, expected).orElseThrow(exception);
     }
-
-    abstract Any fetch(K k);
 
     /**
      * This method looks up the object by key, computes it if not already processed, and returns the
      * result.
      *
      * @param key The key or index
-     * @return Optional JsonValue to be returned.
+     * @return JsonValue to be returned.
      */
     private JsonValue getOrLoadByKey(K key) throws InvalidKeyException {
         return internal.computeIfAbsent(key, (k) -> {
-            final Any any = fetch(k);
+            final T t = fetch(k);
 
-            final var valueType = any.valueType();
-            if (valueType == INVALID) {
+            final var valueType = jsonTypeOf(t);
+            if (valueType == null) {
                 throw new InvalidKeyException();
             }
-            return jsonValueOf(any);
+            return jsonValueOf(t);
         });
     }
 }

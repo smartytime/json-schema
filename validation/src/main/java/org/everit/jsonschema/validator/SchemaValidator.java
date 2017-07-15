@@ -2,6 +2,7 @@ package org.everit.jsonschema.validator;
 
 import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.Schema;
+import org.everit.jsonschema.utils.JsonUtils;
 
 import javax.json.JsonValue;
 import java.util.Optional;
@@ -26,8 +27,20 @@ public abstract class SchemaValidator<S extends Schema> {
         return new ValidationError(schema(), message, keyword, schema().getSchemaLocation());
     }
 
-    protected ValidationError failure(JsonValue.ValueType expectedType, JsonValue.ValueType foundType) {
-        return failure(JsonSchemaType.fromJsonType(expectedType), JsonSchemaType.fromJsonType(expectedType));
+    protected ValidationError failure(JsonSchemaType expectedType, JsonValue value) {
+        checkNotNull(value, "value must not be null");
+        return failure(expectedType, JsonUtils.schemaTypeFor(value));
+    }
+
+    protected Optional<ValidationError> verifyType(JsonValue value, JsonSchemaType expectedType, boolean required) {
+        checkNotNull(value, "value must not be null");
+        checkNotNull(expectedType, "expectedType must not be null");
+        JsonSchemaType jsonSchemaType = JsonUtils.schemaTypeFor(value);
+        if (!required || jsonSchemaType == expectedType) {
+            return Optional.empty();
+        } else {
+            return Optional.of(failure(expectedType, jsonSchemaType));
+        }
     }
 
     protected ValidationError failure(JsonSchemaType expectedType, JsonSchemaType foundType) {

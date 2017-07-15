@@ -1,4 +1,4 @@
-package org.everit.jsoniter.jsr353;
+package org.everit.json;
 
 public class InvalidKeyException extends RuntimeException {
 

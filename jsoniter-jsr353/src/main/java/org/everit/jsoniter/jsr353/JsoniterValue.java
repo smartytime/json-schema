@@ -14,12 +14,6 @@ public class JsoniterValue implements javax.json.JsonValue {
     protected final Any wrapped;
     private final AtomicReference<ValueType> valueType = new AtomicReference<>();
 
-    /**
-     * We try to follow jsoniter approach of loading a thin wrapper and then filling in
-     * the cache once you need data.
-     */
-    private boolean loaded;
-
     public JsoniterValue(Any wrapped) {
         this.wrapped = checkNotNull(wrapped);
     }

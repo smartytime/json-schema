@@ -1,7 +1,5 @@
 package org.everit.jsonschema.loader;
 
-import lombok.Getter;
-import org.everit.jsonschema.api.JsonPointerPath;
 import org.everit.jsonschema.api.JsonSchemaProperty;
 import org.everit.jsonschema.api.MissingExpectedPropertyException;
 
@@ -23,12 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class SchemaJsonWrapper implements JsonObject {
     private final JsonObject wrapped;
 
-    @Getter
-    private final JsonPointerPath path;
-
-    public SchemaJsonWrapper(JsonObject wrapped, JsonPointerPath path) {
+    public SchemaJsonWrapper(JsonObject wrapped) {
         this.wrapped = checkNotNull(wrapped);
-        this.path = checkNotNull(path);
     }
 
     public Optional<JsonValue> find(JsonSchemaProperty prop) {
@@ -213,7 +207,7 @@ public class SchemaJsonWrapper implements JsonObject {
     @Override
     @Deprecated
     public JsonValue get(Object key) {
-        throw new IllegalStateException("Don't call");
+        return wrapped.get(key);
     }
 
     @Override

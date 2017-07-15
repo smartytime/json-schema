@@ -1,5 +1,7 @@
 package org.everit.jsonschema.validator;
 
+import lombok.experimental.var;
+import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.ObjectSchema;
 import org.everit.jsonschema.api.Schema;
 
@@ -27,10 +29,12 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
 
     @Override
     public Optional<ValidationError> validate(JsonValue subject) {
+        var wrongType = verifyType(subject, JsonSchemaType.Object, schema.requiresObject());
+        if (wrongType.isPresent()) {
+            return wrongType;
+        }
 
-        if (subject.getValueType() != JsonValue.ValueType.OBJECT && schema.requiresObject()) {
-            return Optional.of(failure(JsonValue.ValueType.OBJECT, subject.getValueType()));
-        } else if (subject.getValueType() == JsonValue.ValueType.OBJECT) {
+        if (subject.getValueType() == JsonValue.ValueType.OBJECT) {
             List<ValidationError> failures = new ArrayList<>();
             JsonObject objSubject = (JsonObject) subject;
             failures.addAll(testProperties(objSubject));

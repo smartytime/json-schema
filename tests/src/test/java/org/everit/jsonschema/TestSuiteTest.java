@@ -21,6 +21,7 @@ import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.everit.json.schema.IssueServlet;
 import org.everit.json.schema.ServletSupport;
+import org.everit.jsoniter.jsr353.JsoniterProvider;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.api.SchemaException;
 import org.everit.jsonschema.validator.SchemaValidator;
@@ -91,7 +92,7 @@ public class TestSuiteTest {
                     params[0] = "[" + fileName + "]/" + schemaTest.getString("description");
                     params[1] = schemaTest.getJsonObject("schema");
                     params[2] = "[" + fileName + "]/" + input.getString("description");
-                    params[3] = input.getJsonObject("data");
+                    params[3] = input.get("data");
                     params[4] = input.getBoolean("valid");
                     rval.add(params);
                 }
@@ -120,7 +121,7 @@ public class TestSuiteTest {
     @Test
     public void test() {
         try {
-            Schema schema = schemaFactory().load(schemaJson);
+            Schema schema = schemaFactory(new JsoniterProvider()).load(schemaJson);
             SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
             Optional<ValidationError> validationErrors = validator.validate(input);
             boolean failed = validationErrors.isPresent();

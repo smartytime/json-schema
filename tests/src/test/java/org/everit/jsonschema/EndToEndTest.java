@@ -1,6 +1,7 @@
 package org.everit.jsonschema;
 
 import com.google.common.io.Resources;
+import org.everit.jsoniter.jsr353.JsoniterProvider;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.utils.JsonUtils;
 import org.everit.jsonschema.validator.SchemaValidator;
@@ -23,7 +24,7 @@ public class EndToEndTest {
     public void testParseAndValidate() throws MalformedURLException {
         final String jsonSchema = readResource("/org/everit/jsonschema/sbsp-account-profile.json");
         final String jsonData = readResource("/org/everit/jsonschema/account-data.json");
-        Schema loadedSchema = schemaFactory().load(jsonSchema);
+        Schema loadedSchema = schemaFactory(new JsoniterProvider()).load(jsonSchema);
         final JsonObject jsonObject = JsonUtils.readObject(jsonData);
         final SchemaValidator<?> validator = findValidator(loadedSchema);
         final Optional<ValidationError> errors = validator.validate(jsonObject);

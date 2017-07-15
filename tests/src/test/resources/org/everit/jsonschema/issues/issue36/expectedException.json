@@ -5,10 +5,10 @@
       "message": "#/0: 2 schema violations found",
       "causingExceptions": [
         {
-          "message": "#/0/name: expected type: String, found: Array"
+          "message": "#/0/name: expected type: string, found: array"
         },
         {
-          "message": "#/0/dimensions/width: expected type: Number, found: String"
+          "message": "#/0/dimensions/width: expected type: number, found: string"
         }
       ]
     },
@@ -16,7 +16,7 @@
       "message": "#/1: required key [price] not found"
     },
     {
-      "message": "#/2/id: expected type: Number, found: String"
+      "message": "#/2/id: expected type: number, found: string"
     }
   ]
 }

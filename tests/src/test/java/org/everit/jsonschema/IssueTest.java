@@ -16,6 +16,7 @@
 package org.everit.jsonschema;
 
 import lombok.SneakyThrows;
+import org.everit.jsoniter.jsr353.JsoniterProvider;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.utils.JsonUtils;
 import org.everit.jsonschema.validator.SchemaValidator;
@@ -51,6 +52,8 @@ public class IssueTest {
     private ServletSupport servletSupport;
     private List<String> validationFailureList;
     private List<String> expectedFailureList;
+
+    static JsoniterProvider jsonProvider = new JsoniterProvider();
 
     public IssueTest(final File issueDir, final String ignored) {
         this.issueDir = requireNonNull(issueDir, "issueDir cannot be null");
@@ -97,7 +100,8 @@ public class IssueTest {
         Optional<File> schemaFile = fileByName("schema.json");
         if (schemaFile.isPresent()) {
             try (FileInputStream schemaStream = new FileInputStream(schemaFile.get())) {
-                return schemaFactory().load(schemaStream);
+
+                return schemaFactory(jsonProvider).load(schemaStream);
             }
         }
         throw new RuntimeException(issueDir.getCanonicalPath() + "/schema.json is not found");

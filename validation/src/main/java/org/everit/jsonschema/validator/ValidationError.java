@@ -328,4 +328,14 @@ public class ValidationError {
     private String escapeFragment(String fragment) {
         return fragment.replace("~", "~0").replace("/", "~1");
     }
+
+    @Override
+    public String toString() {
+        return "ValidationError{" +
+                "pointerToViolation=" + pointerToViolation +
+                ", causingExceptions=" + causingExceptions +
+                ", keyword='" + keyword + '\'' +
+                ", message='" + message + '\'' +
+                '}';
+    }
 }

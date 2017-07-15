@@ -15,6 +15,7 @@
  */
 package org.everit.jsonschema;
 
+import org.everit.jsoniter.jsr353.JsoniterProvider;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.utils.JsonUtils;
 import org.everit.jsonschema.validator.SchemaValidator;
@@ -32,7 +33,7 @@ public class InvalidObjectInArrayTest {
 
     @Test
     public void test() {
-        Schema schema = schemaFactory().load(readObject("schema.json"));
+        Schema schema = schemaFactory(new JsoniterProvider()).load(readObject("schema.json"));
         JsonObject subject = readObject("subject.json");
         SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
         Optional<ValidationError> errors = validator.validate(subject);

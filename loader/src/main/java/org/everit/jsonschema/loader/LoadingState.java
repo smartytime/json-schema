@@ -8,9 +8,6 @@ import org.everit.jsonschema.loader.internal.ReferenceResolver;
 import javax.json.JsonObject;
 import javax.json.spi.JsonProvider;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 
@@ -45,8 +42,8 @@ public class LoadingState {
                  JsonPointerPath pointerPath, JsonProvider provider) {
         this.httpClient = requireNonNull(httpClient, "httpClient cannot be null");
         this.pointerSchemas = requireNonNull(pointerSchemas, "pointerSchemas cannot be null");
-        this.rootSchemaJson = new SchemaJsonWrapper(rootSchemaJson, pointerPath);
-        this.schemaJson = new SchemaJsonWrapper(schemaJson, pointerPath);
+        this.rootSchemaJson = new SchemaJsonWrapper(rootSchemaJson);
+        this.schemaJson = new SchemaJsonWrapper(schemaJson);
         this.id = id;
         this.pointerToCurrentObj = pointerPath;
         this.provider = provider;
@@ -94,15 +91,4 @@ public class LoadingState {
     public SchemaException createSchemaException(String message) {
         return new SchemaException(locationOfCurrentObj(), message);
     }
-
-    public SchemaException createSchemaException(Class<?> actualType, Class<?> expectedType, Class<?>... furtherExpectedTypes) {
-        return new SchemaException(locationOfCurrentObj(), actualType, expectedType, furtherExpectedTypes);
-    }
-
-    public SchemaException createSchemaException(Class<?> actualType, Collection<Class<?>> expectedTypes) {
-        ArrayList<Class<?>> sortedTypes = new ArrayList<>(expectedTypes);
-        Collections.sort(sortedTypes, CLASS_COMPARATOR);
-        return new SchemaException(locationOfCurrentObj(), actualType, sortedTypes);
-    }
-
 }

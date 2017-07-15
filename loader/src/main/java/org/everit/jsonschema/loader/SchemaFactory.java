@@ -38,9 +38,13 @@ public class SchemaFactory {
 
     private final Map<String, ReferenceSchema.Builder> referenceSchemas;
 
-    public static SchemaFactory schemaFactory() {
-        return new SchemaFactory(JsonProvider.provider(), new DefaultSchemaClient(), UTF8, null, new HashMap<>());
+    public static SchemaFactory schemaFactory(JsonProvider jsonProvider) {
+        return new SchemaFactory(jsonProvider, new DefaultSchemaClient(), UTF8, null, new HashMap<>());
     }
+
+    // public static SchemaFactory schemaFactory() {
+    //     return schemaFactory(new );
+    // }
 
     public Schema load(JsonObject schemaJson) {
         checkNotNull(schemaJson, "schemaJson must not be null");
@@ -48,7 +52,9 @@ public class SchemaFactory {
                 .resolutionScope(resolutionScope)
                 .httpClient(httpClient)
                 .pointerSchemas(referenceSchemas)
-                .rootSchemaJson(schemaJson).build()
+                .schemaJson(schemaJson)
+                .provider(JsonProvider.provider())
+                .build()
                 .load()
                 .build();
     }

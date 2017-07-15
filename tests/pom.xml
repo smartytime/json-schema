@@ -60,8 +60,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.everit.jsonschema.loaders</groupId>
-            <artifactId>jsonschema-loader-jsoniter</artifactId>
+            <groupId>org.everit.jsonschema</groupId>
+            <artifactId>jsoniter-jsr353</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

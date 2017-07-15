@@ -1,6 +1,5 @@
 package org.everit.jsonschema.loader;
 
-import org.everit.jsonschema.api.JsonPointerPath;
 import org.everit.jsonschema.api.ReferenceSchema;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.loader.internal.ReferenceResolver;
@@ -81,19 +80,20 @@ class ReferenceLookup {
             return loadingState.pointerSchemas.get(absPointerString);
         }
         boolean isExternal = !absPointerString.startsWith("#");
-        JsonPointerEvaluator pointer = isExternal
-                ? JsonPointerEvaluator.forURL(loadingState.httpClient, absPointerString, provider)
-                : JsonPointerEvaluator.forDocument(loadingState.rootSchemaJson, absPointerString, provider);
+        JsonPointerResolver pointer = isExternal
+                ? JsonPointerResolver.forURL(loadingState.httpClient, absPointerString, provider)
+                : JsonPointerResolver.forDocument(loadingState.rootSchemaJson, absPointerString, provider);
         ReferenceSchema.Builder refBuilder = ReferenceSchema.builder()
                 .refValue(jsonPointerVal);
         loadingState.pointerSchemas.put(absPointerString, refBuilder);
 
-        JsonPointerEvaluator.QueryResult queryResult = pointer.query();
-        JsonObject resultObject = combineWithRefSchema(provider, withoutRef(document), queryResult.getQueryResult());
-        JsonPointerPath schemaPath = new JsonPointerPath(absPointerString);
+        JsonPointerResolver.QueryResult queryResult = pointer.query();
+        //We shouldn't do this...
+        // JsonObject resultObject = combineWithRefSchema(provider, withoutRef(document), queryResult.getQueryResult());
+        JsonObject resultObject = queryResult.getQueryResult();
         SchemaLoader childLoader = loadingState.initChildLoader()
                 .resolutionScope(isExternal ? withoutFragment(absPointerString) : loadingState.id)
-                .schemaJson(new SchemaJsonWrapper(resultObject, schemaPath))
+                .schemaJson(new SchemaJsonWrapper(resultObject))
                 .rootSchemaJson(queryResult.getContainingDocument()).build();
         Schema referredSchema = childLoader.load().build();
         refBuilder.build().setReferredSchema(referredSchema);

@@ -1,6 +1,5 @@
 package org.everit.jsonschema.validator;
 
-import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.NumberSchema;
 
 import javax.json.JsonNumber;
@@ -24,9 +23,9 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
     public Optional<ValidationError> validate(final JsonValue subject) {
         ValueType schemaType = subject.getValueType();
         if (schemaType != ValueType.NUMBER && schema.requiresNumber()) {
-            return Optional.of(failure(ValueType.NUMBER, schemaType));
+            return Optional.of(failure(Number, subject));
         } else if (schemaType != ValueType.NUMBER && schema.requiresInteger()) {
-            return Optional.of(failure(Integer, JsonSchemaType.fromJsonType(schemaType)));
+            return Optional.of(failure(Integer, subject));
         } else if (schemaType == ValueType.NUMBER) {
 
             //One more check with integer to make sure the data isn't actually a double.

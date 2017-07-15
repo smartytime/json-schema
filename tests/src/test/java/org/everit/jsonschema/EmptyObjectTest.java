@@ -15,6 +15,7 @@
  */
 package org.everit.jsonschema;
 
+import org.everit.jsoniter.jsr353.JsoniterProvider;
 import org.everit.jsonschema.api.Schema;
 import org.everit.jsonschema.loader.SchemaFactory;
 import org.everit.jsonschema.utils.JsonUtils;
@@ -38,7 +39,7 @@ public class EmptyObjectTest {
         JsonObject jsonElement = JsonUtils.readObject(MetaSchemaTest.class
                 .getResourceAsStream("/org/everit/json/schema/json-schema-draft-04.json"));
 
-        Schema schema = SchemaFactory.schemaFactory().load(jsonElement);
+        Schema schema = SchemaFactory.schemaFactory(new JsoniterProvider()).load(jsonElement);
         SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
         Optional<ValidationError> errors = validator.validate(jsonSubject);
         assertFalse(errors.isPresent());

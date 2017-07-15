@@ -1,6 +1,7 @@
 package org.everit.jsonschema.validator;
 
 import org.everit.jsonschema.api.ArraySchema;
+import org.everit.jsonschema.api.JsonSchemaType;
 import org.everit.jsonschema.api.ObjectComparator;
 import org.everit.jsonschema.api.Schema;
 
@@ -28,7 +29,7 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         List<ValidationError> failures = new ArrayList<>();
         final ValueType valueType = subject.getValueType();
         if (valueType != ValueType.ARRAY && schema.isRequiresArray()) {
-            return Optional.of(failure(ValueType.ARRAY, valueType));
+            return Optional.of(failure(JsonSchemaType.Array, subject));
         } else if(valueType == ValueType.ARRAY) {
             JsonArray array = (JsonArray) subject;
             testItemCount(array).ifPresent(failures::add);
