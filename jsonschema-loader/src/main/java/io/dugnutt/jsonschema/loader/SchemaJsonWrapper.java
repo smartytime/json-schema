@@ -2,6 +2,7 @@ package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.JsonSchemaProperty;
 import io.dugnutt.jsonschema.six.MissingExpectedPropertyException;
+import io.dugnutt.jsonschema.six.UnexpectedValueException;
 
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
@@ -26,7 +27,7 @@ public class SchemaJsonWrapper implements JsonObject {
     }
 
     public Optional<JsonValue> find(JsonSchemaProperty prop) {
-        if (wrapped.containsKey(prop.key()) && !wrapped.isNull(prop.key())) {
+        if (wrapped.containsKey(prop.key())) {
             return Optional.of(wrapped.get(prop.key()));
         }
         return Optional.empty();
@@ -41,35 +42,55 @@ public class SchemaJsonWrapper implements JsonObject {
 
     public Optional<JsonNumber> findNumber(JsonSchemaProperty property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
-            return Optional.of(wrapped.getJsonNumber(property.key()));
+            try {
+                return Optional.of(wrapped.getJsonNumber(property.key()));
+            } catch (ClassCastException e) {
+                throw new UnexpectedValueException(wrapped.get(property.key()), ValueType.NUMBER);
+            }
         }
         return Optional.empty();
     }
 
     public Optional<Integer> findInt(JsonSchemaProperty property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
-            return Optional.of(wrapped.getJsonNumber(property.key()).intValue());
+            try {
+                return Optional.of(wrapped.getJsonNumber(property.key()).intValue());
+            } catch (ClassCastException e) {
+                throw new UnexpectedValueException(wrapped.get(property.key()), ValueType.NUMBER);
+            }
         }
         return Optional.empty();
     }
 
     public Optional<JsonArray> findArray(JsonSchemaProperty property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
-            return Optional.of(wrapped.getJsonArray(property.key()));
+            try {
+                return Optional.of(wrapped.getJsonArray(property.key()));
+            } catch (ClassCastException e) {
+                throw new UnexpectedValueException(wrapped.get(property.key()), ValueType.ARRAY);
+            }
         }
         return Optional.empty();
     }
 
     public Optional<JsonObject> findObject(JsonSchemaProperty property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
-            return Optional.of(wrapped.getJsonObject(property.key()));
+            try {
+                return Optional.of(wrapped.getJsonObject(property.key()));
+            } catch (ClassCastException e) {
+                throw new UnexpectedValueException(wrapped.get(property.key()), ValueType.NUMBER);
+            }
         }
         return Optional.empty();
     }
 
     public Optional<Boolean> findBoolean(JsonSchemaProperty property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
-            return Optional.of(wrapped.getBoolean(property.key()));
+            try {
+                return Optional.of(wrapped.getBoolean(property.key()));
+            } catch (ClassCastException e) {
+                throw new UnexpectedValueException(wrapped.get(property.key()), ValueType.NUMBER);
+            }
         }
         return Optional.empty();
     }

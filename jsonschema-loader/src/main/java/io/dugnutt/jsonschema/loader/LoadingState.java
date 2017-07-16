@@ -23,7 +23,7 @@ public class LoadingState {
 
     URI id = null;
 
-    final JsonPointerPath pointerToCurrentObj;
+    final JsonPointerPath currentJsonPath;
 
     final Map<String, ReferenceSchema.Builder> pointerSchemas;
 
@@ -45,7 +45,7 @@ public class LoadingState {
         this.rootSchemaJson = new SchemaJsonWrapper(rootSchemaJson);
         this.schemaJson = new SchemaJsonWrapper(schemaJson);
         this.id = id;
-        this.pointerToCurrentObj = pointerPath;
+        this.currentJsonPath = pointerPath;
         this.provider = provider;
     }
 
@@ -65,11 +65,11 @@ public class LoadingState {
                 .rootSchemaJson(rootSchemaJson)
                 .pointerSchemas(pointerSchemas)
                 .httpClient(httpClient)
-                .pointerToCurrentObj(pointerToCurrentObj);
+                .pointerToCurrentObj(currentJsonPath);
     }
 
     public LoadingState childFor(String key) {
-        return new LoadingState(httpClient, pointerSchemas, rootSchemaJson, schemaJson, id, pointerToCurrentObj
+        return new LoadingState(httpClient, pointerSchemas, rootSchemaJson, schemaJson, id, currentJsonPath
                 .child(key), provider);
     }
 
@@ -85,7 +85,7 @@ public class LoadingState {
     }
 
     String locationOfCurrentObj() {
-        return pointerToCurrentObj.toURIFragment();
+        return currentJsonPath.toURIFragment();
     }
 
     public SchemaException createSchemaException(String message) {

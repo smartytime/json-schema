@@ -16,16 +16,14 @@
 package io.dugnutt.jsonschema;
 
 import com.google.common.base.Preconditions;
-import io.dugnutt.jsonschema.validator.ValidationError;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import io.dugnutt.json.schema.IssueServlet;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
-import org.json.JSONException;
+import io.dugnutt.jsonschema.validator.ValidationError;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,6 +34,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.ResourcesScanner;
 
 import javax.json.JsonArray;
+import javax.json.JsonException;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
@@ -81,7 +80,7 @@ public class TestSuiteTest {
                 continue;
             }
             String fileName = path.substring(path.lastIndexOf('/') + 1);
-            JsonArray arr = loadTests(io.dugnutt.json.schema.TestSuiteTest.class.getResourceAsStream("/" + path));
+            JsonArray arr = loadTests(TestSuiteTest.class.getResourceAsStream("/" + path));
             for (JsonObject schemaTest : arr.getValuesAs(JsonObject.class)) {
                 JsonArray testInputs = schemaTest.getJsonArray("tests");
                 for (JsonObject input : testInputs.getValuesAs(JsonObject.class)) {
@@ -120,7 +119,7 @@ public class TestSuiteTest {
     public void test() {
         try {
             Schema schema = schemaFactory().load(schemaJson);
-            SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
+            SchemaValidator<?> validator = SchemaValidatorFactory.createValidatorForSchema(schema);
             Optional<ValidationError> validationErrors = validator.validate(input);
             boolean failed = validationErrors.isPresent();
             if (expectedToBeValid && failed) {
@@ -131,7 +130,7 @@ public class TestSuiteTest {
             }
         } catch (SchemaException e) {
             throw new AssertionError("schema loading failure for " + schemaDescription, e);
-        } catch (JSONException e) {
+        } catch (JsonException e) {
             throw new AssertionError("schema loading error for " + schemaDescription, e);
         }
     }

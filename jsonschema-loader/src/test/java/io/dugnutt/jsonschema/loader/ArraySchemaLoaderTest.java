@@ -2,10 +2,13 @@ package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.ArraySchema;
 import io.dugnutt.jsonschema.six.NullSchema;
+import io.dugnutt.jsonschema.six.UnexpectedValueException;
 import org.junit.Assert;
 import org.junit.Test;
-import io.dugnutt.jsonschema.six.SchemaException;
 
+import javax.json.JsonObject;
+
+import static io.dugnutt.jsonschema.loader.LoadingTestSupport.failWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,24 +25,24 @@ public class ArraySchemaLoaderTest extends BaseLoaderTest {
 
     @Test
     public void additionalItemSchema() {
-        assertTrue(getJsonObjectForKey("additionalItemSchema") instanceof ArraySchema);
+        assertTrue(getSchemaForKey("additionalItemSchema") instanceof ArraySchema);
     }
 
     @Test
     public void arrayByAdditionalItems() {
-        ArraySchema actual = (ArraySchema) getJsonObjectForKey("arrayByAdditionalItems");
+        ArraySchema actual = (ArraySchema) getSchemaForKey("arrayByAdditionalItems");
         assertFalse(actual.isRequiresArray());
     }
 
     @Test
     public void arrayByItems() {
-        ArraySchema actual = (ArraySchema) getJsonObjectForKey("arrayByItems");
+        ArraySchema actual = (ArraySchema) getSchemaForKey("arrayByItems");
         assertNotNull(actual);
     }
 
     @Test
     public void arraySchema() {
-        ArraySchema actual = (ArraySchema) getJsonObjectForKey("arraySchema");
+        ArraySchema actual = (ArraySchema) getSchemaForKey("arraySchema");
         assertNotNull(actual);
         assertEquals(2, actual.getMinItems().intValue());
         assertEquals(3, actual.getMaxItems().intValue());
@@ -47,18 +50,28 @@ public class ArraySchemaLoaderTest extends BaseLoaderTest {
         Assert.assertEquals(NullSchema.INSTANCE, actual.getAllItemSchema());
     }
 
-    @Test(expected = SchemaException.class)
+    @Test
     public void invalidAdditionalItems() {
-        getJsonObjectForKey("invalidAdditionalItems");
+        failWith(UnexpectedValueException.class)
+                .input(getJsonObjectForKey("invalidAdditionalItems"))
+                .expectedPointer("#")
+                .expect();
     }
 
-    @Test(expected = SchemaException.class)
+    @Test
     public void invalidArrayItemSchema() {
-        getJsonObjectForKey("invalidArrayItemSchema");
+        failWith(UnexpectedValueException.class)
+                .input(getJsonObjectForKey("invalidArrayItemSchema"))
+                .expectedPointer("#")
+                .expect();
     }
 
-    @Test(expected = SchemaException.class)
+    @Test
     public void invalidItemsArraySchema() {
-        getJsonObjectForKey("invalidItemsArraySchema");
+        final JsonObject schemaJson = getJsonObjectForKey("invalidItemsArraySchema");
+        failWith(UnexpectedValueException.class)
+                .input(schemaJson)
+                .expectedPointer("#")
+                .expect();
     }
 }

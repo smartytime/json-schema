@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.findValidator;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static org.junit.Assert.assertEquals;
 
 public class NullSchemaTest {
@@ -37,8 +37,8 @@ public class NullSchemaTest {
 
     @Test
     public void success() {
-        JsonObject obj = JsonUtils.readObject("{\"a\" : null}");
-        findValidator(NullSchema.INSTANCE).validate(obj.get("a"));
+        JsonObject obj = JsonUtils.readJsonObject("{\"a\" : null}");
+        createValidatorForSchema(NullSchema.INSTANCE).validate(obj.get("a"));
     }
 
     @Test

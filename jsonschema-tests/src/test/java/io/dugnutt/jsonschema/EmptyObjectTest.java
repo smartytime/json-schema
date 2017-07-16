@@ -16,8 +16,8 @@
 package io.dugnutt.jsonschema;
 
 import io.dugnutt.jsonschema.loader.SchemaFactory;
-import io.dugnutt.jsonschema.utils.JsonUtils;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import io.dugnutt.jsonschema.validator.ValidationError;
@@ -32,15 +32,14 @@ import static org.junit.Assert.assertFalse;
 public class EmptyObjectTest {
     @Test
     public void validateEmptyObject() {
-        JsonObject jsonSubject = JsonUtils.readObject("{\n" +
+        JsonObject jsonSubject = JsonUtils.readJsonObject("{\n" +
                 "  \"type\": \"object\",\n" +
                 "  \"properties\": {}\n" +
                 "}");
-        JsonObject schemaJson = JsonUtils.readObject(io.dugnutt.json.schema.MetaSchemaTest.class
-                .getResourceAsStream("/org/everit/json/schema/json-schema-draft-04.json"));
+        JsonObject schemaJson = JsonUtils.readResourceAsJsonObject("/org/everit/json/schema/json-schema-draft-04.json");
 
         Schema schema = SchemaFactory.schemaFactory(JsonProvider.provider()).load(schemaJson);
-        SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
+        SchemaValidator<?> validator = SchemaValidatorFactory.createValidatorForSchema(schema);
         Optional<ValidationError> errors = validator.validate(jsonSubject);
         assertFalse(errors.isPresent());
     }

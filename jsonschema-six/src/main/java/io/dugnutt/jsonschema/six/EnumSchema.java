@@ -88,5 +88,6 @@ public class EnumSchema extends Schema {
             this.possibleValues = possibleValues;
             return this;
         }
+
     }
 }

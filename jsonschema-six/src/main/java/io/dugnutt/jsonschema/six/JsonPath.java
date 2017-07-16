@@ -56,7 +56,7 @@ public class JsonPath {
     }
 
     @Value
-    private static class PathPart {
+    static class PathPart {
         private final String name;
         private final Integer index;
 

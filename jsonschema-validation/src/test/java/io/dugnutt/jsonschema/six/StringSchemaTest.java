@@ -15,103 +15,41 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.validator.SchemaValidator;
+import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
+import lombok.experimental.var;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import io.dugnutt.jsonschema.loader.SchemaLoader;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.json.JsonObject;
 import java.util.Optional;
 
-import static org.junit.Assert.assertTrue;
+import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.six.ResourceLoader.DEFAULT;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
+import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
+import static javax.json.spi.JsonProvider.provider;
+import static org.junit.Assert.assertEquals;
 
 public class StringSchemaTest {
 
-    @Test
-    public void stringSchemaWithFormat() {
-        StringSchema subject = (StringSchema) getSchemaForKey("stringSchemaWithFormat");
-        ValidationTestSupport.expectFailure(subject, "asd");
-    }
+    // @Test
+    // public void stringSchemaWithFormat() {
+    //     StringSchema subject = (StringSchema) getSchemaForKey("stringSchemaWithFormat");
+    //     ValidationTestSupport.expectFailure(subject, "asd");
+    // }
+    //
 
-
-    @Test
-    public void formatFailure() {
-        StringSchema subject = ValidationTestSupport.buildWithLocation(StringSchema.builder()
-                .formatValidator(subj -> Optional.of("violation")));
-        ValidationTestSupport.failureOf(subject)
-                .expectedKeyword("format")
-                .input("string")
-                .expect();
-    }
-
-    @Test
-    public void formatSuccess() {
-        StringSchema subject = StringSchema.builder().formatValidator(subj -> Optional.empty()).build();
-        subject.validate("string");
-    }
-
-    @Test
-    public void maxLength() {
-        StringSchema subject = ValidationTestSupport.buildWithLocation(StringSchema.builder().maxLength(3));
-        ValidationTestSupport.failureOf(subject)
-                .expectedKeyword("maxLength")
-                .input("foobar")
-                .expect();
-    }
-
-    @Test
-    public void minLength() {
-        StringSchema subject = ValidationTestSupport.buildWithLocation(StringSchema.builder().minLength(2));
-        ValidationTestSupport.failureOf(subject)
-                .expectedKeyword("minLength")
-                .input("a")
-                .expect();
-    }
-
-    @Test
-    public void multipleViolations() {
-        try {
-            StringSchema.builder().minLength(3).maxLength(1).pattern("^b.*").build().validate("ab");
-            Assert.fail();
-        } catch (ValidationException e) {
-            Assert.assertEquals(3, e.getCausingExceptions().size());
-        }
-    }
-
-    @Test
-    public void notRequiresString() {
-        StringSchema.builder().requiresString(false).build().validate(2);
-    }
-
-    @Test
-    public void patternFailure() {
-        StringSchema subject = ValidationTestSupport.buildWithLocation(StringSchema.builder().pattern("^a*$"));
-        ValidationTestSupport.failureOf(subject).expectedKeyword("pattern").input("abc").expect();
-    }
-
-    @Test
-    public void patternSuccess() {
-        StringSchema.builder().pattern("^a*$").build().validate("aaaa");
-    }
-
-    @Test
-    public void success() {
-        StringSchema.builder().build().validate("foo");
-    }
-
-    @Test
-    public void typeFailure() {
-        ValidationTestSupport.failureOf(StringSchema.builder())
-                .expectedKeyword("type")
-                .input(null)
-                .expect();
-    }
-
-    @Test(expected = ValidationException.class)
-    public void issue38Pattern() {
-        StringSchema.builder().requiresString(true).pattern("\\+?\\d+").build().validate("aaa");
-    }
+    private final SchemaValidatorFactory validatorFactory = SchemaValidatorFactory.builder()
+            .customFormatValidator("test-format-failure", sub -> Optional.of("violation"))
+            .customFormatValidator("test-format-success", sub -> Optional.empty())
+            .build();
 
     @Test
     public void equalsVerifier() {
@@ -123,17 +61,107 @@ public class StringSchemaTest {
     }
 
     @Test
-    public void toStringTest() {
-        JSONObject rawSchemaJson = ResourceLoader.DEFAULT.readObj("tostring/stringschema.json");
-        String actual = SchemaLoader.load(rawSchemaJson).toString();
-        assertTrue(ObjectComparator.deepEquals(rawSchemaJson, new JSONObject(actual)));
+    public void formatFailure() {
+        var
+                schemaValidator = validatorFactory.createValidator(
+                buildWithLocation(StringSchema.builder().format("test-format-failure"))
+        );
+        failureOf(schemaValidator)
+                .expectedKeyword("format")
+                .input("string")
+                .expect();
+    }
+
+    @Test
+    public void formatSuccess() {
+        var schemaValidator = validatorFactory.createValidator(StringSchema.builder().format("test-format-success").build());
+        expectSuccess(() -> schemaValidator.validate(jsonStringValue("string")));
+        ;
+    }
+
+    public void issue38Pattern() {
+        final StringSchema schema = StringSchema.builder().requiresString(true).pattern("\\+?\\d+").build();
+        final SchemaValidator<StringSchema> validator = validatorFactory.createValidator(schema);
+        verifyFailure(() -> validator.validate(jsonStringValue("aaa")));
+        ;
+    }
+
+    @Test
+    public void maxLength() {
+        StringSchema subject = buildWithLocation(StringSchema.builder().maxLength(3));
+        failureOf(subject)
+                .expectedKeyword("maxLength")
+                .input("foobar")
+                .expect();
+    }
+
+    @Test
+    public void minLength() {
+        StringSchema subject = buildWithLocation(StringSchema.builder().minLength(2));
+        failureOf(subject)
+                .expectedKeyword("minLength")
+                .input("a")
+                .expect();
+    }
+
+    @Test
+    public void multipleViolations() {
+        final StringSchema schema = StringSchema.builder().minLength(3).maxLength(1).pattern("^b.*").build();
+        failureOf(schema)
+                .input("ab")
+                .expected(e -> {
+                    Assert.assertEquals(3, e.getCauses().size());
+                })
+                .expect();
+    }
+
+    @Test
+    public void notRequiresString() {
+        final StringSchema schema = StringSchema.builder().requiresString(false).build();
+        expectSuccess(schema, 2);
+    }
+
+    @Test
+    public void patternFailure() {
+        StringSchema subject = buildWithLocation(StringSchema.builder().pattern("^a*$"));
+        failureOf(subject).expectedKeyword("pattern").input("abc").expect();
+    }
+
+    @Test
+    public void patternSuccess() {
+
+        final StringSchema schema = StringSchema.builder().pattern("^a*$").build();
+        expectSuccess(schema, "aaaa");
+    }
+
+    @Test
+    public void success() {
+
+        expectSuccess(StringSchema.builder().build(), "foo");
     }
 
     @Test
     public void toStringNoExplicitType() {
-        JSONObject rawSchemaJson = ResourceLoader.DEFAULT.readObj("tostring/stringschema.json");
-        rawSchemaJson.remove("type");
-        String actual = SchemaLoader.load(rawSchemaJson).toString();
-        assertTrue(ObjectComparator.deepEquals(rawSchemaJson, new JSONObject(actual)));
+        final JsonObject rawSchemaJson = provider().createObjectBuilder(DEFAULT.readObj("tostring/stringschema.json"))
+                .remove("type")
+                .build();
+        final Schema schema = schemaFactory().load(rawSchemaJson);
+        String actual = schemaFactory().load(schema.toString()).toString();
+        assertEquals(rawSchemaJson, readJsonObject(actual));
+    }
+
+    @Test
+    public void toStringTest() {
+        JsonObject rawSchemaJson = DEFAULT.readObj("tostring/stringschema.json");
+        String actual = schemaFactory().load(rawSchemaJson).toString();
+        assertEquals(rawSchemaJson, readJsonObject(actual));
+    }
+
+    @Test
+    public void typeFailure() {
+        failureOf(StringSchema.builder())
+                .expectedKeyword("type")
+                .nullInput()
+                .expect();
     }
 }

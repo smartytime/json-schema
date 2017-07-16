@@ -250,7 +250,7 @@ public class SchemaLoaderTest extends BaseLoaderTest {
 
     @Test
     public void schemaPointerIsPopulated() {
-        JsonObject rawSchema = JsonUtils.readResource("objecttestschemas.json", JsonObject.class)
+        JsonObject rawSchema = JsonUtils.readResourceAsJson("/tests/objecttestschemas.json", JsonObject.class)
                 .getJsonObject("objectWithSchemaDep");
         ObjectSchema schema = (ObjectSchema) schemaFactory().load(rawSchema);
 
@@ -285,7 +285,7 @@ public class SchemaLoaderTest extends BaseLoaderTest {
         Assert.assertFalse(actual.isPermitsAdditionalItems());
         Assert.assertNull(actual.getAllItemSchema());
         assertEquals(2, actual.getItemSchemas().size());
-        assertEquals(BooleanSchema.INSTANCE, actual.getItemSchemas().get(0));
+        assertEquals(BooleanSchema.BOOLEAN_SCHEMA, actual.getItemSchemas().get(0));
         assertEquals(NullSchema.INSTANCE, actual.getItemSchemas().get(1));
     }
 

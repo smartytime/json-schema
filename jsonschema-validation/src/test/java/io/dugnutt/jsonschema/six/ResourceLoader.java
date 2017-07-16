@@ -1,12 +1,12 @@
 package io.dugnutt.jsonschema.six;
 
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import java.io.InputStream;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static javax.json.spi.JsonProvider.provider;
 
 public class ResourceLoader {
 
@@ -18,9 +18,14 @@ public class ResourceLoader {
         this.rootPath = requireNonNull(rootPath, "rootPath cannot be null");
     }
 
-    public JSONObject readObj(String relPath) {
-        InputStream stream = getStream(relPath);
-        return new JSONObject(new JSONTokener(stream));
+    public JsonObject readObj(String relPath) {
+        return provider().createReader(getStream(relPath)).readObject();
+    }
+
+    public JsonObjectBuilder readObjectWithBuilder(String relPath) {
+        return provider().createObjectBuilder(
+                provider().createReader(getStream(relPath)).readObject()
+        );
     }
 
     public InputStream getStream(String relPath) {

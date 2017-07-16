@@ -15,17 +15,18 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.*;
+
 public class BooleanSchemaTest {
 
     @Test
     public void failure() {
-        ValidationTestSupport.failureOf(BooleanSchema.builder())
+        failureOf(BooleanSchema.builder())
                 .expectedKeyword("type")
                 .input("false")
                 .expect();
@@ -33,12 +34,12 @@ public class BooleanSchemaTest {
 
     @Test
     public void success() {
-        SchemaValidatorFactory.findValidator(BooleanSchema.INSTANCE).validate(true);
+        expectSuccess(BooleanSchema.BOOLEAN_SCHEMA, true);
     }
 
     @Test
     public void toStringTest() {
-        Assert.assertEquals("{\"type\":\"boolean\"}", BooleanSchema.INSTANCE.toString());
+        Assert.assertEquals("{\"type\":\"boolean\"}", BooleanSchema.BOOLEAN_SCHEMA.toString());
     }
 
     public void equalsVerifier() {

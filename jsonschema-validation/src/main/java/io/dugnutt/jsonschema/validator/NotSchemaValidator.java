@@ -15,7 +15,7 @@ public class NotSchemaValidator extends SchemaValidator<NotSchema> {
     @Override
     public Optional<ValidationError> validate(JsonValue toBeValidated) {
         Schema mustNotMatch = schema.getMustNotMatch();
-        Optional<ValidationError> validated = SchemaValidatorFactory.findValidator(mustNotMatch)
+        Optional<ValidationError> validated = SchemaValidatorFactory.createValidatorForSchema(mustNotMatch)
                 .validate(toBeValidated);
         if (!validated.isPresent()) {
             return Optional.of(failure("subject must not be valid against schema " + mustNotMatch, "not"));

@@ -8,7 +8,7 @@
   "patternProperties": {
     "patternProperties": {
       "a*": {
-        "type": "integer"
+        "type": "number"
       },
       "aaa*": {
         "maximum": 20

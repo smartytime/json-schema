@@ -24,7 +24,7 @@ public class JsonObjectTest extends BaseLoaderTest {
 
     public JsonObjectTest() {
         super("objecttestcases.json");
-        testSchemas = JsonUtils.readResource("testschemas.json", JsonObject.class);
+        testSchemas = JsonUtils.readResourceAsJson("/tests/testschemas.json", JsonObject.class);
     }
 
     @SuppressWarnings("unchecked")
@@ -35,7 +35,7 @@ public class JsonObjectTest extends BaseLoaderTest {
     private Map<String, Object> storage() {
         Map<String, Object> rval = new HashMap<>();
         rval.put("a", true);
-        rval.put("b", JsonUtils.blankObject());
+        rval.put("b", JsonUtils.blankJsonObject());
         return rval;
     }
 

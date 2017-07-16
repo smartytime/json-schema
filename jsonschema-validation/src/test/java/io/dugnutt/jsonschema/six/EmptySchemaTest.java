@@ -15,60 +15,18 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.json.JsonObject;
+
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.EmptySchemaValidator.EMPTY_SCHEMA_VALIDATOR;
+
 public class EmptySchemaTest {
-
-    @Test
-    public void testValidate() {
-        EmptySchema.INSTANCE.validate("something");
-    }
-
-    @Test
-    public void testBuilder() {
-        Assert.assertEquals(EmptySchema.builder().build(), EmptySchema.builder().build());
-    }
-
-    @Test
-    public void testToString() {
-        Assert.assertEquals("{}", EmptySchema.INSTANCE.toString());
-    }
-
-    private JSONObject json(final String title, final String description, final String id) {
-        return new JSONObject(EmptySchema.builder().title(title).description(description).id(id)
-                .build().toString());
-    }
-
-    @Test
-    public void testOnlySchemaDescription() {
-        JSONObject actual = json(null, "descr", null);
-        Assert.assertEquals(1, JSONObject.getNames(actual).length);
-        Assert.assertEquals("descr", actual.get("description"));
-    }
-
-    @Test
-    public void testOnlyTitle() {
-        JSONObject actual = json("my title", null, null);
-        Assert.assertEquals(1, JSONObject.getNames(actual).length);
-        Assert.assertEquals("my title", actual.get("title"));
-    }
-
-    @Test
-    public void testOnlyId() {
-        JSONObject actual = json(null, null, "my/id");
-        Assert.assertEquals(1, JSONObject.getNames(actual).length);
-        Assert.assertEquals("my/id", actual.get("id"));
-    }
-
-    @Test
-    public void testAllGenericProps() {
-        JSONObject actual = json("my title", "my description", "my/id");
-        Assert.assertEquals(3, JSONObject.getNames(actual).length);
-    }
 
     @Test
     public void equalsVerifier() {
@@ -77,5 +35,52 @@ public class EmptySchemaTest {
                 .withIgnoredFields("schemaLocation")
                 .suppress(Warning.STRICT_INHERITANCE)
                 .verify();
+    }
+
+    @Test
+    public void testAllGenericProps() {
+        JsonObject actual = json("my title", "my description", "my/id");
+        Assert.assertEquals(3, actual.keySet().size());
+    }
+
+    @Test
+    public void testBuilder() {
+        Assert.assertEquals(EmptySchema.builder().build(), EmptySchema.builder().build());
+    }
+
+    @Test
+    public void testOnlyId() {
+        JsonObject actual = json(null, null, "my/id");
+        Assert.assertEquals(1, actual.keySet().size());
+        Assert.assertEquals("my/id", actual.get("id"));
+    }
+
+    @Test
+    public void testOnlySchemaDescription() {
+        JsonObject actual = json(null, "descr", null);
+        Assert.assertEquals(1, actual.keySet().size());
+        Assert.assertEquals("descr", actual.get("description"));
+    }
+
+    @Test
+    public void testOnlyTitle() {
+        JsonObject actual = json("my title", null, null);
+        Assert.assertEquals(1, actual.keySet().size());
+        Assert.assertEquals("my title", actual.get("title"));
+    }
+
+    @Test
+    public void testToString() {
+        Assert.assertEquals("{}", EmptySchema.EMPTY_SCHEMA.toString());
+    }
+
+    @Test
+    public void testValidate() {
+        expectSuccess(() -> EMPTY_SCHEMA_VALIDATOR.validate(JsonUtils.jsonStringValue("something")));
+    }
+
+    private JsonObject json(final String title, final String description, final String id) {
+        return JsonUtils.readJsonObject(EmptySchema.builder().title(title).description(description).id(id)
+                .build().toString());
     }
 }

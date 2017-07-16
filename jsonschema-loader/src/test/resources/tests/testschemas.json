@@ -2,7 +2,7 @@
   "patternProperties": {
     "patternProperties": {
       "a*": {
-        "type": "integer"
+        "type": "number"
       },
       "aaa*": {
         "maximum": 20
@@ -66,21 +66,21 @@
   "nullSchema": {
     "type": "null"
   },
-  "integerSchema": {
-    "type": "integer",
+  "numberSchema": {
+    "type": "number",
     "minimum": 10,
     "maximum": 20,
     "exclusiveMinimum": true,
     "exclusiveMaximum": true,
     "multipleOf": 5
   },
-  "invalidIntegerSchema": {
-    "type": "integer",
+  "invalidNumberSchema": {
+    "type": "number",
     "minimum": "2",
     "maximum": 3
   },
   "invalidExclusiveMinimum": {
-    "type": "integer",
+    "type": "number",
     "exclusiveMinimum": "false"
   },
   "objectWithSchemaRectangleDep": {
@@ -230,7 +230,7 @@
   "jsonPointerInArray": {
     "items": [
       {
-        "type": "integer"
+        "type": "number"
       },
       {
         "$ref": "#/items/0"

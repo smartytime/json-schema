@@ -20,7 +20,7 @@ package io.dugnutt.jsonschema.six;
  */
 public class BooleanSchema extends Schema {
 
-    public static BooleanSchema INSTANCE = builder().build();
+    public static BooleanSchema BOOLEAN_SCHEMA = builder().build();
 
     BooleanSchema(final Builder builder) {
         super(builder);
@@ -31,8 +31,13 @@ public class BooleanSchema extends Schema {
     }
 
     @Override
-    public int hashCode() {
-        return super.hashCode();
+    protected boolean canEqual(final Object other) {
+        return other instanceof BooleanSchema;
+    }
+
+    @Override
+    protected void propertiesToJson(JsonSchemaGenerator writer) {
+        writer.writeType(JsonSchemaType.BOOLEAN, true);
     }
 
     @Override
@@ -49,13 +54,8 @@ public class BooleanSchema extends Schema {
     }
 
     @Override
-    protected boolean canEqual(final Object other) {
-        return other instanceof BooleanSchema;
-    }
-
-    @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
-        writer.writeType(JsonSchemaType.BOOLEAN, true);
+    public int hashCode() {
+        return super.hashCode();
     }
 
     /**

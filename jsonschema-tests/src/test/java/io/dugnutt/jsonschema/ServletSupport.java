@@ -56,7 +56,7 @@ public class ServletSupport {
         server = new Server(1234);
         ServletHandler handler = new ServletHandler();
         server.setHandler(handler);
-        handler.addServletWithMapping(new ServletHolder(new io.dugnutt.json.schema.IssueServlet(documentRoot)), "/*");
+        handler.addServletWithMapping(new ServletHolder(new IssueServlet(documentRoot)), "/*");
         try {
             server.start();
         } catch (Exception e) {

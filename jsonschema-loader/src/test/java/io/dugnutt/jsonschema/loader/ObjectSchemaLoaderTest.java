@@ -32,7 +32,7 @@ public class ObjectSchemaLoaderTest extends BaseLoaderTest {
         Assert.assertNotNull(actual);
         Map<String, Schema> propertySchemas = actual.getPropertySchemas();
         assertEquals(2, propertySchemas.size());
-        assertEquals(BooleanSchema.INSTANCE, propertySchemas.get("boolProp"));
+        assertEquals(BooleanSchema.BOOLEAN_SCHEMA, propertySchemas.get("boolProp"));
         Assert.assertFalse(actual.permitsAdditionalProperties());
         assertEquals(2, actual.getRequiredProperties().size());
         assertEquals(2, actual.getMinProperties().intValue());
@@ -47,7 +47,7 @@ public class ObjectSchemaLoaderTest extends BaseLoaderTest {
     @Test
     public void objectWithAdditionalPropSchema() {
         ObjectSchema actual = (ObjectSchema) getSchemaForKey("objectWithAdditionalPropSchema");
-        assertEquals(BooleanSchema.INSTANCE, actual.getSchemaOfAdditionalProperties());
+        assertEquals(BooleanSchema.BOOLEAN_SCHEMA, actual.getSchemaOfAdditionalProperties());
     }
 
     @Test

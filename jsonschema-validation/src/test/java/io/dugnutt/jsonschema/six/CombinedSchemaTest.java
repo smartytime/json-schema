@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifySuccess;
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.findValidator;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 
@@ -44,7 +44,7 @@ public class CombinedSchemaTest {
 
     @Test
     public void allCriterionSuccess() {
-        verifySuccess(() -> CombinedSchemaValidator.ALL_CRITERION.validate(10, 10));
+        expectSuccess(() -> CombinedSchemaValidator.ALL_CRITERION.validate(10, 10));
     }
 
     public void anyCriterionFailure() {
@@ -53,7 +53,7 @@ public class CombinedSchemaTest {
 
     @Test
     public void anyCriterionSuccess() {
-        verifySuccess(() -> CombinedSchemaValidator.ANY_CRITERION.validate(10, 1));
+        expectSuccess(() -> CombinedSchemaValidator.ANY_CRITERION.validate(10, 1));
     }
 
     public void anyOfInvalid() {
@@ -62,7 +62,7 @@ public class CombinedSchemaTest {
                     StringSchema.builder().maxLength(2).build(),
                     StringSchema.builder().minLength(4).build()))
                     .build();
-            return findValidator(combinedSchema)
+            return createValidatorForSchema(combinedSchema)
                     .validate(JsonUtils.readValue("\"foo\""));
         });
     }
@@ -78,9 +78,9 @@ public class CombinedSchemaTest {
 
     @Test
     public void factories() {
-        CombinedSchema.allOf(asList(BooleanSchema.INSTANCE));
-        CombinedSchema.anyOf(asList(BooleanSchema.INSTANCE));
-        CombinedSchema.oneOf(asList(BooleanSchema.INSTANCE));
+        CombinedSchema.allOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
+        CombinedSchema.anyOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
+        CombinedSchema.oneOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
     }
 
     public void oneCriterionFailure() {
@@ -89,13 +89,13 @@ public class CombinedSchemaTest {
 
     @Test
     public void oneCriterionSuccess() {
-        verifySuccess(() -> CombinedSchemaValidator.ONE_CRITERION.validate(10, 1));
+        expectSuccess(() -> CombinedSchemaValidator.ONE_CRITERION.validate(10, 1));
     }
 
     @Test
     public void reportCauses() {
         CombinedSchema combinedSchema = CombinedSchema.allOf(SUBSCHEMAS).build();
-        Optional<ValidationError> error = findValidator((CombinedSchema) combinedSchema).validate(JsonUtils.readValue("24"));
+        Optional<ValidationError> error = createValidatorForSchema((CombinedSchema) combinedSchema).validate(JsonUtils.readValue("24"));
         assertTrue("Has an error", error.isPresent());
         Assert.assertEquals(1, error.get().getCauses().size());
     }

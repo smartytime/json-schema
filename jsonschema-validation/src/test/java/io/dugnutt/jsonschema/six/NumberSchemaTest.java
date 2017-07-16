@@ -15,17 +15,44 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.loader.SchemaLoader;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.json.JSONObject;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+
+import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonNumberValue;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
+import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
+import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsJson;
+import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsObjectBuilder;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
+import static org.junit.Assert.assertEquals;
 
 public class NumberSchemaTest {
 
     private final ResourceLoader loader = new ResourceLoader("/org/everit/jsonvalidator/tostring/");
+
+    @Test
+    public void equalsVerifier() {
+        EqualsVerifier.forClass(NumberSchema.class)
+                .withRedefinedSuperclass()
+                .withIgnoredFields("schemaLocation")
+                .suppress(Warning.STRICT_INHERITANCE)
+                .verify();
+    }
+
+    @Test
+    public void exclusiveMaximum() {
+        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().maximum(20.0).exclusiveMaximum(true));
+        ValidationTestSupport.failureOf(subject)
+                .expectedKeyword("exclusiveMaximum")
+                .input(20)
+                .expect();
+    }
 
     @Test
     public void exclusiveMinimum() {
@@ -37,20 +64,17 @@ public class NumberSchemaTest {
     }
 
     @Test
+    public void longNumber() {
+        final NumberSchema schema = NumberSchema.builder().requiresNumber(true).build();
+        createValidatorForSchema(schema).validate(jsonNumberValue(4278190207L));
+    }
+
+    @Test
     public void maximum() {
         NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().maximum(20.0));
         ValidationTestSupport.failureOf(subject)
                 .expectedKeyword("maximum")
                 .input(21)
-                .expect();
-    }
-
-    @Test
-    public void exclusiveMaximum() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().maximum(20.0).exclusiveMaximum(true));
-        ValidationTestSupport.failureOf(subject)
-                .expectedKeyword("exclusiveMaximum")
-                .input(20)
                 .expect();
     }
 
@@ -74,79 +98,73 @@ public class NumberSchemaTest {
 
     @Test
     public void notRequiresNumber() {
-        NumberSchema.builder().requiresNumber(false).build().validate("foo");
-    }
-
-    @Test
-    public void requiresIntegerFailure() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().requiresInteger(true));
-        ValidationTestSupport.expectFailure(subject, 10.2f);
+        final NumberSchema numberSchema = NumberSchema.builder()
+                .requiresNumber(false)
+                .build();
+        expectSuccess(() -> createValidatorForSchema(numberSchema).validate(jsonStringValue("foo")));
+        ;
     }
 
     @Test
     public void requiresIntegerSuccess() {
-        NumberSchema.builder().requiresInteger(true).build().validate(10);
+        final NumberSchema numberSchema = NumberSchema.builder().requiresNumber(true).build();
+        expectSuccess(() -> createValidatorForSchema(numberSchema).validate(jsonNumberValue(10)));
+        ;
+    }
+
+    @Test
+    public void requiresNumberFailure() {
+        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().requiresNumber(true));
+        ValidationTestSupport.expectFailure(subject, 10.2f);
     }
 
     @Test
     public void smallMultipleOf() {
-        NumberSchema.builder()
+        final NumberSchema schema = NumberSchema.builder()
                 .multipleOf(0.0001)
-                .build().validate(0.0075);
+                .build();
+        createValidatorForSchema(schema).validate(jsonNumberValue(0.0075));
     }
 
     @Test
     public void success() {
-        NumberSchema.builder()
+        final NumberSchema schema = NumberSchema.builder()
                 .minimum(10.0)
                 .maximum(11.0)
                 .exclusiveMaximum(true)
                 .multipleOf(10)
-                .build().validate(10.0);
+                .build();
+        createValidatorForSchema(schema).validate(jsonNumberValue(10.0));
+    }
+
+    @Test
+    public void toStringNoExplicitType() {
+        JsonObject rawSchemaJson = readResourceAsObjectBuilder("numberschema.json")
+                .remove("type").build();
+        String actual = schemaFactory().load(rawSchemaJson).toString();
+        assertEquals(rawSchemaJson, readJsonObject(actual));
+    }
+
+    @Test
+    public void toStringReqInteger() {
+        JsonObject rawSchemaJson = readResourceAsObjectBuilder("numberschema.json")
+                .add("type", "number").build();
+        String actual = schemaFactory().load(rawSchemaJson).toString();
+        assertEquals(rawSchemaJson, readJsonObject(actual));
+    }
+
+    @Test
+    public void toStringTest() {
+        JsonObject rawSchemaJson = readResourceAsJson("numberschema.json", JsonObject.class);
+        String actual = schemaFactory().load(rawSchemaJson).toString();
+        assertEquals(rawSchemaJson, readJsonObject(actual));
     }
 
     @Test
     public void typeFailure() {
         ValidationTestSupport.failureOf(NumberSchema.builder())
                 .expectedKeyword("type")
-                .input(null)
+                .input(JsonValue.NULL)
                 .expect();
-    }
-
-    @Test
-    public void longNumber() {
-        NumberSchema.builder().requiresInteger(true).build().validate(Long.valueOf(4278190207L));
-    }
-
-    @Test
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(NumberSchema.class)
-                .withRedefinedSuperclass()
-                .withIgnoredFields("schemaLocation")
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
-    }
-
-    @Test
-    public void toStringTest() {
-        JSONObject rawSchemaJson = loader.readObj("numberschema.json");
-        String actual = SchemaLoader.load(rawSchemaJson).toString();
-        assertTrue(ObjectComparator.deepEquals(rawSchemaJson, new JSONObject(actual)));
-    }
-
-    @Test
-    public void toStringNoExplicitType() {
-        JSONObject rawSchemaJson = loader.readObj("numberschema.json");
-        rawSchemaJson.remove("type");
-        String actual = SchemaLoader.load(rawSchemaJson).toString();
-        assertTrue(ObjectComparator.deepEquals(rawSchemaJson, new JSONObject(actual)));
-    }
-
-    @Test
-    public void toStringReqInteger() {
-        JSONObject rawSchemaJson = loader.readObj("numberschema.json");
-        rawSchemaJson.put("type", "integer");
-        String actual = SchemaLoader.load(rawSchemaJson).toString();
-        assertTrue(ObjectComparator.deepEquals(rawSchemaJson, new JSONObject(actual)));
     }
 }

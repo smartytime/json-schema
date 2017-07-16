@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public class SchemaValidation {
     public static Optional<ValidationError> validate(JsonValue input, Schema schema) {
-        final SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
+        final SchemaValidator<?> validator = SchemaValidatorFactory.createValidatorForSchema(schema);
         return validator.validate(input);
     }
 }

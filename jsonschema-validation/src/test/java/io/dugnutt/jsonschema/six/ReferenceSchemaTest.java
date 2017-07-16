@@ -15,30 +15,23 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.loader.SchemaLoader;
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import io.dugnutt.jsonschema.ReferenceSchema.Builder;
-import io.dugnutt.jsonschema.loader.SchemaLoader;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import javax.json.JsonObject;
+
+import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static org.junit.Assert.assertEquals;
 
 public class ReferenceSchemaTest {
 
     @Test
     public void constructorMustRunOnlyOnce() {
-        Builder builder = ReferenceSchema.builder();
+        ReferenceSchema.Builder builder = ReferenceSchema.builder();
         Assert.assertSame(builder.build(), builder.build());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setterShouldWorkOnlyOnce() {
-        ReferenceSchema subject = ReferenceSchema.builder().build();
-        subject.setReferredSchema(BooleanSchema.INSTANCE);
-        subject.setReferredSchema(BooleanSchema.INSTANCE);
     }
 
     @Test
@@ -52,13 +45,19 @@ public class ReferenceSchemaTest {
                 .verify();
     }
 
-    @Test
-    public void toStringTest() {
-        JSONObject rawSchemaJson = ResourceLoader.DEFAULT.readObj("tostring/ref.json");
-        String actual = SchemaLoader.load(rawSchemaJson).toString();
-        System.out.println(actual);
-        assertTrue(ObjectComparator.deepEquals(rawSchemaJson.query("/properties"),
-                new JSONObject(actual).query("/properties")));
+    @Test(expected = IllegalStateException.class)
+    public void setterShouldWorkOnlyOnce() {
+        ReferenceSchema subject = ReferenceSchema.builder().build();
+        subject.setReferredSchema(BooleanSchema.BOOLEAN_SCHEMA);
+        subject.setReferredSchema(BooleanSchema.BOOLEAN_SCHEMA);
     }
 
+    @Test
+    public void toStringTest() {
+        JsonObject rawSchemaJson = JsonUtils.readResourceAsJson("tostring/ref.json", JsonObject.class);
+        String actual = schemaFactory().load(rawSchemaJson).toString();
+        System.out.println(actual);
+        assertEquals(rawSchemaJson.get("/properties"),
+                JsonUtils.readJsonObject(actual).getJsonObject("properties"));
+    }
 }

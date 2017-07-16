@@ -102,7 +102,7 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
             String copyOfI = String.valueOf(i); // i is not effectively final so we copy it
 
             Schema schema = schemaForIndex.apply(i);
-            SchemaValidatorFactory.findValidator(schema)
+            SchemaValidatorFactory.createValidatorForSchema(schema)
                     .validate(items.get(i))
                     .map(exc -> exc.prepend(copyOfI))
                     .ifPresent(failureCollector);

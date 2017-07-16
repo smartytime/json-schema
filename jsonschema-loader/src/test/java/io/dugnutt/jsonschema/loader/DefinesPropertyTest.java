@@ -89,8 +89,8 @@ public class DefinesPropertyTest extends BaseLoaderTest {
     @Test
     public void definesPropertyIfSubschemaMatchCountIsAcceptedByCriterion() {
         CombinedSchema subject = CombinedSchema.builder()
-                .subschema(ObjectSchema.builder().addPropertySchema("a", BooleanSchema.INSTANCE).build())
-                .subschema(ObjectSchema.builder().addPropertySchema("b", BooleanSchema.INSTANCE).build())
+                .subschema(ObjectSchema.builder().addPropertySchema("a", BooleanSchema.BOOLEAN_SCHEMA).build())
+                .subschema(ObjectSchema.builder().addPropertySchema("b", BooleanSchema.BOOLEAN_SCHEMA).build())
                 .combinedSchemaType(CombinedSchemaType.AnyOf)
                 .build();
         assertFalse(subject.definesProperty("a"));
@@ -99,7 +99,7 @@ public class DefinesPropertyTest extends BaseLoaderTest {
     @Test
     public void testOfTest() {
         ObjectSchema actual = (ObjectSchema) getSchemaForKey("patternPropsAndSchemaDeps");
-        JsonObject input = JsonUtils.readResource("objecttestcases.json", JsonObject.class)
+        JsonObject input = JsonUtils.readResourceAsJson("/tests/objecttestcases.json", JsonObject.class)
                 .getJsonObject("validOfPatternPropsAndSchemaDeps");
         //todo:ericm Move to validator project
         // actual.validate(input);

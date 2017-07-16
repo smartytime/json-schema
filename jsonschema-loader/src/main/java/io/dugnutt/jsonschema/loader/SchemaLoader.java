@@ -38,6 +38,9 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Objects.requireNonNull;
 import static javax.json.JsonValue.ValueType.ARRAY;
+import static javax.json.JsonValue.ValueType.NULL;
+import static javax.json.JsonValue.ValueType.NUMBER;
+import static javax.json.JsonValue.ValueType.OBJECT;
 import static javax.json.JsonValue.ValueType.STRING;
 
 /**
@@ -99,7 +102,7 @@ class SchemaLoader {
         loadingState.schemaJson.findString(JsonSchemaProperty.ID).map(JsonString::getString).ifPresent(builder::id);
         loadingState.schemaJson.findString(JsonSchemaProperty.TITLE).map(JsonString::getString).ifPresent(builder::title);
         loadingState.schemaJson.findString(JsonSchemaProperty.DESCRIPTION).map(JsonString::getString).ifPresent(builder::description);
-        builder.schemaLocation(loadingState.pointerToCurrentObj.toURIFragment());
+        builder.schemaLocation(loadingState.currentJsonPath.toURIFragment());
         return builder;
     }
 
@@ -112,7 +115,11 @@ class SchemaLoader {
             return buildAnyOfSchemaForMultipleTypes();
         } else if (element.getValueType() == STRING) {
             final String stringType = ((JsonString) element).getString();
-            return loadForExplicitType(JsonSchemaType.valueOf(stringType));
+            try {
+                return loadForExplicitType(JsonSchemaType.valueOf(stringType.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new UnexpectedValueException(loadingState.currentJsonPath, element, NUMBER, ARRAY, STRING, NULL, OBJECT);
+            }
         } else {
             throw new UnexpectedValueException(element, ARRAY, STRING);
         }
@@ -123,7 +130,7 @@ class SchemaLoader {
 
         SchemaLoaderBuilder childBuilder = loadingState.initChildLoader()
                 .schemaJson(childJson)
-                .pointerToCurrentObj(loadingState.pointerToCurrentObj);
+                .pointerToCurrentObj(loadingState.currentJsonPath);
         if (childJson.has(JsonSchemaProperty.ID)) {
             URI childURL = ReferenceResolver.resolve(this.loadingState.id, childJson.expectString(JsonSchemaProperty.ID).getString());
             childBuilder.resolutionScope(childURL);
@@ -148,6 +155,7 @@ class SchemaLoader {
         JsonArray subtypeJsons = loadingState.schemaJson.expectArray(JsonSchemaProperty.TYPE);
         List<Schema> subSchemas = subtypeJsons.getValuesAs(JsonString.class).stream()
                 .map(JsonString::getString)
+                .map(String::toUpperCase)
                 .map(JsonSchemaType::valueOf)
                 .map(this::loadForExplicitType)
                 .map(Schema.Builder::build)

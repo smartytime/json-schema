@@ -13,7 +13,7 @@ public class BaseLoaderTest {
 
     public BaseLoaderTest(String resourceURL) {
         Preconditions.checkNotNull(resourceURL, "resourceURL must not be null");
-        this.testsForType = JsonUtils.readResource(resourceURL, JsonObject.class);
+        this.testsForType = JsonUtils.readResourceAsJson("/tests/" + resourceURL, JsonObject.class);
         e = SchemaFactory.schemaFactory().load(this.testsForType);
     }
 

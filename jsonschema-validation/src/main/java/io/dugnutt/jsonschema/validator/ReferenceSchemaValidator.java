@@ -16,7 +16,7 @@ public class ReferenceSchemaValidator extends SchemaValidator<ReferenceSchema> {
         if (schema.getReferredSchema() == null) {
             throw new IllegalStateException("referredSchema must be injected before validation");
         }
-        return SchemaValidatorFactory.findValidator(schema.getReferredSchema())
+        return SchemaValidatorFactory.createValidatorForSchema(schema.getReferredSchema())
                 .validate(toBeValidated);
     }
 }

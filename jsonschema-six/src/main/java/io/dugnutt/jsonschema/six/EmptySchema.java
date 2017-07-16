@@ -20,6 +20,8 @@ package io.dugnutt.jsonschema.six;
  */
 public class EmptySchema extends Schema {
 
+    public static EmptySchema EMPTY_SCHEMA = builder().build();
+
     public EmptySchema(final Builder builder) {
         super(builder);
     }

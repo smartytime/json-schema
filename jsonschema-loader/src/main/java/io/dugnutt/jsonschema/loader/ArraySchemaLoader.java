@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchemaProperty;
 import io.dugnutt.jsonschema.six.ArraySchema;
+import io.dugnutt.jsonschema.six.JsonSchemaProperty;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 
@@ -9,6 +9,7 @@ import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 
+import static io.dugnutt.jsonschema.loader.LoadingUtils.*;
 import static java.util.Objects.requireNonNull;
 import static javax.json.JsonValue.ValueType.FALSE;
 import static javax.json.JsonValue.ValueType.OBJECT;
@@ -57,8 +58,7 @@ class ArraySchemaLoader {
                     builder.allItemSchema(childSchema);
                     break;
                 case ARRAY:
-                    buildTupleSchema(builder, (JsonArray) items);
-
+                    buildTupleSchema(builder, items.asJsonArray());
                     break;
 
                 default:
@@ -69,9 +69,9 @@ class ArraySchemaLoader {
     }
 
     private void buildTupleSchema(ArraySchema.Builder builder, JsonArray itemSchema) {
-        itemSchema.getValuesAs(JsonObject.class).forEach(subSchema -> {
-            Schema loadedSubSchema = defaultLoader.loadChild(subSchema).build();
-            builder.addItemSchema(loadedSubSchema);
-        });
+        itemSchema.stream()
+                .map(castTo(JsonObject.class, ls.currentJsonPath))
+                .map(subSchema -> defaultLoader.loadChild(subSchema).build())
+                .forEach(builder::addItemSchema);
     }
 }

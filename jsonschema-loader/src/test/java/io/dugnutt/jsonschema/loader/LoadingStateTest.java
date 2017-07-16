@@ -16,34 +16,34 @@ public class LoadingStateTest {
 
     private LoadingState emptySubject() {
         return new LoadingState(SchemaLoader.builder()
-                .rootSchemaJson(JsonUtils.blankObject())
-                .schemaJson(JsonUtils.blankObject()));
+                .rootSchemaJson(JsonUtils.blankJsonObject())
+                .schemaJson(JsonUtils.blankJsonObject()));
     }
 
     @Test
     public void childForString() {
         LoadingState ls = emptySubject();
         LoadingState actual = ls.childFor("hello");
-        Assert.assertEquals(asList("hello"), actual.pointerToCurrentObj);
+        Assert.assertEquals(asList("hello"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
     public void childForSecond() {
         LoadingState ls = emptySubject();
         LoadingState actual = ls.childFor("hello").childFor("world");
-        Assert.assertEquals(asList("hello", "world"), actual.pointerToCurrentObj);
+        Assert.assertEquals(asList("hello", "world"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
     public void childForArrayIndex() {
         LoadingState ls = emptySubject();
         LoadingState actual = ls.childFor(42);
-        Assert.assertEquals(asList("42"), actual.pointerToCurrentObj);
+        Assert.assertEquals(asList("42"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
     public void testCreateSchemaException() {
-        LoadingState subject = new LoadingState(SchemaLoader.builder().schemaJson(JsonUtils.blankObject()));
+        LoadingState subject = new LoadingState(SchemaLoader.builder().schemaJson(JsonUtils.blankJsonObject()));
         SchemaException actual = subject.createSchemaException("message");
         assertEquals("#: message", actual.getMessage());
         // assertEquals(JsonProvider.provider().createPointer("").toURIFragment(), actual.getSchemaLocation());

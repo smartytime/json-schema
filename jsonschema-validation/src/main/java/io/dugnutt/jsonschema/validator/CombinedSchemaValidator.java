@@ -99,7 +99,7 @@ public class CombinedSchemaValidator extends SchemaValidator<CombinedSchema> {
         CombinedSchemaValidator.ValidationCriterion criterion = this.getCriterion();
         List<ValidationError> failures = subschemas.stream()
                 .map(schema -> SchemaValidatorFactory
-                        .findValidator(schema)
+                        .createValidatorForSchema(schema)
                         .validate(toBeValidated)
                         .orElse(null)
                 )

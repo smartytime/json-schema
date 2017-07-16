@@ -34,13 +34,13 @@ public class InvalidObjectInArrayTest {
     public void test() {
         Schema schema = schemaFactory().load(readObject("schema.json"));
         JsonObject subject = readObject("subject.json");
-        SchemaValidator<?> validator = SchemaValidatorFactory.findValidator(schema);
+        SchemaValidator<?> validator = SchemaValidatorFactory.createValidatorForSchema(schema);
         Optional<ValidationError> errors = validator.validate(subject);
         Assert.assertTrue("did not throw exception", errors.isPresent());
         Assert.assertEquals("#/notification/target/apps/0/id", errors.get().getPointerToViolation());
     }
 
     private JsonObject readObject(final String fileName) {
-        return JsonUtils.readObject(getClass().getResourceAsStream("/org/everit/json/schema/invalidobjectinarray/" + fileName));
+        return JsonUtils.readJsonObject(getClass().getResourceAsStream("/org/everit/json/schema/invalidobjectinarray/" + fileName));
     }
 }

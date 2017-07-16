@@ -15,16 +15,21 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.utils.JsonUtils;
+import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.junit.Assert;
 
 import javax.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.findValidator;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonNumberValue;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
+import static javax.json.spi.JsonProvider.provider;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -33,6 +38,10 @@ public class ValidationTestSupport {
 
     public static <S extends Schema> S buildWithLocation(Schema.Builder<S> builder) {
         return builder.schemaLocation("#").build();
+    }
+
+    public static SchemaValidator buildValidatorWithLocation(Schema.Builder builder) {
+        return createValidatorForSchema(builder.schemaLocation("#").build());
     }
 
     public static long countCauseByJsonPointer(final ValidationError root, final String pointer) {
@@ -57,6 +66,10 @@ public class ValidationTestSupport {
         Assert.assertSame(expectedViolatedSchemaClass, errors.get().getViolatedSchema().getClass());
     }
 
+    public static void expectFailure(final Schema failingSchema, final double num) {
+        expectFailure(failingSchema, null, provider().createValue(num));
+    }
+
     public static void expectFailure(final Schema failingSchema, final JsonValue input) {
         expectFailure(failingSchema, null, input);
     }
@@ -75,24 +88,31 @@ public class ValidationTestSupport {
         expectFailure(failingSchema, failingSchema, expectedPointer, input);
     }
 
-    public static Optional<ValidationError> expectFailure(final Failure failure) {
-        Optional<ValidationError> error = findValidator(failure.subject()).validate(failure.input());
-        Assert.assertTrue(failure.subject() + " did not fail for " + failure.input(), error.isPresent());
-        ValidationError e = error.get();
-        Assert.assertSame(failure.expectedViolatedSchema(), e.getViolatedSchema());
-        assertEquals(failure.expectedPointer(), e.getPointerToViolation());
-        assertEquals(failure.expectedSchemaLocation(), e.getSchemaLocation());
+    public static ValidationError expectFailure(final Failure failure) {
+        final SchemaValidator<?> validator = failure.validator()
+                .orElse(createValidatorForSchema(failure.schema()));
+        ValidationError error = validator.validate(failure.input())
+                .orElseThrow(() -> new AssertionError(failure.schema() + " did not fail for " + failure.input()));
+        Assert.assertSame(failure.expectedViolatedSchema(), error.getViolatedSchema());
+        assertEquals(failure.expectedPointer(), error.getPointerToViolation());
+        assertEquals(failure.expectedSchemaLocation(), error.getSchemaLocation());
         if (failure.expectedKeyword() != null) {
-            assertEquals(failure.expectedKeyword(), e.getKeyword());
+            assertEquals(failure.expectedKeyword(), error.getKeyword());
         }
         if (failure.expectedMessageFragment() != null) {
-            assertThat(e.getMessage(), containsString(failure.expectedMessageFragment()));
+            assertThat(error.getMessage(), containsString(failure.expectedMessageFragment()));
         }
+        failure.expected().ifPresent(p-> Assert.assertTrue("Predicate failed validation", p.test(error)));
+        failure.expectedConsumer().ifPresent(consumer-> consumer.accept(error));
         return error;
     }
 
-    public static Failure failureOf(Schema subject) {
-        return new Failure().subject(subject);
+    public static Failure failureOf(SchemaValidator<?> validator) {
+        return new Failure().schema(validator.schema()).validator(validator);
+    }
+
+    public static Failure failureOf(Schema schema) {
+        return new Failure().schema(schema);
     }
 
     public static Failure failureOf(Schema.Builder<?> subjectBuilder) {
@@ -102,7 +122,7 @@ public class ValidationTestSupport {
     private static Optional<ValidationError> test(final Schema failingSchema, final String expectedPointer,
                                                   final JsonValue input) {
 
-        Optional<ValidationError> error = findValidator(failingSchema).validate(input);
+        Optional<ValidationError> error = createValidatorForSchema(failingSchema).validate(input);
         Assert.assertTrue(failingSchema + " did not fail for " + input, error.isPresent());
         if (expectedPointer != null) {
             assertEquals(expectedPointer, error.get().getPointerToViolation());
@@ -113,6 +133,8 @@ public class ValidationTestSupport {
     public static class Failure {
 
         private Schema subject;
+
+        private SchemaValidator validator;
 
         private Schema expectedViolatedSchema;
 
@@ -126,6 +148,10 @@ public class ValidationTestSupport {
 
         private String expectedMessageFragment;
 
+        private Predicate<ValidationError> expectedPredicate;
+
+        private Consumer<ValidationError> expectedConsumer;
+
         public void expect() {
             expectFailure(this);
         }
@@ -137,6 +163,24 @@ public class ValidationTestSupport {
 
         public String expectedKeyword() {
             return expectedKeyword;
+        }
+
+        public Optional<Predicate<ValidationError>> expected() {
+            return Optional.ofNullable(expectedPredicate);
+        }
+
+        public Optional<Consumer<ValidationError>> expectedConsumer() {
+            return Optional.ofNullable(expectedConsumer);
+        }
+
+        public Failure expected(Predicate<ValidationError> expected) {
+            this.expectedPredicate = expected;
+            return this;
+        }
+
+        public Failure expected(Consumer<ValidationError> expected) {
+            this.expectedConsumer = expected;
+            return this;
         }
 
         public String expectedMessageFragment() {
@@ -178,8 +222,23 @@ public class ValidationTestSupport {
             return subject;
         }
 
+        public Failure nullInput() {
+            this.input = null;
+            return this;
+        }
+
         public Failure input(final String input) {
-            this.input = JsonUtils.readValue(input, JsonValue.class);
+            this.input = provider().createValue(input);
+            return this;
+        }
+
+        public Failure input(final boolean input) {
+            this.input = input ? JsonValue.TRUE : JsonValue.FALSE;
+            return this;
+        }
+
+        public Failure input(final int i) {
+            this.input = provider().createValue(i);
             return this;
         }
 
@@ -192,23 +251,56 @@ public class ValidationTestSupport {
             return input;
         }
 
-        public Failure subject(final Schema subject) {
+        public Failure schema(final Schema subject) {
             this.subject = subject;
             return this;
         }
 
-        public Schema subject() {
+        public Failure validator(final SchemaValidator validator) {
+            this.validator = validator;
+            return this;
+        }
+
+        public Schema schema() {
             return subject;
+        }
+
+        public Optional<SchemaValidator> validator() {
+            return Optional.ofNullable(validator);
         }
     }
 
-    public static void verifyFailure(Supplier<Optional<ValidationError>> validationFn) {
+    public static ValidationError verifyFailure(Supplier<Optional<ValidationError>> validationFn) {
         Optional<ValidationError> error = validationFn.get();
         Assert.assertTrue("Should have failed", error.isPresent());
+        return error.get();
     }
 
-    public static void verifySuccess(Supplier<Optional<ValidationError>> validationFn) {
+    public static void expectSuccess(Supplier<Optional<ValidationError>> validationFn) {
         Optional<ValidationError> error = validationFn.get();
         Assert.assertFalse("Should have succeeded", error.isPresent());
+    }
+
+    public static void expectSuccess(Schema schema, long input) {
+        expectSuccess(schema, jsonNumberValue(input));
+    }
+
+    public static void expectSuccess(Schema schema, double input) {
+        expectSuccess(schema, jsonNumberValue(input));
+    }
+
+    public static void expectSuccess(Schema schema, String input) {
+        expectSuccess(schema, jsonStringValue(input));
+    }
+
+    public static void expectSuccess(Schema schema, boolean input) {
+        expectSuccess(schema, input ? JsonValue.TRUE : JsonValue.FALSE);
+    }
+
+    public static void expectSuccess(Schema schema, JsonValue input) {
+        final Optional<ValidationError> error = createValidatorForSchema(schema).validate(input);
+        if (error.isPresent()) {
+            Assert.assertFalse("Found errors: " + error.toString(), error.isPresent());
+        }
     }
 }

@@ -15,40 +15,37 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.loader.SchemaLoader;
-import org.json.JSONObject;
+import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
+
+import javax.json.JsonObject;
+
+import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsJsonObject;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 
 public class PointerBubblingTest {
 
     private static final ResourceLoader loader = ResourceLoader.DEFAULT;
-
-    private final JSONObject allSchemas = loader.readObj("testschemas.json");
-
-    private final Schema rectangleSchema = SchemaLoader
-            .load(allSchemas.getJSONObject("pointerResolution"));
-
-    private final JSONObject testInputs = loader.readObj("objecttestcases.json");
+    private final JsonObject allSchemas = readResourceAsJsonObject("testschemas.json");
+    private final Schema rectangleSchema = schemaFactory().load(allSchemas.getJsonObject("pointerResolution"));
+    private final JsonObject testInputs = readResourceAsJsonObject("objecttestcases.json");
 
     @Test
     public void rectangleMultipleFailures() {
-        JSONObject input = testInputs.getJSONObject("rectangleMultipleFailures");
-        try {
-            rectangleSchema.validate(input);
-            Assert.fail();
-        } catch (ValidationException e) {
-            Assert.assertEquals("#/rectangle", e.getPointerToViolation());
-            Assert.assertEquals(2, e.getCausingExceptions().size());
-            Assert.assertEquals(1, ValidationTestSupport.countCauseByJsonPointer(e, "#/rectangle/a"));
-            Assert.assertEquals(1, ValidationTestSupport.countCauseByJsonPointer(e, "#/rectangle/b"));
-        }
+        JsonObject input = testInputs.getJsonObject("rectangleMultipleFailures");
+        var e = verifyFailure(() -> createValidatorForSchema(rectangleSchema).validate(input));
+        Assert.assertEquals("#/rectangle", e.getPointerToViolation());
+        Assert.assertEquals(2, e.getCauses().size());
+        Assert.assertEquals(1, ValidationTestSupport.countCauseByJsonPointer(e, "#/rectangle/a"));
+        Assert.assertEquals(1, ValidationTestSupport.countCauseByJsonPointer(e, "#/rectangle/b"));
     }
 
     @Test
     public void rectangleSingleFailure() {
-        JSONObject input = testInputs.getJSONObject("rectangleSingleFailure");
+        JsonObject input = testInputs.getJsonObject("rectangleSingleFailure");
         ValidationTestSupport.expectFailure(rectangleSchema, NumberSchema.class, "#/rectangle/a", input);
     }
-
 }

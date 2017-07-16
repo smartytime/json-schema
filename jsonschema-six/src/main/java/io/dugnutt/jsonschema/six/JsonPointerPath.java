@@ -1,11 +1,13 @@
 package io.dugnutt.jsonschema.six;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
 import lombok.SneakyThrows;
 
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,6 +57,14 @@ public class JsonPointerPath {
 
     public JsonPath jsonPath() {
         return path;
+    }
+
+    @VisibleForTesting
+    public List<String> jsonPathParts() {
+        return jsonPath().getPath().stream()
+                .map(JsonPath.PathPart::getNameOrIndex)
+                .map(String::valueOf)
+                .collect(Collectors.toList());
     }
 
     public String toURIFragment() {

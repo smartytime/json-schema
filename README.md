@@ -77,7 +77,7 @@ try (InputStream inputStream = getClass().getResourceAsStream("/path/to/your/sch
 Starting from version `1.1.0` the validator collects every schema violations (instead of failing immediately on the first
 one). Each failure is denoted by a JSON pointer, pointing from the root of the document to the violating part. If  more
 than one schema violations have been detected, then a `ValidationException` will be thrown at the most common parent
-elements of the violations, and each separate violations can be obtained using the `ValidationException#getCausingExceptions()`
+elements of the violations, and each separate violations can be obtained using the `ValidationException#getCauses()`
 method.
 
 To demonstrate the above concepts, lets see an example. Lets consider the following schema:
@@ -147,7 +147,7 @@ try {
   schema.validate(rectangleMultipleFailures);
 } catch (ValidationException e) {
   System.out.println(e.getMessage());
-  e.getCausingExceptions().stream()
+  e.getCauses().stream()
       .map(ValidationException::getMessage)
       .forEach(System.out::println);
 }

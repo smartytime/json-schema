@@ -61,7 +61,7 @@ public class IssueTest {
         List<Object[]> rval = new ArrayList<>();
         try {
             File issuesDir = new File(
-                    io.dugnutt.json.schema.IssueTest.class.getResource("/org/everit/jsonschema/issues").toURI());
+                    IssueTest.class.getResource("/org/everit/jsonschema/issues").toURI());
             for (File issue : issuesDir.listFiles()) {
                 rval.add(new Object[] {issue, issue.getName()});
             }
@@ -113,7 +113,7 @@ public class IssueTest {
     private void validate(final File file, final Schema schema, final boolean shouldBeValid) {
         JsonValue subject = loadJsonFile(file);
 
-        SchemaValidator validator = SchemaValidatorFactory.findValidator(schema);
+        SchemaValidator validator = SchemaValidatorFactory.createValidatorForSchema(schema);
         Optional<ValidationError> errors = validator.validate(subject);
 
         if (shouldBeValid && errors.isPresent()) {
@@ -166,7 +166,7 @@ public class IssueTest {
                                         final ValidationError ve) {
 
         // Read the expected values from user supplied file
-        JsonObject expected = JsonUtils.readObject(expectedExceptionsFile);
+        JsonObject expected = JsonUtils.readJsonObject(expectedExceptionsFile);
         expectedFailureList = new ArrayList<>();
 
         // NOTE: readExpectedValues() will update expectedFailureList

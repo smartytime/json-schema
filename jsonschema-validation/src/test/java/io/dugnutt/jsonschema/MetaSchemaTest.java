@@ -13,29 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.json.schema;
+package io.dugnutt.jsonschema;
 
-import io.dugnutt.jsonschema.loader.SchemaLoader;
-import io.dugnutt.jsonschema.loader.SchemaLoader;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import io.dugnutt.jsonschema.loader.SchemaFactory;
+import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Test;
+
+import javax.json.JsonObject;
+
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 
 public class MetaSchemaTest {
 
     @Test
     public void validateMetaSchema() {
-
-        JSONObject jsonSchema = new JSONObject(new JSONTokener(
-                MetaSchemaTest.class
-                        .getResourceAsStream("/org/everit/json/schema/json-schema-draft-04.json")));
-
-        JSONObject jsonSubject = new JSONObject(new JSONTokener(
-                MetaSchemaTest.class
-                        .getResourceAsStream("/org/everit/json/schema/json-schema-draft-04.json")));
-
-        Schema schema = SchemaLoader.load(jsonSchema);
-        schema.validate(jsonSubject);
+        JsonObject jsonSchema = JsonUtils.readResourceAsJsonObject("/org/everit/json/schema/json-schema-draft-04.json");
+        Schema schema = SchemaFactory.schemaFactory().load(jsonSchema);
+        expectSuccess(schema, jsonSchema);
     }
-
 }

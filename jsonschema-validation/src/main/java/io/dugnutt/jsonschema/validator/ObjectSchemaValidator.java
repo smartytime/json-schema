@@ -94,7 +94,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     }
 
     private Function<String, Optional<ValidationError>> getValidationErrors(Schema validateAgainst, JsonObject sourceObject) {
-        return propertyName -> SchemaValidatorFactory.findValidator(validateAgainst)
+        return propertyName -> SchemaValidatorFactory.createValidatorForSchema(validateAgainst)
                 .validate(sourceObject.get(propertyName))
                 .map(prependPropertyToError(propertyName));
     }
@@ -113,7 +113,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
             List<ValidationError> errors = new ArrayList<>();
             schema.getPropertySchemas().forEach((propertyName, schema) -> {
                 if (subject.containsKey(propertyName)) {
-                    SchemaValidatorFactory.findValidator(schema)
+                    SchemaValidatorFactory.createValidatorForSchema(schema)
                             .validate(subject.get(propertyName))
                             .map(prependPropertyToError(propertyName))
                             .ifPresent(errors::add);
@@ -146,7 +146,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         List<ValidationError> rval = new ArrayList<>();
         schema.getSchemaDependencies().forEach((propName, schema) -> {
             if (subject.containsKey(propName)) {
-                SchemaValidatorFactory.findValidator(schema)
+                SchemaValidatorFactory.createValidatorForSchema(schema)
                         .validate(subject)
                         .ifPresent(rval::add);
             }

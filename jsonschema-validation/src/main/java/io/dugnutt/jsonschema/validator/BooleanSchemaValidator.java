@@ -6,11 +6,14 @@ import io.dugnutt.jsonschema.six.JsonSchemaType;
 import javax.json.JsonValue;
 import java.util.Optional;
 
+import static io.dugnutt.jsonschema.six.BooleanSchema.*;
 import static javax.json.JsonValue.ValueType;
 import static javax.json.JsonValue.ValueType.FALSE;
 import static javax.json.JsonValue.ValueType.TRUE;
 
 public class BooleanSchemaValidator extends SchemaValidator<BooleanSchema> {
+
+    public static BooleanSchemaValidator BOOLEAN_SCHEMA_VALIDATOR = new BooleanSchemaValidator(BOOLEAN_SCHEMA);
 
     public BooleanSchemaValidator(BooleanSchema schema) {
         super(schema);

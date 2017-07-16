@@ -2,7 +2,7 @@
   "combinedSchema": {
     "anyOf": [
       {
-        "type": "integer"
+        "type": "number"
       },
       {
         "type": "null"
@@ -35,7 +35,7 @@
   "combinedSchemaWithMultipleBaseSchemas": {
     "type": [
       "string",
-      "integer"
+      "number"
     ],
     "anyOf": [
       {

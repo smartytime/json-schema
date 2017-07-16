@@ -18,7 +18,12 @@ package io.dugnutt.jsonschema.validator;
 import io.dugnutt.jsonschema.six.ArraySchema;
 import io.dugnutt.jsonschema.six.ObjectSchema;
 import io.dugnutt.jsonschema.six.Schema;
+import lombok.experimental.var;
 
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.spi.JsonProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,67 +36,14 @@ import static java.util.Objects.requireNonNull;
  * Thrown by {@link Schema} subclasses on validation failure.
  */
 public class ValidationError {
-    
-    private static final long serialVersionUID = 6192047123024651924L;
-    /**
-     * Sort of static factory method. It is used by {@link ObjectSchema} and {@link ArraySchema} to
-     * create {@code ValidationException}s, handling the case of multiple violations occuring during
-     * validation.
-     * <p>
-     * <ul>
-     * <li>If {@code failures} is empty, then it doesn't do anything</li>
-     * <li>If {@code failures} contains 1 exception instance, then that will be thrown</li>
-     * <li>Otherwise a new exception instance will be created, its {@link #getViolatedSchema()
-     * violated schema} will be {@code rootFailingSchema}, and its {@link #getCauses()
-     * causing exceptions} will be the {@code failures} list</li>
-     * </ul>
-     *
-     * @param rootFailingSchema the schema which detected the {@code failures}
-     * @param failures          list containing validation failures to be thrown by this method
-     */
-    public static Optional<ValidationError> collectErrors(Schema rootFailingSchema,
-                                                          List<ValidationError> failures) {
-        int failureCount = failures.size();
-        if (failureCount == 0) {
-            return Optional.empty();
-        } else if (failureCount == 1) {
-            return Optional.of(failures.get(0));
-        } else {
-            return Optional.of(new ValidationError(rootFailingSchema,
-                    new StringBuilder("#"),
-                    getViolationCount(failures) + " schema violations found",
-                    new ArrayList<>(failures),
-                    null,
-                    rootFailingSchema.getSchemaLocation()));
-        }
-    }
 
+    private static final long serialVersionUID = 6192047123024651924L;
     private final StringBuilder pointerToViolation;
     private final String schemaLocation;
     private final transient Schema violatedSchema;
     private final List<ValidationError> causingExceptions;
     private final String keyword;
     private final String message;
-
-
-    // /**
-    //  * Constructor for type-mismatch failures. It is usually more convenient to use
-    //  * {@link #ValidationReport(Schema, Class, Object)} instead.
-    //  *
-    //  * @param violatedSchema the schema instance which detected the schema violation
-    //  * @param expectedType   the expected type
-    //  * @param actualValue    the violating value
-    //  * @param keyword        the violating keyword
-    //  * @param schemaLocation a path denoting the location of the violated keyword in the schema JSON
-    //  */
-    // public ValidationReport(Schema violatedSchema, Class<?> expectedType,
-    //                         Object actualValue, String keyword, String schemaLocation) {
-    //     this(violatedSchema, new StringBuilder("#"),
-    //             "expected type: " + expectedType.getSimpleName() + ", found: "
-    //                     + (actualValue == null ? "null" : actualValue.getClass().getSimpleName()),
-    //             Collections.emptyList(), keyword, schemaLocation);
-    // }
-
     /**
      * Constructor.
      *
@@ -110,6 +62,24 @@ public class ValidationError {
                 keyword,
                 null);
     }
+
+    // /**
+    //  * Constructor for type-mismatch failures. It is usually more convenient to use
+    //  * {@link #ValidationReport(Schema, Class, Object)} instead.
+    //  *
+    //  * @param violatedSchema the schema instance which detected the schema violation
+    //  * @param expectedType   the expected type
+    //  * @param actualValue    the violating value
+    //  * @param keyword        the violating keyword
+    //  * @param schemaLocation a path denoting the location of the violated keyword in the schema JSON
+    //  */
+    // public ValidationReport(Schema violatedSchema, Class<?> expectedType,
+    //                         Object actualValue, String keyword, String schemaLocation) {
+    //     this(violatedSchema, new StringBuilder("#"),
+    //             "expected type: " + expectedType.getSimpleName() + ", found: "
+    //                     + (actualValue == null ? "null" : actualValue.getClass().getSimpleName()),
+    //             Collections.emptyList(), keyword, schemaLocation);
+    // }
 
     /**
      * Constructor.
@@ -146,11 +116,11 @@ public class ValidationError {
      * @param keyword
      *          the violated keyword
      */
-    ValidationError(Schema violatedSchema, StringBuilder pointerToViolation,
-                    String message,
-                    List<ValidationError> causingExceptions,
-                    String keyword,
-                    String schemaLocation) {
+    public ValidationError(Schema violatedSchema, StringBuilder pointerToViolation,
+                           String message,
+                           List<ValidationError> causingExceptions,
+                           String keyword,
+                           String schemaLocation) {
         this.message = message;
         this.violatedSchema = violatedSchema;
         this.pointerToViolation = pointerToViolation;
@@ -165,6 +135,39 @@ public class ValidationError {
                             List<ValidationError> causingExceptions,
                             String keyword, String schemaLocation) {
         this(violatedSchema, pointerToViolation, message, causingExceptions, keyword, schemaLocation);
+    }
+
+    /**
+     * Sort of static factory method. It is used by {@link ObjectSchema} and {@link ArraySchema} to
+     * create {@code ValidationException}s, handling the case of multiple violations occuring during
+     * validation.
+     * <p>
+     * <ul>
+     * <li>If {@code failures} is empty, then it doesn't do anything</li>
+     * <li>If {@code failures} contains 1 exception instance, then that will be thrown</li>
+     * <li>Otherwise a new exception instance will be created, its {@link #getViolatedSchema()
+     * violated schema} will be {@code rootFailingSchema}, and its {@link #getCauses()
+     * causing exceptions} will be the {@code failures} list</li>
+     * </ul>
+     *
+     * @param rootFailingSchema the schema which detected the {@code failures}
+     * @param failures          list containing validation failures to be thrown by this method
+     */
+    public static Optional<ValidationError> collectErrors(Schema rootFailingSchema,
+                                                          List<ValidationError> failures) {
+        int failureCount = failures.size();
+        if (failureCount == 0) {
+            return Optional.empty();
+        } else if (failureCount == 1) {
+            return Optional.of(failures.get(0));
+        } else {
+            return Optional.of(new ValidationError(rootFailingSchema,
+                    new StringBuilder("#"),
+                    getViolationCount(failures) + " schema violations found",
+                    new ArrayList<>(failures),
+                    null,
+                    rootFailingSchema.getSchemaLocation()));
+        }
     }
 
     /**
@@ -268,6 +271,60 @@ public class ValidationError {
                 prependedCausingExceptions, this.keyword, this.schemaLocation);
     }
 
+    /**
+     * Creates a JSON representation of the failure.
+     * <p>
+     * The returned {@code JSONObject} contains the following keys:
+     * <ul>
+     * <li>{@code "message"}: a programmer-friendly exception message. This value is a non-nullable
+     * string.</li>
+     * <li>{@code "keyword"}: a JSON Schema keyword which was used in the schema and violated by the
+     * input JSON. This value is a nullable string.</li>
+     * <li>{@code "pointerToViolation"}: a JSON Pointer denoting the path from the root of the
+     * document to the invalid fragment of it. This value is a non-nullable string. See
+     * {@link #getPointerToViolation()}</li>
+     * <li>{@code "causes"}: is a (possibly empty) array of violations which caused this
+     * exception. See {@link #getCauses()}</li>
+     * <li>{@code "schemaLocation"}: a string denoting the path to the violated schema keyword in the schema
+     * JSON (since version 1.6.0)</li>
+     * </ul>
+     *
+     * @return a JSON description of the validation error
+     */
+    public JsonObject toJson() {
+        final JsonProvider provider = JsonProvider.provider();
+        var errorJson = provider.createObjectBuilder()
+                .add("keyword", this.keyword);
+
+        if (pointerToViolation == null) {
+            errorJson.add("pointerToViolation", JsonValue.NULL);
+        } else {
+            errorJson.add("pointerToViolation", getPointerToViolation());
+        }
+        errorJson.add("message", this.message);
+
+        final JsonArrayBuilder arrayBuilder = provider.createArrayBuilder();
+        causingExceptions.stream()
+                .map(ValidationError::toJson)
+                .forEach(arrayBuilder::add);
+
+        errorJson.add("causes", arrayBuilder);
+        if (schemaLocation != null) {
+            errorJson.add("schemaLocation", schemaLocation);
+        }
+        return errorJson.build();
+    }
+
+    @Override
+    public String toString() {
+        return "ValidationError{" +
+                "pointerToViolation=" + pointerToViolation +
+                ", causingExceptions=" + causingExceptions +
+                ", keyword='" + keyword + '\'' +
+                ", message='" + message + '\'' +
+                '}';
+    }
+
     private static int getViolationCount(List<ValidationError> causes) {
         int causeCount = causes.stream().mapToInt(ValidationError::getViolationCount).sum();
         return Math.max(1, causeCount);
@@ -324,18 +381,7 @@ public class ValidationError {
     //     }
     //     return rval;
     // }
-
     private String escapeFragment(String fragment) {
         return fragment.replace("~", "~0").replace("/", "~1");
-    }
-
-    @Override
-    public String toString() {
-        return "ValidationError{" +
-                "pointerToViolation=" + pointerToViolation +
-                ", causingExceptions=" + causingExceptions +
-                ", keyword='" + keyword + '\'' +
-                ", message='" + message + '\'' +
-                '}';
     }
 }

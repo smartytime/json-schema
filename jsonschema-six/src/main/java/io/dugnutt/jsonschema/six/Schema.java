@@ -1,18 +1,19 @@
 package io.dugnutt.jsonschema.six;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.hibernate.validator.constraints.URL;
 
 import javax.annotation.Nullable;
+import javax.json.spi.JsonProvider;
 import javax.json.stream.JsonGenerator;
 import javax.validation.constraints.NotBlank;
+import java.io.StringWriter;
+import java.util.Objects;
 
 /**
  * Superclass of all other schema validator classes of this package.
  */
 @Getter
-@EqualsAndHashCode
 public abstract class Schema {
 
     @URL
@@ -83,6 +84,35 @@ public abstract class Schema {
      */
     public boolean definesProperty(final String field) {
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(title, description, id);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o instanceof Schema) {
+            Schema schema = (Schema) o;
+            return schema.canEqual(this) &&
+                    Objects.equals(title, schema.title) &&
+                    Objects.equals(description, schema.description) &&
+                    Objects.equals(id, schema.id);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringWriter writer = new StringWriter();
+        final JsonGenerator generator = JsonProvider.provider().createGenerator(writer);
+        toJson(generator);
+        return writer.getBuffer().toString();
     }
 
     /**

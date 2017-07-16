@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema;
+package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.loader.SchemaLoader;
-import io.dugnutt.jsonschema.loader.SchemaLoader;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import io.dugnutt.jsonschema.ServletSupport;
 import org.junit.Test;
 
 import java.net.URISyntaxException;
+
+import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsJsonObject;
 
 public class RelativeURITest {
 
@@ -35,9 +34,9 @@ public class RelativeURITest {
         SchemaLoader
                 .builder()
                 .resolutionScope("http://localhost:1234/schema/")
-                .schemaJson(
-                        new JSONObject(new JSONTokener(getClass().getResourceAsStream(
-                                "/org/everit/jsonschema/relative-uri/schema/main.json"))))
-                .build().load().build();
+                .schemaJson(readResourceAsJsonObject("/org/everit/jsonschema/relative-uri/schema/main.json"))
+                .build()
+                .load()
+                .build();
     }
 }
