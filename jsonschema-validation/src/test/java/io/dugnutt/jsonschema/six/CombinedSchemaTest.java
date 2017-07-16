@@ -15,16 +15,21 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.utils.JsonUtils;
+import io.dugnutt.jsonschema.validator.CombinedSchemaValidator;
+import io.dugnutt.jsonschema.validator.ValidationError;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Optional;
 
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifySuccess;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.findValidator;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CombinedSchemaTest {
@@ -33,83 +38,33 @@ public class CombinedSchemaTest {
             NumberSchema.builder().multipleOf(10).build(),
             NumberSchema.builder().multipleOf(3).build());
 
-    @Test(expected = ValidationException.class)
     public void allCriterionFailure() {
-        CombinedSchema.ALL_CRITERION.validate(10, 1);
+        verifyFailure(() -> CombinedSchemaValidator.ALL_CRITERION.validate(10, 1));
     }
 
     @Test
     public void allCriterionSuccess() {
-        CombinedSchema.ALL_CRITERION.validate(10, 10);
+        verifySuccess(() -> CombinedSchemaValidator.ALL_CRITERION.validate(10, 10));
     }
 
-    @Test(expected = ValidationException.class)
     public void anyCriterionFailure() {
-        CombinedSchema.ANY_CRITERION.validate(10, 0);
+        verifyFailure(() -> CombinedSchemaValidator.ANY_CRITERION.validate(10, 0));
     }
 
     @Test
     public void anyCriterionSuccess() {
-        CombinedSchema.ANY_CRITERION.validate(10, 1);
+        verifySuccess(() -> CombinedSchemaValidator.ANY_CRITERION.validate(10, 1));
     }
 
-    @Test(expected = ValidationException.class)
     public void anyOfInvalid() {
-        CombinedSchema.anyOf(asList(
-                StringSchema.builder().maxLength(2).build(),
-                StringSchema.builder().minLength(4).build()))
-                .build().validate("foo");
-    }
-
-    @Test
-    public void factories() {
-        CombinedSchema.allOf(asList(BooleanSchema.INSTANCE));
-        CombinedSchema.anyOf(asList(BooleanSchema.INSTANCE));
-        CombinedSchema.oneOf(asList(BooleanSchema.INSTANCE));
-    }
-
-    @Test(expected = ValidationException.class)
-    public void oneCriterionFailure() {
-        CombinedSchema.ONE_CRITERION.validate(10, 2);
-    }
-
-    @Test
-    public void oneCriterionSuccess() {
-        CombinedSchema.ONE_CRITERION.validate(10, 1);
-    }
-
-    @Test
-    public void validateAll() {
-        ValidationTestSupport.failureOf(CombinedSchema.allOf(SUBSCHEMAS))
-                .input(20)
-                .expectedKeyword("allOf")
-                .expect();
-    }
-
-    @Test
-    public void validateAny() {
-        ValidationTestSupport.failureOf(CombinedSchema.anyOf(SUBSCHEMAS))
-                .input(5)
-                .expectedKeyword("anyOf")
-                .expect();
-    }
-
-    @Test
-    public void validateOne() {
-        ValidationTestSupport.failureOf(CombinedSchema.oneOf(SUBSCHEMAS))
-                .input(30)
-                .expectedKeyword("oneOf")
-                .expect();
-    }
-
-    @Test
-    public void reportCauses() {
-        try {
-            CombinedSchema.allOf(SUBSCHEMAS).build().validate(24);
-            Assert.fail("did not throw exception");
-        } catch (ValidationException e) {
-            assertEquals(1, e.getCausingExceptions().size());
-        }
+        verifyFailure(() -> {
+            CombinedSchema combinedSchema = CombinedSchema.anyOf(asList(
+                    StringSchema.builder().maxLength(2).build(),
+                    StringSchema.builder().minLength(4).build()))
+                    .build();
+            return findValidator(combinedSchema)
+                    .validate(JsonUtils.readValue("\"foo\""));
+        });
     }
 
     @Test
@@ -122,16 +77,50 @@ public class CombinedSchemaTest {
     }
 
     @Test
-    public void toStringTest() {
-        CombinedSchema subject = CombinedSchema
-                .allOf(asList(BooleanSchema.INSTANCE, NullSchema.INSTANCE))
-                .build();
-        JSONObject actual = new JSONObject(subject.toString());
-        assertTrue(ObjectComparator.deepEquals(new JSONObject("{\"allOf\":["
-                + BooleanSchema.INSTANCE.toString()
-                + ", "
-                + NullSchema.INSTANCE
-                + "]}"), actual));
+    public void factories() {
+        CombinedSchema.allOf(asList(BooleanSchema.INSTANCE));
+        CombinedSchema.anyOf(asList(BooleanSchema.INSTANCE));
+        CombinedSchema.oneOf(asList(BooleanSchema.INSTANCE));
     }
 
+    public void oneCriterionFailure() {
+        verifyFailure(() -> CombinedSchemaValidator.ONE_CRITERION.validate(10, 2));
+    }
+
+    @Test
+    public void oneCriterionSuccess() {
+        verifySuccess(() -> CombinedSchemaValidator.ONE_CRITERION.validate(10, 1));
+    }
+
+    @Test
+    public void reportCauses() {
+        CombinedSchema combinedSchema = CombinedSchema.allOf(SUBSCHEMAS).build();
+        Optional<ValidationError> error = findValidator((CombinedSchema) combinedSchema).validate(JsonUtils.readValue("24"));
+        assertTrue("Has an error", error.isPresent());
+        Assert.assertEquals(1, error.get().getCauses().size());
+    }
+
+    @Test
+    public void validateAll() {
+        ValidationTestSupport.failureOf(CombinedSchema.allOf(SUBSCHEMAS))
+                .input("20")
+                .expectedKeyword("allOf")
+                .expect();
+    }
+
+    @Test
+    public void validateAny() {
+        ValidationTestSupport.failureOf(CombinedSchema.anyOf(SUBSCHEMAS))
+                .input("5")
+                .expectedKeyword("anyOf")
+                .expect();
+    }
+
+    @Test
+    public void validateOne() {
+        ValidationTestSupport.failureOf(CombinedSchema.oneOf(SUBSCHEMAS))
+                .input("30")
+                .expectedKeyword("oneOf")
+                .expect();
+    }
 }

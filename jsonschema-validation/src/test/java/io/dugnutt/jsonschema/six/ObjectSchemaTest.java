@@ -50,7 +50,7 @@ public class ObjectSchemaTest {
         ObjectSchema subject = ValidationTestSupport.buildWithLocation(ObjectSchema.builder()
                 .schemaOfAdditionalProperties(boolSchema));
         ValidationTestSupport.failureOf(subject)
-                .input(OBJECTS.get("additionalPropertySchema"))
+                .input(OBJECTS.get("additionalPropertySchema"))Ω
                 .expectedPointer("#/foo")
                 .expectedSchemaLocation(expectedSchemaLocation)
                 .expect();

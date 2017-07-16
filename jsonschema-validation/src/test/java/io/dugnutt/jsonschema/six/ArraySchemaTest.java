@@ -15,6 +15,7 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Before;
@@ -23,6 +24,7 @@ import io.dugnutt.jsonschema.utils.JsonUtils;
 
 import javax.json.JsonArray;
 
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.findValidator;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -39,10 +41,10 @@ public class ArraySchemaTest {
 
     @Test
     public void additionalItemsSchema() {
-        ArraySchema.builder()
+        findValidator(ArraySchema.builder()
                 .addItemSchema(BooleanSchema.INSTANCE)
                 .schemaOfAdditionalItems(NullSchema.INSTANCE)
-                .build().validate(ARRAYS.get("additionalItemsSchema"));
+                .build()).validate(ARRAYS.get("additionalItemsSchema"));
     }
 
     @Test

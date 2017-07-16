@@ -15,12 +15,14 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.junit.Assert;
 
 import javax.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.findValidator;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -176,6 +178,11 @@ public class ValidationTestSupport {
             return subject;
         }
 
+        public Failure input(final String input) {
+            this.input = JsonUtils.readValue(input, JsonValue.class);
+            return this;
+        }
+
         public Failure input(final JsonValue input) {
             this.input = input;
             return this;
@@ -193,5 +200,15 @@ public class ValidationTestSupport {
         public Schema subject() {
             return subject;
         }
+    }
+
+    public static void verifyFailure(Supplier<Optional<ValidationError>> validationFn) {
+        Optional<ValidationError> error = validationFn.get();
+        Assert.assertTrue("Should have failed", error.isPresent());
+    }
+
+    public static void verifySuccess(Supplier<Optional<ValidationError>> validationFn) {
+        Optional<ValidationError> error = validationFn.get();
+        Assert.assertFalse("Should have succeeded", error.isPresent());
     }
 }

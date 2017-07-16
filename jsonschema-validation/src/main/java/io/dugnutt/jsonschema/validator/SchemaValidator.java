@@ -44,7 +44,13 @@ public abstract class SchemaValidator<S extends Schema> {
     }
 
     protected ValidationError failure(JsonSchemaType expectedType, JsonSchemaType foundType) {
-        String message = String.format("expected type: %s, found: %s", expectedType, foundType);
-        return new ValidationError(schema(), message, "typeMismatch", schema().getSchemaLocation());
+        return failure(schema(), expectedType, foundType);
     }
+
+    public static ValidationError failure(Schema validating, JsonSchemaType expectedType, JsonSchemaType foundType) {
+        String message = String.format("expected type: %s, found: %s", expectedType, foundType);
+        return new ValidationError(validating, message, "typeMismatch", validating.getSchemaLocation());
+    }
+
+
 }

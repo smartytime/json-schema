@@ -51,6 +51,14 @@ public class JsonUtils {
     }
 
     @SneakyThrows
+    public static JsonValue readValue(String json) {
+        checkNotNull(json, "json must not be null");
+        return JsonProvider.provider()
+                .createReader(new StringReader(json))
+                .readValue();
+    }
+
+    @SneakyThrows
     public static <V extends JsonValue> V readValue(InputStream json, Class<V> expected) {
         checkNotNull(json, "json must not be null");
         return (V) JsonProvider.provider()

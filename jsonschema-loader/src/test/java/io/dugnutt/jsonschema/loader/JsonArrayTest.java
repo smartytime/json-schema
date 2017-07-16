@@ -8,7 +8,7 @@ import org.junit.Test;
  */
 public class JsonArrayTest {
 
-    private static final LoadingState emptyLs = JsonValueTest.emptyLs;
+    // private static final LoadingState emptyLs = JsonValueTest.emptyLs;
 
     @Test
     public void testForEach() {

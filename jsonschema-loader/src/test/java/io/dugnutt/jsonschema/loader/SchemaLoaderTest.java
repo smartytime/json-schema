@@ -280,12 +280,6 @@ public class SchemaLoaderTest extends BaseLoaderTest {
     }
 
     @Test
-    public void stringSchemaWithFormat() {
-        StringSchema subject = (StringSchema) getSchemaForKey("stringSchemaWithFormat");
-        LoadingTestSupport.expectFailure(subject, "asd");
-    }
-
-    @Test
     public void tupleSchema() {
         ArraySchema actual = (ArraySchema) getSchemaForKey("tupleSchema");
         Assert.assertFalse(actual.isPermitsAdditionalItems());

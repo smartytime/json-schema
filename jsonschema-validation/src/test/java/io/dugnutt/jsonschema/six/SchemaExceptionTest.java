@@ -1,13 +1,10 @@
 package io.dugnutt.jsonschema.six;
 
-import org.json.JSONPointer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.util.Map;
-
-import static io.dugnutt.jsonschema.SchemaException.buildMessage;
+import static io.dugnutt.jsonschema.validator.SchemaValidator.failure;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -15,35 +12,31 @@ import static org.junit.Assert.assertEquals;
  */
 public class SchemaExceptionTest {
 
-    private static final Class<?> INTEGER_CLASS = Integer.class;
+    private static final NullSchema SCHEMA = NullSchema.builder()
+            .schemaLocation("#")
+            .build();
 
     @Rule
     public final ExpectedException expExc = ExpectedException.none();
 
     @Test
-    public void testBuildMessageSingleExcType() {
-        String actual = buildMessage(JSONPointer.builder().build().toURIFragment(), INTEGER_CLASS, String.class);
-        assertEquals("#: expected type: String, found: Integer", actual);
+    public void nullActual() {
+        NullSchema schema = NullSchema.builder().schemaLocation("#/required/2").build();
+        String actual = failure(schema, JsonSchemaType.NULL, JsonSchemaType.STRING).getErrorMessage();
+        assertEquals("#/required/2: expected type: String, found: null", actual);
     }
 
     @Test
     public void nullJSONPointer() {
         expExc.expect(NullPointerException.class);
         expExc.expectMessage("pointer cannot be null");
-        buildMessage(null, INTEGER_CLASS, String.class);
+        failure(null, JsonSchemaType.NUMBER, JsonSchemaType.STRING);
     }
 
     @Test
-    public void nullActual() {
-        JSONPointer ptr = JSONPointer.builder().append("required").append("2").build();
-        String actual = buildMessage(ptr.toURIFragment(), null, String.class);
-        assertEquals("#/required/2: expected type: String, found: null", actual);
+    public void testBuildMessageSingleExcType() {
+        String actual = failure(SCHEMA, JsonSchemaType.NUMBER, JsonSchemaType.STRING)
+                .getErrorMessage();
+        assertEquals("#: expected type: String, found: Integer", actual);
     }
-
-    @Test
-    public void twoExpected() {
-        String actual = buildMessage(JSONPointer.builder().build().toURIFragment(), INTEGER_CLASS, String.class, Map.class);
-        assertEquals("#: expected type is one of String or Map, found: Integer", actual);
-    }
-
 }

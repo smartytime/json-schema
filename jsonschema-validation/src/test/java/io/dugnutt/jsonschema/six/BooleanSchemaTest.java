@@ -15,6 +15,7 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Assert;
@@ -32,7 +33,7 @@ public class BooleanSchemaTest {
 
     @Test
     public void success() {
-        BooleanSchema.INSTANCE.validate(true);
+        SchemaValidatorFactory.findValidator(BooleanSchema.INSTANCE).validate(true);
     }
 
     @Test

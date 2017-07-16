@@ -18,74 +18,75 @@ package io.dugnutt.jsonschema.loader;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Optional;
-
-import static org.junit.Assert.assertEquals;
-
 public class CustomFormatValidatorTest {
 
-    private final ResourceLoader loader = ResourceLoader.DEFAULT;
-
-    static class EvenCharNumValidator implements FormatValidator {
-
-        @Override
-        public Optional<String> validate(final String subject) {
-            if (subject.length() % 2 == 0) {
-                return Optional.empty();
-            } else {
-                return Optional.of(String.format("the length of srtring [%s] is odd", subject));
-            }
-        }
-
-        @Override
-        public String formatName() {
-            return "evenlength";
-        }
-    }
+    // private final ResourceLoader loader = ResourceLoader.DEFAULT;
+    //
+    // static class EvenCharNumValidator implements FormatValidator {
+    //
+    //     @Override
+    //     public Optional<String> validate(final String subject) {
+    //         if (subject.length() % 2 == 0) {
+    //             return Optional.empty();
+    //         } else {
+    //             return Optional.of(String.format("the length of srtring [%s] is odd", subject));
+    //         }
+    //     }
+    //
+    //     @Override
+    //     public String formatName() {
+    //         return "evenlength";
+    //     }
+    // }
+    //
+    // @Test
+    // public void test() {
+    //     SchemaLoader schemaLoader = SchemaLoader.builder()
+    //             .schemaJson(baseSchemaJson())
+    //             .addFormatValidator("evenlength", new EvenCharNumValidator())
+    //             .build();
+    //     try {
+    //         schemaLoader.load().build().validate(loader.readObj("customformat-data.json"));
+    //         Assert.fail("did not throw exception");
+    //     } catch (ValidationException ve) {
+    //     }
+    // }
+    //
+    // @Test
+    // public void nameOverride() {
+    //     JSONObject rawSchemaJson = baseSchemaJson();
+    //     JSONObject idPropSchema = (JSONObject) rawSchemaJson.query("/properties/id");
+    //     idPropSchema.put("format", "somethingelse");
+    //     SchemaLoader schemaLoader = SchemaLoader.builder()
+    //             .schemaJson(rawSchemaJson)
+    //             .addFormatValidator("somethingelse", new EvenCharNumValidator())
+    //             .build();
+    //     Object actual = fetchFormatValueFromOutputJson(schemaLoader);
+    //     assertEquals("somethingelse", actual);
+    // }
+    //
+    // private Object fetchFormatValueFromOutputJson(SchemaLoader schemaLoader) {
+    //     return new JSONObject(schemaLoader.load().build().toString())
+    //             .query("/properties/id/format");
+    // }
+    //
+    // private JSONObject baseSchemaJson() {
+    //     return loader.readObj("customformat-schema.json");
+    // }
+    //
+    // @Test
+    // public void formatValidatorWithoutExplicitName() {
+    //     SchemaLoader schemaLoader = SchemaLoader.builder()
+    //             .schemaJson(baseSchemaJson())
+    //             .addFormatValidator(new EvenCharNumValidator())
+    //             .build();
+    //     Object actual = fetchFormatValueFromOutputJson(schemaLoader);
+    //     assertEquals("evenlength", actual);
+    // }
 
     @Test
-    public void test() {
-        SchemaLoader schemaLoader = SchemaLoader.builder()
-                .schemaJson(baseSchemaJson())
-                .addFormatValidator("evenlength", new EvenCharNumValidator())
-                .build();
-        try {
-            schemaLoader.load().build().validate(loader.readObj("customformat-data.json"));
-            Assert.fail("did not throw exception");
-        } catch (ValidationException ve) {
-        }
-    }
-
-    @Test
-    public void nameOverride() {
-        JSONObject rawSchemaJson = baseSchemaJson();
-        JSONObject idPropSchema = (JSONObject) rawSchemaJson.query("/properties/id");
-        idPropSchema.put("format", "somethingelse");
-        SchemaLoader schemaLoader = SchemaLoader.builder()
-                .schemaJson(rawSchemaJson)
-                .addFormatValidator("somethingelse", new EvenCharNumValidator())
-                .build();
-        Object actual = fetchFormatValueFromOutputJson(schemaLoader);
-        assertEquals("somethingelse", actual);
-    }
-
-    private Object fetchFormatValueFromOutputJson(SchemaLoader schemaLoader) {
-        return new JSONObject(schemaLoader.load().build().toString())
-                .query("/properties/id/format");
-    }
-
-    private JSONObject baseSchemaJson() {
-        return loader.readObj("customformat-schema.json");
-    }
-
-    @Test
-    public void formatValidatorWithoutExplicitName() {
-        SchemaLoader schemaLoader = SchemaLoader.builder()
-                .schemaJson(baseSchemaJson())
-                .addFormatValidator(new EvenCharNumValidator())
-                .build();
-        Object actual = fetchFormatValueFromOutputJson(schemaLoader);
-        assertEquals("evenlength", actual);
+    public void fail() {
+        Assert.fail("Add support for custom format validators?");
     }
 
 }

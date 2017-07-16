@@ -29,6 +29,13 @@ import static org.junit.Assert.assertTrue;
 public class StringSchemaTest {
 
     @Test
+    public void stringSchemaWithFormat() {
+        StringSchema subject = (StringSchema) getSchemaForKey("stringSchemaWithFormat");
+        ValidationTestSupport.expectFailure(subject, "asd");
+    }
+
+
+    @Test
     public void formatFailure() {
         StringSchema subject = ValidationTestSupport.buildWithLocation(StringSchema.builder()
                 .formatValidator(subj -> Optional.of("violation")));

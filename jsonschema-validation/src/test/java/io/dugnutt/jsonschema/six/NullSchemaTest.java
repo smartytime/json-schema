@@ -15,11 +15,14 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.json.JSONObject;
 import org.junit.Test;
 
+import javax.json.JsonObject;
+
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.findValidator;
 import static org.junit.Assert.assertEquals;
 
 public class NullSchemaTest {
@@ -34,8 +37,8 @@ public class NullSchemaTest {
 
     @Test
     public void success() {
-        JSONObject obj = new JSONObject("{\"a\" : null}");
-        NullSchema.INSTANCE.validate(obj.get("a"));
+        JsonObject obj = JsonUtils.readObject("{\"a\" : null}");
+        findValidator(NullSchema.INSTANCE).validate(obj.get("a"));
     }
 
     @Test
