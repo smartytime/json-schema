@@ -19,7 +19,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.martysoft.jsonschema</groupId>
+    <groupId>io.dugnutt.jsonschema</groupId>
     <artifactId>jsonschema-validation</artifactId>
     <version>1.6.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
@@ -68,8 +68,8 @@
                         <Import-Package>*
                         </Import-Package>
                         <Export-Package>
-                            org.martysoft.jsonschema.validator;version=${project.version},
-                            org.martysoft.jsonschema.validator.formatValidators;version=${project.version}
+                            io.dugnutt.jsonschema.validator;version=${project.version},
+                            io.dugnutt.jsonschema.validator.formatValidators;version=${project.version}
                         </Export-Package>
                     </instructions>
                 </configuration>
@@ -139,7 +139,7 @@
             <version>1.6.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.martysoft.jsonschema</groupId>
+            <groupId>io.dugnutt.jsonschema</groupId>
             <artifactId>jsonschema-v6</artifactId>
             <version>1.6.0-SNAPSHOT</version>
         </dependency>

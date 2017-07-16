@@ -1,6 +1,6 @@
-package org.martysoft.jsoniter.jsr353;
+package io.dugnutt.jsoniter.jsr353;
 
-import org.martysoft.json.BaseJsonProvider;
+import io.dugnutt.json.BaseJsonProvider;
 
 import javax.json.JsonArray;
 import javax.json.JsonException;

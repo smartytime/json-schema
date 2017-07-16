@@ -27,14 +27,14 @@
         <!--<version>7.2.0</version>-->
     <!--</parent>-->
 
-    <groupId>org.martysoft.jsonschema</groupId>
+    <groupId>io.dugnutt.jsonschema</groupId>
     <artifactId>jsonschema-parent</artifactId>
     <version>1.6.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
     <modules>
-        <module>jsonschema-v6</module>
+        <module>jsonschema-six</module>
         <module>jsonschema-loader</module>
         <module>jsonschema-validation</module>
         <module>jsonschema-tests</module>

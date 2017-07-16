@@ -1,4 +1,4 @@
-package org.martysoft.json;
+package io.dugnutt.json;
 
 import javax.json.JsonArray;
 import javax.json.JsonNumber;

@@ -1,4 +1,4 @@
-package org.martysoft.json;
+package io.dugnutt.json;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Streams;

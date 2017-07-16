@@ -1,4 +1,4 @@
-package org.martysoft.jsoniter.jsr353;
+package io.dugnutt.jsoniter.jsr353;
 
 import com.jsoniter.any.Any;
 

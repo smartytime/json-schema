@@ -1,4 +1,4 @@
-package org.martysoft.json;
+package io.dugnutt.json;
 
 import lombok.EqualsAndHashCode;
 

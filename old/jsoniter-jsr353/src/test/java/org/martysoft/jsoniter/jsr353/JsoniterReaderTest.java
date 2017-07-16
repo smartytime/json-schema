@@ -1,7 +1,7 @@
-package org.martysoft.jsoniter.jsr353;
+package io.dugnutt.jsoniter.jsr353;
 
 import com.google.common.io.Resources;
-import org.martysoft.json.BaseJsonPointer;
+import io.dugnutt.json.BaseJsonPointer;
 import org.junit.Test;
 
 import javax.json.JsonArray;

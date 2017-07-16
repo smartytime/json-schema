@@ -1,8 +1,8 @@
-package org.martysoft.jsoniter.jsr353;
+package io.dugnutt.jsoniter.jsr353;
 
 import com.jsoniter.any.Any;
-import org.martysoft.json.BaseJsonArray;
-import org.martysoft.json.ImmutableJsonArray;
+import io.dugnutt.json.BaseJsonArray;
+import io.dugnutt.json.ImmutableJsonArray;
 
 import javax.json.JsonValue;
 import java.util.function.Function;
