@@ -18,7 +18,7 @@ package io.dugnutt.jsonschema.six;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaProperty.NOT;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
 
 /**
  * {@code Not} schema validator.

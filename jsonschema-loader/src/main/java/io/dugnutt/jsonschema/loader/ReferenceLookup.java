@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.loader.internal.ReferenceResolver;
-import io.dugnutt.jsonschema.six.JsonSchemaProperty;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.ReferenceSchema;
 import io.dugnutt.jsonschema.six.Schema;
 
@@ -33,12 +33,12 @@ class ReferenceLookup {
         return b.build();
     }
 
-    private LoadingState loadingState;
+    private SchemaLoaderModel schemaLoaderModel;
     private JsonProvider provider;
 
-    public ReferenceLookup(LoadingState loadingState) {
-        this.loadingState = requireNonNull(loadingState, "ls cannot eb null");
-        this.provider = checkNotNull(loadingState.provider);
+    public ReferenceLookup(SchemaLoaderModel schemaLoaderModel) {
+        this.schemaLoaderModel = requireNonNull(schemaLoaderModel, "ls cannot eb null");
+        this.provider = checkNotNull(schemaLoaderModel.provider);
     }
 
     /**
@@ -64,7 +64,7 @@ class ReferenceLookup {
 
     JsonObject withoutRef(JsonObject original) {
         JsonObjectBuilder b = provider.createObjectBuilder(original);
-        b.remove(JsonSchemaProperty.$REF.key());
+        b.remove(JsonSchemaKeyword.$REF.key());
 
         //todo:ericm Need a path here??
         return b.build();
@@ -75,25 +75,25 @@ class ReferenceLookup {
      */
     Schema.Builder<?> lookup(String jsonPointerVal, JsonObject document) {
 
-        String absPointerString = ReferenceResolver.resolve(loadingState.id, jsonPointerVal).toString();
-        if (loadingState.pointerSchemas.containsKey(absPointerString)) {
-            return loadingState.pointerSchemas.get(absPointerString);
+        String absPointerString = ReferenceResolver.resolve(schemaLoaderModel.id, jsonPointerVal).toString();
+        if (schemaLoaderModel.pointerSchemas.containsKey(absPointerString)) {
+            return schemaLoaderModel.pointerSchemas.get(absPointerString);
         }
         boolean isExternal = !absPointerString.startsWith("#");
         JsonPointerResolver pointer = isExternal
-                ? JsonPointerResolver.forURL(loadingState.httpClient, absPointerString, provider)
-                : JsonPointerResolver.forDocument(loadingState.rootSchemaJson, absPointerString, provider);
+                ? JsonPointerResolver.forURL(schemaLoaderModel.httpClient, absPointerString, provider)
+                : JsonPointerResolver.forDocument(schemaLoaderModel.rootSchemaJson, absPointerString, provider);
         ReferenceSchema.Builder refBuilder = ReferenceSchema.builder()
                 .refValue(jsonPointerVal);
-        loadingState.pointerSchemas.put(absPointerString, refBuilder);
+        schemaLoaderModel.pointerSchemas.put(absPointerString, refBuilder);
 
         JsonPointerResolver.QueryResult queryResult = pointer.query();
         //We shouldn't do this...
         // JsonObject resultObject = combineWithRefSchema(provider, withoutRef(document), queryResult.getQueryResult());
         JsonObject resultObject = queryResult.getQueryResult();
-        SchemaLoader childLoader = loadingState.initChildLoader()
-                .resolutionScope(isExternal ? withoutFragment(absPointerString) : loadingState.id)
-                .schemaJson(new SchemaJsonWrapper(resultObject))
+        SchemaLoader childLoader = schemaLoaderModel.initChildLoader()
+                .resolutionScope(isExternal ? withoutFragment(absPointerString) : schemaLoaderModel.id)
+                .schemaJson(new SchemaJsonObject(resultObject, path))
                 .rootSchemaJson(queryResult.getContainingDocument()).build();
         Schema referredSchema = childLoader.load().build();
         refBuilder.build().setReferredSchema(referredSchema);

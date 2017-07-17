@@ -2,8 +2,6 @@ package io.dugnutt.jsonschema.six;
 
 import javax.json.JsonValue;
 
-import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public enum JsonSchemaType {
@@ -21,6 +19,11 @@ public enum JsonSchemaType {
 
     public static JsonSchemaType fromJsonType(JsonValue.ValueType type) {
         checkNotNull(type, "type must not be null");
-        return valueOf(UPPER_UNDERSCORE.to(UPPER_CAMEL, type.name()));
+        return valueOf(type.name());
     }
+    public static JsonSchemaType fromString(String type) {
+        checkNotNull(type, "type must not be null");
+        return valueOf(type.toUpperCase());
+    }
+
 }

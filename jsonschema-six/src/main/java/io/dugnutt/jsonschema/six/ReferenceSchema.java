@@ -3,7 +3,7 @@ package io.dugnutt.jsonschema.six;
 import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaProperty.*;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.*;
 
 /**
  * This class is used to resolve JSON pointers.

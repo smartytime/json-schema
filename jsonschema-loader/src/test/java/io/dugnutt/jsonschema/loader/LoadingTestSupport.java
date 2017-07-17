@@ -26,6 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 
 public class LoadingTestSupport {
@@ -41,8 +42,8 @@ public class LoadingTestSupport {
 
     public static <S extends Schema, E extends Exception> E expectFailure(final Failure<S, E> failure) {
         try {
-            final Schema loadedSchema = failure.schemaFactory().orElse(SchemaFactory.schemaFactory())
-                    .load(failure.input());
+            final SchemaFactory schemaFactory = failure.schemaFactory().orElse(schemaFactory());
+            schemaFactory.load(failure.input());
         } catch (Throwable e) {
             failure.expectedException()
                     .ifPresent(expected -> {
@@ -60,12 +61,13 @@ public class LoadingTestSupport {
                             });
                         }
                     });
-            failure.expectedPointer().ifPresent(pointer -> {
+            failure.expectedSchemaLocation().ifPresent(pointer -> {
                 if (!(e instanceof SchemaException)) {
                     Assert.fail("Trying to test pointer, but exception wasn't SchemaException, it was: " + e);
+                } else {
                     SchemaException schemaException = (SchemaException) e;
                     final String schemaLocation = schemaException.getSchemaLocation();
-                    Assert.assertEquals("Error's location should have failed", pointer, schemaLocation);
+                    Assert.assertEquals("Error schemaLocation incorrect", pointer, schemaLocation);
                 }
             });
             return (E) e;
@@ -78,34 +80,30 @@ public class LoadingTestSupport {
 
         private JsonObject input;
 
-        private String expectedPointer = "#";
-
         private String expectedSchemaLocation = "#";
 
         private SchemaFactory schemaFactory;
 
         private Class<E> expectedException;
 
-        private String expectedMessageFragment;
-
         private Predicate<E> expectedPredicate;
 
         private Consumer<E> expectedConsumer;
 
-        public void expect() {
-            expectFailure(this);
+        public E expect() {
+            return expectFailure(this);
         }
 
         public Optional<Predicate<E>> expected() {
             return Optional.ofNullable(expectedPredicate);
         }
 
-        public Failure expected(Predicate<E> expected) {
+        public Failure<S, E> expected(Predicate<E> expected) {
             this.expectedPredicate = expected;
             return this;
         }
 
-        public Failure expected(Consumer<E> expected) {
+        public Failure<S, E> expected(Consumer<E> expected) {
             this.expectedConsumer = expected;
             return this;
         }
@@ -114,49 +112,31 @@ public class LoadingTestSupport {
             return Optional.ofNullable(expectedConsumer);
         }
 
-        public String expectedMessageFragment() {
-            return expectedMessageFragment;
-        }
-
-        public Failure expectedMessageFragment(String expectedFragment) {
-            this.expectedMessageFragment = expectedFragment;
+        public Failure<S, E> expectedSchemaLocation(final String expectedPointer) {
+            this.expectedSchemaLocation = expectedPointer;
             return this;
         }
 
-        public Failure expectedPointer(final String expectedPointer) {
-            this.expectedPointer = expectedPointer;
-            return this;
+        public Optional<String> expectedSchemaLocation() {
+            return Optional.ofNullable(expectedSchemaLocation);
         }
 
-        public Optional<String> expectedPointer() {
-            return Optional.ofNullable(expectedPointer);
-        }
-
-        public Failure expectedSchemaLocation(String expectedSchemaLocation) {
-            this.expectedSchemaLocation = expectedSchemaLocation;
-            return this;
-        }
-
-        public Failure expectedException(Class<E> exceptionClass) {
+        public Failure<S, E> expectedException(Class<E> exceptionClass) {
             this.expectedException = exceptionClass;
             return this;
         }
 
-        public String expectedSchemaLocation() {
-            return expectedSchemaLocation;
-        }
-
-        public Failure input(final String input) {
+        public Failure<S, E> input(final String input) {
             this.input = readJsonObject(input);
             return this;
         }
 
-        public Failure input(final JsonObject input) {
+        public Failure<S, E> input(final JsonObject input) {
             this.input = input;
             return this;
         }
 
-        public Failure input(final JsonValue input) {
+        public Failure<S, E> input(final JsonValue input) {
             this.input = input.asJsonObject();
             return this;
         }

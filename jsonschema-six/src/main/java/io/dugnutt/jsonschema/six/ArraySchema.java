@@ -17,6 +17,7 @@ package io.dugnutt.jsonschema.six;
 
 import lombok.Getter;
 
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,10 +30,15 @@ import static java.util.Objects.requireNonNull;
 @Getter
 public class ArraySchema extends Schema {
 
+    @Min(0)
     private final Integer minItems;
+
+    @Min(0)
     private final Integer maxItems;
+
     private final boolean needsUniqueItems;
     private final Schema allItemSchema;
+    private final Schema containsSchema;
     private final boolean permitsAdditionalItems;
     private final List<Schema> itemSchemas;
     private final boolean requiresArray;
@@ -50,6 +56,8 @@ public class ArraySchema extends Schema {
         this.needsUniqueItems = builder.uniqueItems;
         this.allItemSchema = builder.allItemSchema;
         this.itemSchemas = builder.itemSchemas;
+        this.containsSchema = builder.containsSchema;
+
         if (!builder.additionalItems && allItemSchema != null) {
             permitsAdditionalItems = true;
         } else {
@@ -102,13 +110,13 @@ public class ArraySchema extends Schema {
     @Override
     protected void propertiesToJson(final JsonSchemaGenerator writer) {
         writer.writeType(JsonSchemaType.ARRAY, requiresArray)
-                .writeIfTrue(JsonSchemaProperty.NEEDS_UNIQUE_ITEMS, needsUniqueItems)
-                .optionalWrite(JsonSchemaProperty.MIN_ITEMS, minItems)
-                .optionalWrite(JsonSchemaProperty.MAX_ITEMS, maxItems)
-                .writeIfFalse(JsonSchemaProperty.NEEDS_ADDITIONAL_ITEMS, permitsAdditionalItems)
-                .optionalWrite(JsonSchemaProperty.ITEMS, allItemSchema)
-                .optionalWrite(JsonSchemaProperty.ITEMS, itemSchemas)
-                .optionalWrite(JsonSchemaProperty.NEEDS_ADDITIONAL_ITEMS, schemaOfAdditionalItems);
+                .writeIfTrue(JsonSchemaKeyword.UNIQUE_ITEMS, needsUniqueItems)
+                .optionalWrite(JsonSchemaKeyword.MIN_ITEMS, minItems)
+                .optionalWrite(JsonSchemaKeyword.MAX_ITEMS, maxItems)
+                .writeIfFalse(JsonSchemaKeyword.ADDITIONAL_ITEMS, permitsAdditionalItems)
+                .optionalWrite(JsonSchemaKeyword.ITEMS, allItemSchema)
+                .optionalWrite(JsonSchemaKeyword.ITEMS, itemSchemas)
+                .optionalWrite(JsonSchemaKeyword.ADDITIONAL_ITEMS, schemaOfAdditionalItems);
     }
 
     /**
@@ -131,6 +139,8 @@ public class ArraySchema extends Schema {
         private boolean additionalItems = true;
 
         private Schema schemaOfAdditionalItems;
+
+        private Schema containsSchema;
 
         /**
          * Adds an item schema for tuple validation. The array items of the subject under validation
@@ -156,6 +166,11 @@ public class ArraySchema extends Schema {
 
         public Builder allItemSchema(final Schema allItemSchema) {
             this.allItemSchema = allItemSchema;
+            return this;
+        }
+
+        public Builder containsSchema(final Schema containsSchema) {
+            this.containsSchema = containsSchema;
             return this;
         }
 

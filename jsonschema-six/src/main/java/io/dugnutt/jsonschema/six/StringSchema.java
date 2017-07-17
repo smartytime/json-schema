@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.six;
 
+import javax.validation.constraints.Min;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -10,7 +11,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class StringSchema extends Schema {
 
+    @Min(0)
     private final Integer minLength;
+
+    @Min(0)
     private final Integer maxLength;
     private final Pattern pattern;
     private final boolean requiresString;
@@ -92,8 +96,8 @@ public class StringSchema extends Schema {
     @Override
     protected void propertiesToJson(JsonSchemaGenerator writer) {
         writer.writeType(JsonSchemaType.STRING, requiresString)
-                .optionalWrite(JsonSchemaProperty.MIN_LENGTH, minLength)
-                .optionalWrite(JsonSchemaProperty.MAX_LENGTH, maxLength)
+                .optionalWrite(JsonSchemaKeyword.MIN_LENGTH, minLength)
+                .optionalWrite(JsonSchemaKeyword.MAX_LENGTH, maxLength)
                 .optionalWrite(pattern)
                 .optionalWrite(formatType);
 

@@ -1,9 +1,9 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.ArraySchema;
+import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.ObjectComparator;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.JsonSchemaType;
 
 import javax.json.JsonArray;
 import javax.json.JsonValue;
@@ -26,6 +26,7 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
     @Override
     public Optional<ValidationError> validate(JsonValue subject) {
 
+        if(true) throw new AssertionError("Implement contains");
         List<ValidationError> failures = new ArrayList<>();
         final ValueType valueType = subject.getValueType();
         if (valueType != ValueType.ARRAY && schema.isRequiresArray()) {

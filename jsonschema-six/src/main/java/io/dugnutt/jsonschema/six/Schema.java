@@ -4,6 +4,8 @@ import lombok.Getter;
 import org.hibernate.validator.constraints.URL;
 
 import javax.annotation.Nullable;
+import javax.json.JsonArray;
+import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import javax.json.stream.JsonGenerator;
 import javax.validation.constraints.NotBlank;
@@ -27,6 +29,13 @@ public abstract class Schema {
 
     @NotBlank
     private final String id;
+
+    private final Schema allOfSchema;
+    private final Schema anyOfSchema;
+    private final Schema oneOfSchema;
+    private final Schema notSchema;
+    private final JsonArray enumValues;
+    private final JsonValue constValue;
 
     /**
      * Constructor.
@@ -124,9 +133,9 @@ public abstract class Schema {
 
     protected final JsonSchemaGenerator toJson(final JsonSchemaGenerator writer) {
         writer.object();
-        writer.optionalWrite(JsonSchemaProperty.TITLE, title);
-        writer.optionalWrite(JsonSchemaProperty.DESCRIPTION, description);
-        writer.optionalWrite(JsonSchemaProperty.ID, id);
+        writer.optionalWrite(JsonSchemaKeyword.TITLE, title);
+        writer.optionalWrite(JsonSchemaKeyword.DESCRIPTION, description);
+        writer.optionalWrite(JsonSchemaKeyword.$ID, id);
         propertiesToJson(writer);
         writer.endObject();
         return writer;

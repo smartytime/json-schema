@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.EnumSchema;
-import io.dugnutt.jsonschema.six.JsonSchemaProperty;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import org.junit.Assert;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class EnumSchemaValidatorTest {
         final Optional<ValidationError> validate = validator.validate(testValNotSame);
 
         assertTrue("Should have an error", validate.isPresent());
-        Assert.assertEquals("Should be for enum keyword", JsonSchemaProperty.ENUM.key(), validate.get().getKeyword());
+        Assert.assertEquals("Should be for enum keyword", JsonSchemaKeyword.ENUM.key(), validate.get().getKeyword());
     }
 
     @Test

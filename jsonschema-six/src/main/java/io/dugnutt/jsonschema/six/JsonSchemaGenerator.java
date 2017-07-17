@@ -55,28 +55,28 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaProperty name, Integer value) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword name, Integer value) {
         if (value != null) {
             wrapped.write(name.key(), value);
         }
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaProperty name, String value) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword name, String value) {
         if (value != null) {
             wrapped.write(name.key(), value);
         }
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaProperty property, Schema schema) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Schema schema) {
         if (schema != null) {
             write(property, schema);
         }
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaProperty property, Collection<Schema> schemas) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, List<Schema> schemas) {
         if (schemas != null) {
             wrapped.writeKey(property.key());
             array();
@@ -88,7 +88,7 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaProperty property, Map<String, Schema> schemas) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Map<String, Schema> schemas) {
         if (schemas != null && !schemas.isEmpty()) {
             writeKey(property);
             object();
@@ -101,14 +101,14 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaProperty property, Number number) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Number number) {
         if (number != null) {
             wrapped.write(property.key(), number.doubleValue());
         }
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaProperty property, List<String> arrayOfValues) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Collection<String> arrayOfValues) {
         if (arrayOfValues != null && !arrayOfValues.isEmpty()) {
             wrapped.writeKey(property.key());
             array();
@@ -122,20 +122,20 @@ public class JsonSchemaGenerator {
 
     public void optionalWrite(FormatType format) {
         if (format != null) {
-            write(JsonSchemaProperty.FORMAT, format.toString());
+            write(JsonSchemaKeyword.FORMAT, format.toString());
         }
     }
 
     public JsonSchemaGenerator optionalWrite(Pattern pattern) {
         if (pattern != null) {
-            write(JsonSchemaProperty.PATTERN, pattern.pattern());
+            write(JsonSchemaKeyword.PATTERN, pattern.pattern());
         }
         return this;
     }
 
     public JsonSchemaGenerator optionalWritePatternProperties(Map<Pattern, Schema> patterns) {
         if (patterns != null && !patterns.isEmpty()) {
-            writeKey(JsonSchemaProperty.PATTERN_PROPERTIES);
+            writeKey(JsonSchemaKeyword.PATTERN_PROPERTIES);
             object();
             patterns.forEach((pattern, schema) -> {
                 wrapped.writeKey(String.valueOf(pattern));
@@ -151,42 +151,42 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty name, JsonValue value) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, JsonValue value) {
         wrapped.write(name.key(), value);
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty name, String value) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, String value) {
         wrapped.write(name.key(), value);
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty name, BigInteger value) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, BigInteger value) {
         wrapped.write(name.key(), value);
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty name, BigDecimal value) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, BigDecimal value) {
         wrapped.write(name.key(), value);
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty name, int value) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, int value) {
         wrapped.write(name.key(), value);
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty name, long value) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, long value) {
         wrapped.write(name.key(), value);
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty name, double value) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, double value) {
         wrapped.write(name.key(), value);
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty name, boolean value) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, boolean value) {
         wrapped.write(name.key(), value);
         return this;
     }
@@ -231,7 +231,7 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaProperty property, Schema schema) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword property, Schema schema) {
         wrapped.writeKey(property.key());
         schema.toJson(this);
         return this;
@@ -242,26 +242,26 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator writeIfFalse(JsonSchemaProperty name, Boolean value) {
+    public JsonSchemaGenerator writeIfFalse(JsonSchemaKeyword name, Boolean value) {
         if (value == null || !value) {
             wrapped.write(name.key(), false);
         }
         return this;
     }
 
-    public JsonSchemaGenerator writeIfTrue(JsonSchemaProperty name, Boolean value) {
+    public JsonSchemaGenerator writeIfTrue(JsonSchemaKeyword name, Boolean value) {
         if (value != null && value) {
             wrapped.write(name.key(), true);
         }
         return this;
     }
 
-    public JsonSchemaGenerator writeKey(JsonSchemaProperty name) {
+    public JsonSchemaGenerator writeKey(JsonSchemaKeyword name) {
         wrapped.writeKey(name.key());
         return this;
     }
 
-    public JsonSchemaGenerator writeNull(JsonSchemaProperty name) {
+    public JsonSchemaGenerator writeNull(JsonSchemaKeyword name) {
         wrapped.writeNull(name.key());
         return this;
     }
@@ -281,19 +281,19 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator writeStartArray(JsonSchemaProperty name) {
+    public JsonSchemaGenerator writeStartArray(JsonSchemaKeyword name) {
         wrapped.writeStartArray(name.key());
         return this;
     }
 
-    public JsonSchemaGenerator writeStartObject(JsonSchemaProperty name) {
+    public JsonSchemaGenerator writeStartObject(JsonSchemaKeyword name) {
         wrapped.writeStartObject(name.key());
         return this;
     }
 
     public JsonSchemaGenerator writeType(JsonSchemaType type, boolean required) {
         if (required) {
-            wrapped.write(JsonSchemaProperty.TYPE.key(), type.toString());
+            wrapped.write(JsonSchemaKeyword.TYPE.key(), type.toString());
         }
         return this;
     }

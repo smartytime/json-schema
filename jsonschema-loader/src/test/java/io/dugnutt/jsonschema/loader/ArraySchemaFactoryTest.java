@@ -17,9 +17,9 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author erosb
  */
-public class ArraySchemaLoaderTest extends BaseLoaderTest {
+public class ArraySchemaFactoryTest extends BaseLoaderTest {
 
-    public ArraySchemaLoaderTest() {
+    public ArraySchemaFactoryTest() {
         super("arraytestschemas.json");
     }
 
@@ -54,7 +54,7 @@ public class ArraySchemaLoaderTest extends BaseLoaderTest {
     public void invalidAdditionalItems() {
         failWith(UnexpectedValueException.class)
                 .input(getJsonObjectForKey("invalidAdditionalItems"))
-                .expectedPointer("#")
+                .expectedSchemaLocation("#")
                 .expect();
     }
 
@@ -62,7 +62,7 @@ public class ArraySchemaLoaderTest extends BaseLoaderTest {
     public void invalidArrayItemSchema() {
         failWith(UnexpectedValueException.class)
                 .input(getJsonObjectForKey("invalidArrayItemSchema"))
-                .expectedPointer("#")
+                .expectedSchemaLocation("#")
                 .expect();
     }
 
@@ -71,7 +71,7 @@ public class ArraySchemaLoaderTest extends BaseLoaderTest {
         final JsonObject schemaJson = getJsonObjectForKey("invalidItemsArraySchema");
         failWith(UnexpectedValueException.class)
                 .input(schemaJson)
-                .expectedPointer("#")
+                .expectedSchemaLocation("#")
                 .expect();
     }
 }

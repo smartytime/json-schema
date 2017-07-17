@@ -12,38 +12,38 @@ import static org.junit.Assert.assertNull;
 /**
  * @author erosb
  */
-public class LoadingStateTest {
+public class SchemaLoaderModelTest {
 
-    private LoadingState emptySubject() {
-        return new LoadingState(SchemaLoader.builder()
+    private SchemaLoaderModel emptySubject() {
+        return new SchemaLoaderModel(SchemaLoader.builder()
                 .rootSchemaJson(JsonUtils.blankJsonObject())
                 .schemaJson(JsonUtils.blankJsonObject()));
     }
 
     @Test
     public void childForString() {
-        LoadingState ls = emptySubject();
-        LoadingState actual = ls.childFor("hello");
+        SchemaLoaderModel ls = emptySubject();
+        SchemaLoaderModel actual = ls.childFor("hello");
         Assert.assertEquals(asList("hello"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
     public void childForSecond() {
-        LoadingState ls = emptySubject();
-        LoadingState actual = ls.childFor("hello").childFor("world");
+        SchemaLoaderModel ls = emptySubject();
+        SchemaLoaderModel actual = ls.childFor("hello").childFor("world");
         Assert.assertEquals(asList("hello", "world"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
     public void childForArrayIndex() {
-        LoadingState ls = emptySubject();
-        LoadingState actual = ls.childFor(42);
+        SchemaLoaderModel ls = emptySubject();
+        SchemaLoaderModel actual = ls.childFor(42);
         Assert.assertEquals(asList("42"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
     public void testCreateSchemaException() {
-        LoadingState subject = new LoadingState(SchemaLoader.builder().schemaJson(JsonUtils.blankJsonObject()));
+        SchemaLoaderModel subject = new SchemaLoaderModel(SchemaLoader.builder().schemaJson(JsonUtils.blankJsonObject()));
         SchemaException actual = subject.createSchemaException("message");
         assertEquals("#: message", actual.getMessage());
         // assertEquals(JsonProvider.provider().createPointer("").toURIFragment(), actual.getSchemaLocation());
@@ -52,13 +52,13 @@ public class LoadingStateTest {
 
     @Test
     public void childForNotnullId() {
-        LoadingState actual = emptySubject().childForId("http://x.y");
+        SchemaLoaderModel actual = emptySubject().childForId("http://x.y");
         assertEquals("http://x.y", actual.id.toString());
     }
 
     @Test
     public void childForNullId() {
-        LoadingState actual = emptySubject().childForId(null);
+        SchemaLoaderModel actual = emptySubject().childForId(null);
         assertNull(actual.id);
     }
 }

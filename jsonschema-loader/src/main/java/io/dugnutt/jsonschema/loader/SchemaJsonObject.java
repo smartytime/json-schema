@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchemaProperty;
+import io.dugnutt.jsonschema.six.JsonPointerPath;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.MissingExpectedPropertyException;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 
@@ -9,6 +10,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
@@ -19,31 +21,40 @@ import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SchemaJsonWrapper implements JsonObject {
+public class SchemaJsonObject implements JsonObject {
     private final JsonObject wrapped;
 
-    public SchemaJsonWrapper(JsonObject wrapped) {
+    //Used to attach to error messages.
+    private final JsonPointerPath path;
+
+    public SchemaJsonObject(JsonObject wrapped, JsonPointerPath path) {
         this.wrapped = checkNotNull(wrapped);
+        this.path = path;
     }
 
-    public Optional<JsonValue> find(JsonSchemaProperty prop) {
+    public Optional<JsonValue> find(JsonSchemaKeyword prop) {
         if (wrapped.containsKey(prop.key())) {
             return Optional.of(wrapped.get(prop.key()));
         }
         return Optional.empty();
     }
 
-    public Optional<JsonString> findString(JsonSchemaProperty property) {
-        if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
-            return Optional.of(wrapped.getJsonString(property.key()));
+    public Optional<String> findString(JsonSchemaKeyword property) {
+        if (wrapped.containsKey(property.key())) {
+            try {
+                return Optional.of(wrapped.getString(property.key()));
+            } catch (ClassCastException e) {
+                throw new UnexpectedValueException(wrapped.get(property.key()), ValueType.STRING);
+            }
         }
         return Optional.empty();
     }
 
-    public Optional<JsonNumber> findNumber(JsonSchemaProperty property) {
-        if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
+    public Optional<Number> findNumber(JsonSchemaKeyword property) {
+        if (wrapped.containsKey(property.key())) {
             try {
-                return Optional.of(wrapped.getJsonNumber(property.key()));
+                final BigDecimal bigDecimalValue = wrapped.getJsonNumber(property.key()).bigDecimalValue();
+                return Optional.of(bigDecimalValue);
             } catch (ClassCastException e) {
                 throw new UnexpectedValueException(wrapped.get(property.key()), ValueType.NUMBER);
             }
@@ -51,7 +62,19 @@ public class SchemaJsonWrapper implements JsonObject {
         return Optional.empty();
     }
 
-    public Optional<Integer> findInt(JsonSchemaProperty property) {
+    public Optional<Integer> findInteger(JsonSchemaKeyword property) {
+        if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
+            try {
+                final int intValue = wrapped.getJsonNumber(property.key()).intValueExact();
+                return Optional.of(intValue);
+            } catch (ClassCastException e) {
+                throw new UnexpectedValueException(wrapped.get(property.key()), ValueType.NUMBER);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Integer> findInt(JsonSchemaKeyword property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
             try {
                 return Optional.of(wrapped.getJsonNumber(property.key()).intValue());
@@ -62,7 +85,7 @@ public class SchemaJsonWrapper implements JsonObject {
         return Optional.empty();
     }
 
-    public Optional<JsonArray> findArray(JsonSchemaProperty property) {
+    public Optional<JsonArray> findArray(JsonSchemaKeyword property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
             try {
                 return Optional.of(wrapped.getJsonArray(property.key()));
@@ -73,7 +96,7 @@ public class SchemaJsonWrapper implements JsonObject {
         return Optional.empty();
     }
 
-    public Optional<JsonObject> findObject(JsonSchemaProperty property) {
+    public Optional<JsonObject> findObject(JsonSchemaKeyword property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
             try {
                 return Optional.of(wrapped.getJsonObject(property.key()));
@@ -84,7 +107,7 @@ public class SchemaJsonWrapper implements JsonObject {
         return Optional.empty();
     }
 
-    public Optional<Boolean> findBoolean(JsonSchemaProperty property) {
+    public Optional<Boolean> findBoolean(JsonSchemaKeyword property) {
         if (wrapped.containsKey(property.key()) && !wrapped.isNull(property.key())) {
             try {
                 return Optional.of(wrapped.getBoolean(property.key()));
@@ -95,19 +118,19 @@ public class SchemaJsonWrapper implements JsonObject {
         return Optional.empty();
     }
 
-    public JsonString expectString(JsonSchemaProperty property) {
+    public JsonString expectString(JsonSchemaKeyword property) {
         return findString(property).orElseThrow(()-> new MissingExpectedPropertyException(wrapped, property.key()));
     }
 
-    public JsonNumber expectNumber(JsonSchemaProperty property) {
+    public JsonNumber expectNumber(JsonSchemaKeyword property) {
         return findNumber(property).orElseThrow(()-> new MissingExpectedPropertyException(wrapped, property.key()));
     }
 
-    public JsonObject expectObject(JsonSchemaProperty property) {
+    public JsonObject expectObject(JsonSchemaKeyword property) {
         return findObject(property).orElseThrow(()-> new MissingExpectedPropertyException(wrapped, property.key()));
     }
 
-    public JsonArray expectArray(JsonSchemaProperty property) {
+    public JsonArray expectArray(JsonSchemaKeyword property) {
         return findArray(property).orElseThrow(()-> new MissingExpectedPropertyException(wrapped, property.key()));
     }
 
@@ -119,6 +142,14 @@ public class SchemaJsonWrapper implements JsonObject {
     @Override
     public JsonObject getJsonObject(String name) {
         return wrapped.getJsonObject(name);
+    }
+
+    public JsonObject getJsonObject(JsonSchemaKeyword name) {
+        try {
+            return wrapped.getJsonObject(name.key());
+        } catch (ClassCastException e) {
+            throw new UnexpectedValueException(path, wrapped.get(name.key()), ValueType.OBJECT);
+        }
     }
 
     @Override
@@ -161,6 +192,14 @@ public class SchemaJsonWrapper implements JsonObject {
         return wrapped.getBoolean(name, defaultValue);
     }
 
+    public String getString(JsonSchemaKeyword property) {
+        try {
+            return wrapped.getString(property.key());
+        } catch (ClassCastException e) {
+            throw new UnexpectedValueException(path, wrapped.get(property.key()), ValueType.STRING);
+        }
+    }
+
     @Override
     public boolean isNull(String name) {
         return wrapped.isNull(name);
@@ -186,8 +225,17 @@ public class SchemaJsonWrapper implements JsonObject {
         return wrapped.asJsonArray();
     }
 
-    public boolean has(JsonSchemaProperty property) {
-        return wrapped.containsKey(property.key()) && !wrapped.isNull(property.key());
+    public boolean has(JsonSchemaKeyword property) {
+        return wrapped.containsKey(property.key());
+    }
+
+    public boolean hasAny(JsonSchemaKeyword... property) {
+        for (JsonSchemaKeyword jsonSchemaKeyword : property) {
+            if (wrapped.containsKey(jsonSchemaKeyword.key())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

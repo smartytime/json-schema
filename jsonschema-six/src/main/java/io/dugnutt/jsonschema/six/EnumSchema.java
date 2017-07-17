@@ -16,6 +16,8 @@
 package io.dugnutt.jsonschema.six;
 
 import javax.json.JsonArray;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 /**
@@ -23,6 +25,8 @@ import java.util.Objects;
  */
 public class EnumSchema extends Schema {
 
+    @Size(min = 1)
+    @NotNull
     private final JsonArray possibleValues;
 
     public EnumSchema(final Builder builder) {
@@ -66,7 +70,7 @@ public class EnumSchema extends Schema {
     @Override
     protected void propertiesToJson(JsonSchemaGenerator writer) {
         // writer.properties.put(TYPE.key(), provider.createValue(ENUM.key()));
-        writer.writeKey(JsonSchemaProperty.ENUM);
+        writer.writeKey(JsonSchemaKeyword.ENUM);
         writer.array();
         possibleValues.forEach(writer::write);
         writer.endArray();

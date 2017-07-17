@@ -1,11 +1,12 @@
 package io.dugnutt.jsonschema.six;
 
+import lombok.Getter;
+
 import javax.json.JsonObject;
-import java.util.ArrayList;
+import javax.validation.constraints.Min;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -17,14 +18,21 @@ import static java.util.Objects.requireNonNull;
 /**
  * Object schema validator.
  */
+@Getter
 public class ObjectSchema extends Schema {
 
     private final Map<String, Schema> propertySchemas;
     private final boolean additionalProperties;
     private final Schema schemaOfAdditionalProperties;
-    private final List<String> requiredProperties;
+    private final Set<String> requiredProperties;
+
+    @Min(0)
     private final Integer minProperties;
+
+    @Min(0)
     private final Integer maxProperties;
+
+    private final StringSchema propertyNames;
     private final Map<String, Set<String>> propertyDependencies;
     private final Map<String, Schema> schemaDependencies;
     private final boolean requiresObject;
@@ -45,7 +53,7 @@ public class ObjectSchema extends Schema {
             throw new SchemaException(
                     "additionalProperties cannot be false if schemaOfAdditionalProperties is present");
         }
-        this.requiredProperties = Collections.unmodifiableList(new ArrayList<>(
+        this.requiredProperties = Collections.unmodifiableSet(new HashSet<>(
                 builder.requiredProperties));
         this.minProperties = builder.minProperties;
         this.maxProperties = builder.maxProperties;
@@ -53,14 +61,11 @@ public class ObjectSchema extends Schema {
         this.schemaDependencies = copyMap(builder.schemaDependencies);
         this.requiresObject = builder.requiresObject;
         this.patternProperties = copyMap(builder.patternProperties);
+        this.propertyNames = builder.propertyNames;
     }
 
     public static Builder builder() {
         return new Builder();
-    }
-
-    private static <K, V> Map<K, V> copyMap(final Map<K, V> original) {
-        return Collections.unmodifiableMap(new HashMap<>(original));
     }
 
     public boolean definesProperty(String field) {
@@ -115,16 +120,16 @@ public class ObjectSchema extends Schema {
     }
 
     protected void propertiesToJson(JsonSchemaGenerator writer) {
-
+        //todo:ericm Add propertyNames schema
         writer.writeType(JsonSchemaType.OBJECT, requiresObject)
-                .optionalWrite(JsonSchemaProperty.PROPERTIES, propertySchemas)
-                .optionalWrite(JsonSchemaProperty.MIN_PROPERTIES, minProperties)
-                .optionalWrite(JsonSchemaProperty.MAX_PROPERTIES, maxProperties)
-                .optionalWrite(JsonSchemaProperty.REQUIRED, requiredProperties)
-                .optionalWrite(JsonSchemaProperty.ADDITIONAL_PROPERTIES, schemaOfAdditionalProperties)
-                .optionalWrite(JsonSchemaProperty.DEPENDENCIES, schemaDependencies)
+                .optionalWrite(JsonSchemaKeyword.PROPERTIES, propertySchemas)
+                .optionalWrite(JsonSchemaKeyword.MIN_PROPERTIES, minProperties)
+                .optionalWrite(JsonSchemaKeyword.MAX_PROPERTIES, maxProperties)
+                .optionalWrite(JsonSchemaKeyword.REQUIRED, requiredProperties)
+                .optionalWrite(JsonSchemaKeyword.ADDITIONAL_PROPERTIES, schemaOfAdditionalProperties)
+                .optionalWrite(JsonSchemaKeyword.DEPENDENCIES, schemaDependencies)
                 .optionalWritePatternProperties(patternProperties)
-                .writeIfFalse(JsonSchemaProperty.ADDITIONAL_PROPERTIES, additionalProperties);
+                .writeIfFalse(JsonSchemaKeyword.ADDITIONAL_PROPERTIES, additionalProperties);
 
         describePropertyDependenciesTo(writer);
     }
@@ -136,44 +141,8 @@ public class ObjectSchema extends Schema {
                 .filter(key -> !matchesAnyPattern(key));
     }
 
-    public Integer getMaxProperties() {
-        return maxProperties;
-    }
-
-    public Integer getMinProperties() {
-        return minProperties;
-    }
-
-    public Map<Pattern, Schema> getPatternProperties() {
-        return patternProperties;
-    }
-
-    public Map<String, Set<String>> getPropertyDependencies() {
-        return propertyDependencies;
-    }
-
-    public Map<String, Schema> getPropertySchemas() {
-        return propertySchemas;
-    }
-
-    public List<String> getRequiredProperties() {
-        return requiredProperties;
-    }
-
-    public Map<String, Schema> getSchemaDependencies() {
-        return schemaDependencies;
-    }
-
-    public Schema getSchemaOfAdditionalProperties() {
-        return schemaOfAdditionalProperties;
-    }
-
-    public boolean permitsAdditionalProperties() {
-        return additionalProperties;
-    }
-
-    public boolean requiresObject() {
-        return requiresObject;
+    private static <K, V> Map<K, V> copyMap(final Map<K, V> original) {
+        return Collections.unmodifiableMap(new HashMap<>(original));
     }
 
     private boolean matchesAnyPattern(final String key) {
@@ -182,9 +151,9 @@ public class ObjectSchema extends Schema {
     }
 
     private void describePropertyDependenciesTo(JsonSchemaGenerator writer) {
-        writer.writeKey(JsonSchemaProperty.DEPENDENCIES);
+        writer.writeKey(JsonSchemaKeyword.DEPENDENCIES);
         writer.object();
-        propertyDependencies.forEach((k,v) -> {
+        propertyDependencies.forEach((k, v) -> {
             writer.writePropertyName(k);
             writer.array();
             v.forEach(writer::write);
@@ -231,7 +200,7 @@ public class ObjectSchema extends Schema {
 
         private final Map<Pattern, Schema> patternProperties = new HashMap<>();
         private final Map<String, Schema> propertySchemas = new HashMap<>();
-        private final List<String> requiredProperties = new ArrayList<String>(0);
+        private final Set<String> requiredProperties = new HashSet<String>(0);
         private final Map<String, Set<String>> propertyDependencies = new HashMap<>();
         private final Map<String, Schema> schemaDependencies = new HashMap<>();
         private boolean requiresObject = true;
@@ -239,6 +208,7 @@ public class ObjectSchema extends Schema {
         private Schema schemaOfAdditionalProperties;
         private Integer minProperties;
         private Integer maxProperties;
+        private StringSchema propertyNames;
 
         /**
          * Adds a property schema.
@@ -305,6 +275,11 @@ public class ObjectSchema extends Schema {
                 propertyDependencies.put(ifPresent, dependencies);
             }
             dependencies.add(mustBePresent);
+            return this;
+        }
+
+        public Builder propertyNames(final StringSchema schema) {
+            this.propertyNames = schema;
             return this;
         }
 

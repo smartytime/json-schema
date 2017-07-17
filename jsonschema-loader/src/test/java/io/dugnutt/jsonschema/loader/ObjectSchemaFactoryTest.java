@@ -17,9 +17,9 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author erosb
  */
-public class ObjectSchemaLoaderTest extends BaseLoaderTest {
+public class ObjectSchemaFactoryTest extends BaseLoaderTest {
 
-    public ObjectSchemaLoaderTest() {
+    public ObjectSchemaFactoryTest() {
         super("objecttestschemas.json");
     }
 

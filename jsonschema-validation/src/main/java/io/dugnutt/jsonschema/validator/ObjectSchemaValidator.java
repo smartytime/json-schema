@@ -29,7 +29,9 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
 
     @Override
     public Optional<ValidationError> validate(JsonValue subject) {
-        var wrongType = verifyType(subject, JsonSchemaType.OBJECT, schema.requiresObject());
+
+        //todo:ericm Add propertyNames schema
+        var wrongType = verifyType(subject, JsonSchemaType.OBJECT, schema.isRequiresObject());
         if (wrongType.isPresent()) {
             return wrongType;
         }
@@ -51,7 +53,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     }
 
     private List<ValidationError> testAdditionalProperties(final JsonObject subject) {
-        if (!schema.permitsAdditionalProperties()) {
+        if (!schema.isAdditionalProperties()) {
             return schema.getAdditionalProperties(subject)
                     .map(unneeded -> String.format("extraneous key [%s] is not permitted", unneeded))
                     .map(msg -> new ValidationError(schema, msg, "additionalProperties"))

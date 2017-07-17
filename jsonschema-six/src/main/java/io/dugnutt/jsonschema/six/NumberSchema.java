@@ -3,6 +3,7 @@ package io.dugnutt.jsonschema.six;
 import lombok.Builder;
 import lombok.Getter;
 
+import javax.validation.constraints.Min;
 import java.util.Objects;
 
 /**
@@ -15,9 +16,11 @@ public class NumberSchema extends Schema {
     private final boolean requiresNumber;
     private final Number minimum;
     private final Number maximum;
+
+    @Min(1)
     private final Number multipleOf;
-    private final boolean exclusiveMinimum;
-    private final boolean exclusiveMaximum;
+    private final Number exclusiveMinimum;
+    private final Number exclusiveMaximum;
 
     public NumberSchema() {
         this(builder());
@@ -42,17 +45,23 @@ public class NumberSchema extends Schema {
         return new Builder();
     }
 
+    @Override
+    public int hashCode() {
+        return Objects
+                .hash(super.hashCode(), requiresNumber, minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum);
+    }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
+        }
         if (o instanceof NumberSchema) {
             NumberSchema that = (NumberSchema) o;
             return that.canEqual(this) &&
                     requiresNumber == that.requiresNumber &&
-                    exclusiveMinimum == that.exclusiveMinimum &&
-                    exclusiveMaximum == that.exclusiveMaximum &&
+                    Objects.equals(exclusiveMinimum, that.exclusiveMinimum) &&
+                    Objects.equals(exclusiveMaximum, that.exclusiveMaximum) &&
                     Objects.equals(minimum, that.minimum) &&
                     Objects.equals(maximum, that.maximum) &&
                     Objects.equals(multipleOf, that.multipleOf) &&
@@ -63,24 +72,18 @@ public class NumberSchema extends Schema {
     }
 
     @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
-        writer.writeType(JsonSchemaType.NUMBER, requiresNumber)
-                .optionalWrite(JsonSchemaProperty.MINIMUM, minimum)
-                .optionalWrite(JsonSchemaProperty.MAXIMUM, maximum)
-                .optionalWrite(JsonSchemaProperty.MULTIPLE_OF, multipleOf)
-                .writeIfTrue(JsonSchemaProperty.EXCLUSIVE_MINIMUM, exclusiveMinimum)
-                .writeIfTrue(JsonSchemaProperty.EXCLUSIVE_MAXIMUM, exclusiveMinimum);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects
-                .hash(super.hashCode(), requiresNumber, minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum);
-    }
-
-    @Override
     protected boolean canEqual(Object other) {
         return other instanceof NumberSchema;
+    }
+
+    @Override
+    protected void propertiesToJson(JsonSchemaGenerator writer) {
+        writer.writeType(JsonSchemaType.NUMBER, requiresNumber)
+                .optionalWrite(JsonSchemaKeyword.MINIMUM, minimum)
+                .optionalWrite(JsonSchemaKeyword.MAXIMUM, maximum)
+                .optionalWrite(JsonSchemaKeyword.MULTIPLE_OF, multipleOf)
+                .optionalWrite(JsonSchemaKeyword.EXCLUSIVE_MINIMUM, exclusiveMinimum)
+                .optionalWrite(JsonSchemaKeyword.EXCLUSIVE_MAXIMUM, exclusiveMinimum);
     }
 
     /**
@@ -95,12 +98,12 @@ public class NumberSchema extends Schema {
             return new NumberSchema(this);
         }
 
-        public Builder exclusiveMaximum(final boolean exclusiveMaximum) {
+        public Builder exclusiveMaximum(final Integer exclusiveMaximum) {
             this.exclusiveMaximum = exclusiveMaximum;
             return this;
         }
 
-        public Builder exclusiveMinimum(final boolean exclusiveMinimum) {
+        public Builder exclusiveMinimum(final Integer exclusiveMinimum) {
             this.exclusiveMinimum = exclusiveMinimum;
             return this;
         }
@@ -124,6 +127,5 @@ public class NumberSchema extends Schema {
             this.requiresNumber = requiresNumber;
             return this;
         }
-
     }
 }

@@ -6,14 +6,14 @@ import static com.google.common.base.CaseFormat.UPPER_CAMEL;
 public enum CombinedSchemaType {
     AllOf, OneOf, AnyOf;
 
-    public JsonSchemaProperty getProperty() {
+    public JsonSchemaKeyword getProperty() {
         switch (this) {
             case AllOf:
-                return JsonSchemaProperty.ALL_OF;
+                return JsonSchemaKeyword.ALL_OF;
             case AnyOf:
-                return JsonSchemaProperty.ANY_OF;
+                return JsonSchemaKeyword.ANY_OF;
             case OneOf:
-                return JsonSchemaProperty.ONE_OF;
+                return JsonSchemaKeyword.ONE_OF;
             default:
                 throw new IllegalStateException("Shouldn't ever see this");
         }

@@ -18,7 +18,6 @@ package io.dugnutt.jsonschema.six;
 import lombok.Getter;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ import static java.util.Objects.requireNonNull;
 public class CombinedSchema extends Schema {
 
     private final CombinedSchemaType combinedSchemaType;
-    private final Collection<Schema> subSchemas;
+    private final List<Schema> subSchemas;
 
     /**
      * Constructor.
@@ -87,11 +86,11 @@ public class CombinedSchema extends Schema {
         writer.optionalWrite(combinedSchemaType.getProperty(), subSchemas);
     }
 
-    public static Builder allOf(final Collection<Schema> schemas) {
+    public static Builder allOf(final List<Schema> schemas) {
         return builder(schemas).combinedSchemaType(CombinedSchemaType.AllOf);
     }
 
-    public static Builder anyOf(final Collection<Schema> schemas) {
+    public static Builder anyOf(final List<Schema> schemas) {
         return builder(schemas).combinedSchemaType(CombinedSchemaType.AnyOf);
     }
 
@@ -99,11 +98,11 @@ public class CombinedSchema extends Schema {
         return new Builder();
     }
 
-    public static Builder builder(final Collection<Schema> subschemas) {
+    public static Builder builder(final List<Schema> subschemas) {
         return new Builder().subschemas(subschemas);
     }
 
-    public static Builder oneOf(final Collection<Schema> schemas) {
+    public static Builder oneOf(final List<Schema> schemas) {
         return builder(schemas).combinedSchemaType(CombinedSchemaType.OneOf);
     }
 
@@ -114,7 +113,7 @@ public class CombinedSchema extends Schema {
 
         private CombinedSchemaType combinedSchemaType;
 
-        private Collection<Schema> subschemas = new ArrayList<>();
+        private List<Schema> subschemas = new ArrayList<>();
 
         @Override
         public CombinedSchema build() {
@@ -131,7 +130,7 @@ public class CombinedSchema extends Schema {
             return this;
         }
 
-        public Builder subschemas(final Collection<Schema> subschemas) {
+        public Builder subschemas(final List<Schema> subschemas) {
             this.subschemas = subschemas;
             return this;
         }
