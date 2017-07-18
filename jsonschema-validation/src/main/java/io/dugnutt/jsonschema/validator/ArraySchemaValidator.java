@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.ArraySchema;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.ObjectComparator;
 import io.dugnutt.jsonschema.six.Schema;
@@ -25,8 +26,6 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
 
     @Override
     public Optional<ValidationError> validate(JsonValue subject) {
-
-        if(true) throw new AssertionError("Implement contains");
         List<ValidationError> failures = new ArrayList<>();
         final ValueType valueType = subject.getValueType();
         if (valueType != ValueType.ARRAY && schema.isRequiresArray()) {
@@ -49,45 +48,58 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
 
         if (minItems != null && actualLength < minItems) {
             return Optional.of(failure("expected minimum item count: " + minItems
-                    + ", found: " + actualLength, "minItems"));
+                    + ", found: " + actualLength, JsonSchemaKeyword.MIN_ITEMS));
         }
 
         if (maxItems != null && maxItems < actualLength) {
             return Optional.of(failure("expected maximum item count: " + maxItems
-                    + ", found: " + actualLength, "maxItems"));
+                    + ", found: " + actualLength, JsonSchemaKeyword.MAX_ITEMS));
         }
         return Optional.empty();
     }
 
     private List<ValidationError> testItems(final JsonArray subject) {
-        List<ValidationError> rval = new ArrayList<>();
+        List<ValidationError> errors = new ArrayList<>();
         Schema allItemSchema = schema.getAllItemSchema();
         List<Schema> itemSchemas = schema.getItemSchemas();
         boolean additionalItems = schema.isPermitsAdditionalItems();
         Schema schemaOfAdditionalItems = schema.getSchemaOfAdditionalItems();
+
         if (allItemSchema != null) {
             validateItemsAgainstSchema(IntStream.range(0, subject.size()),
                     subject,
                     allItemSchema,
-                    rval::add);
+                    errors::add);
         } else if (itemSchemas != null) {
             if (!additionalItems && subject.size() > itemSchemas.size()) {
-                rval.add(failure(String.format("expected: [%d] array items, found: [%d]",
-                        itemSchemas.size(), subject.size()), "items"));
+                errors.add(failure(String.format("expected: [%d] array items, found: [%d]",
+                        itemSchemas.size(), subject.size()), JsonSchemaKeyword.ITEMS));
             }
             int itemValidationUntil = Math.min(subject.size(), itemSchemas.size());
             validateItemsAgainstSchema(IntStream.range(0, itemValidationUntil),
                     subject,
                     itemSchemas::get,
-                    rval::add);
+                    errors::add);
             if (schemaOfAdditionalItems != null) {
                 validateItemsAgainstSchema(IntStream.range(itemValidationUntil, subject.size()),
                         subject,
                         schemaOfAdditionalItems,
-                        rval::add);
+                        errors::add);
             }
         }
-        return rval;
+
+        Schema containsSchema = schema.getContainsSchema();
+        if (containsSchema != null) {
+            SchemaValidator<Schema> containsValidator = context.getFactory().createValidator(containsSchema);
+            Optional<JsonValue> containsValid = subject.stream()
+                    .filter(arrayItem -> !containsValidator.validate(arrayItem).isPresent())
+                    .findAny();
+            if (!containsValid.isPresent()) {
+                errors.add(failure("array does not contain at least 1 matching item", JsonSchemaKeyword.CONTAINS));
+            }
+        }
+
+        return errors;
     }
 
     private void validateItemsAgainstSchema(final IntStream indices, final JsonArray items,
@@ -120,7 +132,7 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
             for (JsonValue contained : uniqueItems) {
                 if (ObjectComparator.lexicalEquivalent(contained, item)) {
                     return Optional.of(
-                            failure("array items are not unique", "uniqueItems"));
+                            failure("array items are not unique", JsonSchemaKeyword.UNIQUE_ITEMS));
                 }
             }
             uniqueItems.add(item);

@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.ResourceLoader.DEFAULT;
 import static io.dugnutt.jsonschema.six.ValidationErrorTest.loader;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;

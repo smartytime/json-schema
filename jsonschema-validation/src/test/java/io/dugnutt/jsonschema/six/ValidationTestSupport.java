@@ -97,7 +97,7 @@ public class ValidationTestSupport {
         assertEquals(failure.expectedPointer(), error.getPointerToViolation());
         assertEquals(failure.expectedSchemaLocation(), error.getSchemaLocation());
         if (failure.expectedKeyword() != null) {
-            assertEquals(failure.expectedKeyword(), error.getKeyword());
+            assertEquals(failure.expectedKeyword(), error.getKeyword().key());
         }
         if (failure.expectedMessageFragment() != null) {
             assertThat(error.getMessage(), containsString(failure.expectedMessageFragment()));

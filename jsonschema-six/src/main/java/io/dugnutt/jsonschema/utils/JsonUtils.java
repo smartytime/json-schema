@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.CaseFormat.UPPER_CAMEL;
-import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static javax.json.spi.JsonProvider.provider;
 
@@ -140,6 +138,18 @@ public class JsonUtils {
         return readValue(JsonUtils.class.getResourceAsStream(resourceURL), jsonValue);
     }
 
+    public static boolean isOneOf(JsonValue value, JsonValue.ValueType... anyOf) {
+        if (anyOf.length == 0) {
+            return true;
+        }
+        for (JsonValue.ValueType valueType : anyOf) {
+            if (value.getValueType() == valueType) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @SneakyThrows
     public static <V extends JsonValue> V readValue(String json, Class<V> expected) {
         checkNotNull(json, "json must not be null");
@@ -184,7 +194,7 @@ public class JsonUtils {
         if (valueType == JsonValue.ValueType.FALSE || valueType == JsonValue.ValueType.TRUE) {
             return JsonSchemaType.BOOLEAN;
         } else {
-            return JsonSchemaType.valueOf(UPPER_UNDERSCORE.to(UPPER_CAMEL, valueType.name()));
+            return JsonSchemaType.valueOf(valueType.name());
         }
     }
 }

@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -39,8 +40,6 @@ public class JsonObjectTest extends BaseLoaderTest {
         return rval;
     }
 
-    // private static final LoadingState emptyLs = JsonValueTest.emptyLs;
-
     @Rule
     public ExpectedException expExc = ExpectedException.none();
 
@@ -55,27 +54,12 @@ public class JsonObjectTest extends BaseLoaderTest {
                 .build();
     }
 
-    // @Test
-    // public void idHandling() {
-    //     Schema schema = getSchemaForKey("idInRoot");
-    //     URI actual = JsonValue.of(schema, emptyLs).ls.id;
-    //     assertEquals(schema.getId(), actual.toString());
-    // }
-    //
-    // @Test
-    // public void nullId() {
-    //     JsonObject schema = JsonUtils.blankObject();
-    //     URI actual = JsonValue.of(schema, emptyLs).ls.id;
-    //     assertNull(actual);
-    // }
-
     @Test
     public void nestedId() {
         JsonObject schema = getJsonObjectForKey("nestedId");
-        // URI actual = schema.getJsonObject("properties")
-        //         .getJsonObject("prop");
-        Assert.fail("No LS to test");
-        // assertEquals("http://x.y/z#zzz", actual.toString());
+        SchemaLoaderModel modelFor = SchemaLoaderModel.createModelFor(schema);
+        SchemaLoaderModel grandChild = modelFor.childModel(JsonSchemaKeyword.PROPERTIES).childModel("prop");
+        assertEquals("http://x.y/z#zzz", grandChild.getResolutionScope().toString());
     }
 
     @Test
@@ -83,9 +67,6 @@ public class JsonObjectTest extends BaseLoaderTest {
         JsonObject input = testSchemas.getJsonObject("remotePointerResolution");
         JsonObject fc = input.getJsonObject("properties").getJsonObject("folderChange");
         JsonObject sIF = fc.getJsonObject("properties").getJsonObject("schemaInFolder");
-        //What's the test?
-        Assert.fail("No assertion");
-
     }
 
 }

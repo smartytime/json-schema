@@ -94,7 +94,7 @@ public class StringSchema extends Schema {
     }
 
     @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
         writer.writeType(JsonSchemaType.STRING, requiresString)
                 .optionalWrite(JsonSchemaKeyword.MIN_LENGTH, minLength)
                 .optionalWrite(JsonSchemaKeyword.MAX_LENGTH, maxLength)

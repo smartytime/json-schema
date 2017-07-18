@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.CombinedSchema;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 
 import javax.json.JsonValue;
@@ -29,7 +30,7 @@ public class CombinedSchemaValidator extends SchemaValidator<CombinedSchema> {
             if (matchingCount < subschemaCount) {
                 return Optional.of(new ValidationError(null,
                         format("only %d subschema matches out of %d", matchingCount, subschemaCount),
-                        "allOf"
+                        JsonSchemaKeyword.ALL_OF
                 ));
             }
             return Optional.empty();
@@ -45,7 +46,7 @@ public class CombinedSchemaValidator extends SchemaValidator<CombinedSchema> {
             if (matchingCount == 0) {
                 return Optional.of(new ValidationError(null, format(
                         "no subschema matched out of the total %d subschemas",
-                        subschemaCount), "anyOf"));
+                        subschemaCount), JsonSchemaKeyword.ANY_OF));
             }
             return Optional.empty();
         }
@@ -65,7 +66,7 @@ public class CombinedSchemaValidator extends SchemaValidator<CombinedSchema> {
                 public Optional<ValidationError> validate(int subschemaCount, int matchingCount) {
                     if (matchingCount != 1) {
                         return Optional.of(new ValidationError(null, format("%d subschemas matched instead of one",
-                                matchingCount), "oneOf"));
+                                matchingCount), JsonSchemaKeyword.ONE_OF));
                     }
                     return Optional.empty();
                 }

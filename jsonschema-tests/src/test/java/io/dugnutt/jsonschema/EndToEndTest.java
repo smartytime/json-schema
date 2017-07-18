@@ -14,7 +14,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
-import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 
 public class EndToEndTest {

@@ -6,7 +6,7 @@ import io.dugnutt.jsonschema.six.JsonSchemaType;
 import javax.json.JsonValue;
 import java.util.Optional;
 
-import static io.dugnutt.jsonschema.six.BooleanSchema.*;
+import static io.dugnutt.jsonschema.six.BooleanSchema.BOOLEAN_SCHEMA;
 import static javax.json.JsonValue.ValueType;
 import static javax.json.JsonValue.ValueType.FALSE;
 import static javax.json.JsonValue.ValueType.TRUE;

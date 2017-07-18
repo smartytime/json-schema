@@ -22,7 +22,6 @@ import static java.util.Objects.requireNonNull;
 public class ObjectSchema extends Schema {
 
     private final Map<String, Schema> propertySchemas;
-    private final boolean additionalProperties;
     private final Schema schemaOfAdditionalProperties;
     private final Set<String> requiredProperties;
 
@@ -47,12 +46,7 @@ public class ObjectSchema extends Schema {
         super(builder);
         this.propertySchemas = builder.propertySchemas == null ? null
                 : Collections.unmodifiableMap(builder.propertySchemas);
-        this.additionalProperties = builder.additionalProperties;
         this.schemaOfAdditionalProperties = builder.schemaOfAdditionalProperties;
-        if (!additionalProperties && schemaOfAdditionalProperties != null) {
-            throw new SchemaException(
-                    "additionalProperties cannot be false if schemaOfAdditionalProperties is present");
-        }
         this.requiredProperties = Collections.unmodifiableSet(new HashSet<>(
                 builder.requiredProperties));
         this.minProperties = builder.minProperties;
@@ -86,7 +80,7 @@ public class ObjectSchema extends Schema {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), propertySchemas, additionalProperties, schemaOfAdditionalProperties, requiredProperties,
+        return Objects.hash(super.hashCode(), propertySchemas, schemaOfAdditionalProperties, requiredProperties,
                 minProperties, maxProperties, propertyDependencies, schemaDependencies, requiresObject, patternProperties);
     }
 
@@ -98,7 +92,6 @@ public class ObjectSchema extends Schema {
         if (o instanceof ObjectSchema) {
             ObjectSchema that = (ObjectSchema) o;
             return that.canEqual(this) &&
-                    additionalProperties == that.additionalProperties &&
                     requiresObject == that.requiresObject &&
                     Objects.equals(propertySchemas, that.propertySchemas) &&
                     Objects.equals(schemaOfAdditionalProperties, that.schemaOfAdditionalProperties) &&
@@ -119,7 +112,7 @@ public class ObjectSchema extends Schema {
         return other instanceof ObjectSchema;
     }
 
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
         //todo:ericm Add propertyNames schema
         writer.writeType(JsonSchemaType.OBJECT, requiresObject)
                 .optionalWrite(JsonSchemaKeyword.PROPERTIES, propertySchemas)
@@ -128,8 +121,7 @@ public class ObjectSchema extends Schema {
                 .optionalWrite(JsonSchemaKeyword.REQUIRED, requiredProperties)
                 .optionalWrite(JsonSchemaKeyword.ADDITIONAL_PROPERTIES, schemaOfAdditionalProperties)
                 .optionalWrite(JsonSchemaKeyword.DEPENDENCIES, schemaDependencies)
-                .optionalWritePatternProperties(patternProperties)
-                .writeIfFalse(JsonSchemaKeyword.ADDITIONAL_PROPERTIES, additionalProperties);
+                .optionalWritePatternProperties(patternProperties);
 
         describePropertyDependenciesTo(writer);
     }
@@ -151,15 +143,17 @@ public class ObjectSchema extends Schema {
     }
 
     private void describePropertyDependenciesTo(JsonSchemaGenerator writer) {
-        writer.writeKey(JsonSchemaKeyword.DEPENDENCIES);
-        writer.object();
-        propertyDependencies.forEach((k, v) -> {
-            writer.writePropertyName(k);
-            writer.array();
-            v.forEach(writer::write);
-            writer.endArray();
-        });
-        writer.endObject();
+        if (propertyDependencies.size() > 0) {
+            writer.writeKey(JsonSchemaKeyword.DEPENDENCIES);
+            writer.object();
+            propertyDependencies.forEach((k, v) -> {
+                writer.writePropertyName(k);
+                writer.array();
+                v.forEach(writer::write);
+                writer.endArray();
+            });
+            writer.endObject();
+        }
     }
 
     private boolean definesSchemaProperty(String current, final String remaining) {
@@ -204,7 +198,6 @@ public class ObjectSchema extends Schema {
         private final Map<String, Set<String>> propertyDependencies = new HashMap<>();
         private final Map<String, Schema> schemaDependencies = new HashMap<>();
         private boolean requiresObject = true;
-        private boolean additionalProperties = true;
         private Schema schemaOfAdditionalProperties;
         private Integer minProperties;
         private Integer maxProperties;
@@ -227,11 +220,6 @@ public class ObjectSchema extends Schema {
 
         public Builder addRequiredProperty(final String propertyName) {
             requiredProperties.add(propertyName);
-            return this;
-        }
-
-        public Builder additionalProperties(final boolean additionalProperties) {
-            this.additionalProperties = additionalProperties;
             return this;
         }
 

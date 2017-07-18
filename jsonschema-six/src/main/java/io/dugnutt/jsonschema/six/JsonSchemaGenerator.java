@@ -1,5 +1,7 @@
 package io.dugnutt.jsonschema.six;
 
+import com.google.common.math.DoubleMath;
+
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 import java.math.BigDecimal;
@@ -81,7 +83,9 @@ public class JsonSchemaGenerator {
             wrapped.writeKey(property.key());
             array();
             for (Schema schema : schemas) {
-                schema.propertiesToJson(this);
+                object();
+                schema.writePropertiesToJson(this);
+                endObject();
             }
             endArray();
         }
@@ -94,7 +98,9 @@ public class JsonSchemaGenerator {
             object();
             schemas.forEach((k, schema) -> {
                 wrapped.writeKey(k);
-                schema.propertiesToJson(this);
+                object();
+                schema.writePropertiesToJson(this);
+                endObject();
             });
             endObject();
         }
@@ -103,10 +109,16 @@ public class JsonSchemaGenerator {
 
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Number number) {
         if (number != null) {
-            wrapped.write(property.key(), number.doubleValue());
+            if (DoubleMath.isMathematicalInteger(number.doubleValue())) {
+                wrapped.write(property.key(), number.intValue());
+            } else {
+                wrapped.write(property.key(), number.doubleValue());
+            }
         }
         return this;
     }
+
+
 
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Collection<String> arrayOfValues) {
         if (arrayOfValues != null && !arrayOfValues.isEmpty()) {
@@ -139,7 +151,9 @@ public class JsonSchemaGenerator {
             object();
             patterns.forEach((pattern, schema) -> {
                 wrapped.writeKey(String.valueOf(pattern));
-                schema.propertiesToJson(this);
+                object();
+                schema.writePropertiesToJson(this);
+                endObject();
             });
             endObject();
         }

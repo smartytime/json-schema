@@ -10,7 +10,10 @@ import javax.json.spi.JsonProvider;
 import javax.json.stream.JsonGenerator;
 import javax.validation.constraints.NotBlank;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Superclass of all other schema validator classes of this package.
@@ -30,9 +33,9 @@ public abstract class Schema {
     @NotBlank
     private final String id;
 
-    private final Schema allOfSchema;
-    private final Schema anyOfSchema;
-    private final Schema oneOfSchema;
+    private final CombinedSchema allOfSchema;
+    private final CombinedSchema anyOfSchema;
+    private final CombinedSchema oneOfSchema;
     private final Schema notSchema;
     private final JsonArray enumValues;
     private final JsonValue constValue;
@@ -47,6 +50,12 @@ public abstract class Schema {
         this.description = builder.description;
         this.id = builder.id;
         this.schemaLocation = builder.schemaLocation;
+        this.enumValues = builder.enumValues;
+        this.constValue = builder.constValue;
+        this.allOfSchema = builder.allOfSchema;
+        this.anyOfSchema = builder.anyOfSchema;
+        this.oneOfSchema = builder.oneOfSchema;
+        this.notSchema = builder.notSchema;
     }
 
     /**
@@ -73,7 +82,7 @@ public abstract class Schema {
      *           "type" : "number",
      *           "minimum" : 0
      *       },
-     *       "Rectangle" : {
+     *       "rectangle" : {
      *           "type" : "object",
      *           "properties" : {
      *               "a" : {"$ref" : "#/definitions/size"},
@@ -121,6 +130,7 @@ public abstract class Schema {
         StringWriter writer = new StringWriter();
         final JsonGenerator generator = JsonProvider.provider().createGenerator(writer);
         toJson(generator);
+        generator.close();
         return writer.getBuffer().toString();
     }
 
@@ -135,8 +145,8 @@ public abstract class Schema {
         writer.object();
         writer.optionalWrite(JsonSchemaKeyword.TITLE, title);
         writer.optionalWrite(JsonSchemaKeyword.DESCRIPTION, description);
-        writer.optionalWrite(JsonSchemaKeyword.$ID, id);
-        propertiesToJson(writer);
+        writer.optionalWrite(JsonSchemaKeyword.ID, id);
+        writePropertiesToJson(writer);
         writer.endObject();
         return writer;
     }
@@ -158,7 +168,7 @@ public abstract class Schema {
      * Convenience method for writing properties to a generator.  Overridden by subclasses
      * for any schema-specific properties.
      */
-    protected void propertiesToJson(final JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(final JsonSchemaGenerator writer) {
 
     }
 
@@ -175,16 +185,63 @@ public abstract class Schema {
         private String description;
         private String id;
         private String schemaLocation;
+        private JsonArray enumValues;
+        private JsonValue constValue;
+        private CombinedSchema allOfSchema;
+        private CombinedSchema anyOfSchema;
+        private CombinedSchema oneOfSchema;
+        private Schema notSchema;
+
+        public Builder<S> allOfSchemas(Stream<Schema> schema) {
+            List<Schema> schemas = schema.collect(Collectors.toList());
+            if (schemas.size() > 0) {
+                this.allOfSchema = CombinedSchema.allOf(schemas).build();
+            }
+
+            return this;
+        }
+
+        public Builder<S> anyOfSchemas(Stream<Schema> schema) {
+            List<Schema> schemas = schema.collect(Collectors.toList());
+            if (schemas.size() > 0) {
+                this.anyOfSchema = CombinedSchema.anyOf(schemas).build();
+            }
+
+            return this;
+        }
 
         public abstract S build();
+
+        public Builder<S> constValue(JsonValue constValue) {
+            this.constValue = constValue;
+            return this;
+        }
 
         public Builder<S> description(final String description) {
             this.description = description;
             return this;
         }
 
+        public Builder<S> enumValues(JsonArray enumValues) {
+            this.enumValues = enumValues;
+            return this;
+        }
+
         public Builder<S> id(final String id) {
             this.id = id;
+            return this;
+        }
+
+        public Builder<S> notSchema(Schema schema) {
+            this.notSchema = schema;
+            return this;
+        }
+
+        public Builder<S> oneOfSchemas(Stream<Schema> schema) {
+            List<Schema> schemas = schema.collect(Collectors.toList());
+            if (schemas.size() > 0) {
+                this.oneOfSchema = CombinedSchema.oneOf(schemas).build();
+            }
             return this;
         }
 

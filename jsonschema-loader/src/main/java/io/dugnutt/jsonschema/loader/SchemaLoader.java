@@ -7,7 +7,6 @@ import io.dugnutt.jsonschema.six.Schema;
  */
 interface SchemaLoader<S extends Schema> {
 
-    private
 
     // private final LoadingState loadingState;
     // private final JsonProvider provider;

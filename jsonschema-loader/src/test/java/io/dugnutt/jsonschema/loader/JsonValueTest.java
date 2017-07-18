@@ -1,8 +1,6 @@
 package io.dugnutt.jsonschema.loader;
 
 import junitparams.JUnitParamsRunner;
-import org.junit.Assert;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -200,9 +198,4 @@ public class JsonValueTest {
     //             par(new JSONArray(), JsonArray.class)
     //     };
     // }
-
-    @Test
-    public void testCheckBack() {
-        Assert.fail("Look into this");
-    }
 }

@@ -14,6 +14,7 @@ import java.util.Objects;
 public class NumberSchema extends Schema {
 
     private final boolean requiresNumber;
+    private final boolean requiresInteger;
     private final Number minimum;
     private final Number maximum;
 
@@ -39,6 +40,7 @@ public class NumberSchema extends Schema {
         this.exclusiveMaximum = builder.exclusiveMaximum;
         this.multipleOf = builder.multipleOf;
         this.requiresNumber = builder.requiresNumber;
+        this.requiresInteger = builder.requiresInteger;
     }
 
     public static Builder builder() {
@@ -77,13 +79,13 @@ public class NumberSchema extends Schema {
     }
 
     @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
         writer.writeType(JsonSchemaType.NUMBER, requiresNumber)
                 .optionalWrite(JsonSchemaKeyword.MINIMUM, minimum)
                 .optionalWrite(JsonSchemaKeyword.MAXIMUM, maximum)
                 .optionalWrite(JsonSchemaKeyword.MULTIPLE_OF, multipleOf)
                 .optionalWrite(JsonSchemaKeyword.EXCLUSIVE_MINIMUM, exclusiveMinimum)
-                .optionalWrite(JsonSchemaKeyword.EXCLUSIVE_MAXIMUM, exclusiveMinimum);
+                .optionalWrite(JsonSchemaKeyword.EXCLUSIVE_MAXIMUM, exclusiveMaximum);
     }
 
     /**
@@ -96,36 +98,6 @@ public class NumberSchema extends Schema {
         @Override
         public NumberSchema build() {
             return new NumberSchema(this);
-        }
-
-        public Builder exclusiveMaximum(final Integer exclusiveMaximum) {
-            this.exclusiveMaximum = exclusiveMaximum;
-            return this;
-        }
-
-        public Builder exclusiveMinimum(final Integer exclusiveMinimum) {
-            this.exclusiveMinimum = exclusiveMinimum;
-            return this;
-        }
-
-        public Builder maximum(final Number maximum) {
-            this.maximum = maximum;
-            return this;
-        }
-
-        public Builder minimum(final Number minimum) {
-            this.minimum = minimum;
-            return this;
-        }
-
-        public Builder multipleOf(final Number multipleOf) {
-            this.multipleOf = multipleOf;
-            return this;
-        }
-
-        public Builder requiresNumber(final boolean requiresNumber) {
-            this.requiresNumber = requiresNumber;
-            return this;
         }
     }
 }

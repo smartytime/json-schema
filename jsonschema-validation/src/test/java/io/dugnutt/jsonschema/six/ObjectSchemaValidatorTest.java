@@ -15,6 +15,7 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import io.dugnutt.jsonschema.validator.ObjectSchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
@@ -29,26 +30,25 @@ import javax.json.JsonPointer;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildValidatorWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.countCauseByJsonPointer;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.countMatchingMessage;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectFailure;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
-import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsJson;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static javax.json.spi.JsonProvider.provider;
 import static org.junit.Assert.assertEquals;
 
 public class ObjectSchemaValidatorTest {
 
-    private static final JsonObject OBJECTS = readResourceAsJson("objecttestcases.json", JsonObject.class);
+    private static final JsonObject OBJECTS = JsonUtils.readResourceAsJson("/io/dugnutt/jsonschema/six/objecttestcases.json", JsonObject.class);
 
     @Test
     public void additionalPropertiesOnEmptyObject() {
@@ -417,5 +417,9 @@ public class ObjectSchemaValidatorTest {
                 .expectedKeyword("type")
                 .input("a")
                 .expect();
+    }
+
+    JsonObject readResourceAsJson(String url, Class<JsonObject> clazz) {
+        return JsonUtils.readResourceAsJson("/io/dugnutt/jsonschema/six/" + url, clazz);
     }
 }

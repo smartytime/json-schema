@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.NotSchema;
 import io.dugnutt.jsonschema.six.Schema;
 
@@ -18,7 +19,7 @@ public class NotSchemaValidator extends SchemaValidator<NotSchema> {
         Optional<ValidationError> validated = SchemaValidatorFactory.createValidatorForSchema(mustNotMatch)
                 .validate(toBeValidated);
         if (!validated.isPresent()) {
-            return Optional.of(failure("subject must not be valid against schema " + mustNotMatch, "not"));
+            return Optional.of(failure("subject must not be valid against schema " + mustNotMatch, JsonSchemaKeyword.NOT));
         }
         return Optional.empty();
     }

@@ -1,0 +1,68 @@
+{
+  "combinedSchema": {
+    "anyOf": [
+      {
+        "type": "number"
+      },
+      {
+        "type": "null"
+      }
+    ]
+  },
+  "combinedSchemaWithBaseSchema": {
+    "type": "string",
+    "maxLength": 30,
+    "anyOf": [
+      {
+        "minLength": 20
+      },
+      {
+        "pattern": "a.*"
+      }
+    ]
+  },
+  "combinedSchemaWithExplicitBaseSchema": {
+    "type": "string",
+    "anyOf": [
+      {
+        "pattern": "a.*"
+      },
+      {
+        "minLength": 50
+      }
+    ]
+  },
+  "combinedSchemaWithMultipleBaseSchemas": {
+    "type": [
+      "string",
+      "number"
+    ],
+    "anyOf": [
+      {
+        "pattern": "a.*"
+      },
+      {
+        "minLength": 50
+      }
+    ]
+  },
+  "multipleKeywordsFailure": {
+    "properties": {
+      "wrapper": {
+        "type": "array",
+        "items": {
+          "allOf": [
+            {
+              "type": "boolean"
+            }
+          ],
+          "anyOf": [
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

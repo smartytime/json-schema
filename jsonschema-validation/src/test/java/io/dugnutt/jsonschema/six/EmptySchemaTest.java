@@ -52,21 +52,21 @@ public class EmptySchemaTest {
     public void testOnlyId() {
         JsonObject actual = json(null, null, "my/id");
         Assert.assertEquals(1, actual.keySet().size());
-        Assert.assertEquals("my/id", actual.get("id"));
+        Assert.assertEquals("my/id", actual.getString("id"));
     }
 
     @Test
     public void testOnlySchemaDescription() {
         JsonObject actual = json(null, "descr", null);
         Assert.assertEquals(1, actual.keySet().size());
-        Assert.assertEquals("descr", actual.get("description"));
+        Assert.assertEquals("descr", actual.getString("description"));
     }
 
     @Test
     public void testOnlyTitle() {
         JsonObject actual = json("my title", null, null);
         Assert.assertEquals(1, actual.keySet().size());
-        Assert.assertEquals("my title", actual.get("title"));
+        Assert.assertEquals("my title", actual.getString("title"));
     }
 
     @Test
@@ -80,7 +80,8 @@ public class EmptySchemaTest {
     }
 
     private JsonObject json(final String title, final String description, final String id) {
-        return JsonUtils.readJsonObject(EmptySchema.builder().title(title).description(description).id(id)
-                .build().toString());
+        String jsonFromString = EmptySchema.builder().title(title).description(description).id(id)
+                .build().toString();
+        return JsonUtils.readJsonObject(jsonFromString);
     }
 }

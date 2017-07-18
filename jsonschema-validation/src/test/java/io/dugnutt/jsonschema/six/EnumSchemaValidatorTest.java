@@ -28,13 +28,11 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-import javax.json.stream.JsonGenerator;
-import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Set;
 
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonObjectBuilder;
@@ -80,7 +78,7 @@ public class EnumSchemaValidatorTest {
                         .build())
                 .build();
 
-        EnumSchema subject = subject().build();
+        EnumSchema subject = subject().possibleValues(possibleValues).build();
 
         JsonArray testValues = provider().createArrayBuilder()
                 .add(jsonObjectBuilder()
@@ -104,15 +102,12 @@ public class EnumSchemaValidatorTest {
 
     @Test
     public void toStringTest() {
-        StringWriter buffer = new StringWriter();
-        final JsonGenerator generator = provider().createGenerator(buffer);
-        subject().build().toJson(generator);
-        JsonObject actual = JsonUtils.readJsonObject(buffer.getBuffer().toString());
-        Assert.assertEquals(2, actual.keySet().size());
-        Assert.assertEquals("enum", actual.getString("type"));
+
+        String toString = subject().build().toString();
+        JsonObject actual = JsonUtils.readJsonObject(toString);
+        Assert.assertEquals(1, actual.keySet().size());
         JsonArray pv = jsonArray(true, "foo");
         assertEquals(asSet(pv), asSet(actual.getJsonArray("enum")));
-        Assert.fail("Check toString");
     }
 
     private EnumSchema.Builder subject() {

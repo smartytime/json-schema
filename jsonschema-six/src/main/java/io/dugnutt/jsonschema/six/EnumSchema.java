@@ -68,7 +68,7 @@ public class EnumSchema extends Schema {
     }
 
     @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
         // writer.properties.put(TYPE.key(), provider.createValue(ENUM.key()));
         writer.writeKey(JsonSchemaKeyword.ENUM);
         writer.array();

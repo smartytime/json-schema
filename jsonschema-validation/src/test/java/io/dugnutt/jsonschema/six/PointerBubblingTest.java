@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsJsonObject;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;

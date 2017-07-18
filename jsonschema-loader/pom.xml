@@ -67,7 +67,8 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Import-Package>*</Import-Package>
                         <Export-Package>
-                            io.dugnutt.jsonschema.loader;version=${project.version}
+                            io.dugnutt.jsonschema.loader;version=${project.version},
+                            io.dugnutt.jsonschema.loader.reference;version=${project.version},
                         </Export-Package>
                     </instructions>
                 </configuration>

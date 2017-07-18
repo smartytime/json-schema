@@ -8,6 +8,7 @@ public enum JsonSchemaType {
     STRING,
     BOOLEAN,
     NUMBER,
+    INTEGER,
     NULL,
     OBJECT,
     ARRAY;

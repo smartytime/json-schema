@@ -108,7 +108,7 @@ public class ArraySchema extends Schema {
     }
 
     @Override
-    protected void propertiesToJson(final JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(final JsonSchemaGenerator writer) {
         writer.writeType(JsonSchemaType.ARRAY, requiresArray)
                 .writeIfTrue(JsonSchemaKeyword.UNIQUE_ITEMS, needsUniqueItems)
                 .optionalWrite(JsonSchemaKeyword.MIN_ITEMS, minItems)
@@ -153,7 +153,7 @@ public class ArraySchema extends Schema {
          */
         public Builder addItemSchema(final Schema itemSchema) {
             if (itemSchemas == null) {
-                itemSchemas = new ArrayList<Schema>();
+                itemSchemas = new ArrayList<>();
             }
             itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
             return this;

@@ -15,7 +15,7 @@
  */
 package io.dugnutt.jsonschema;
 
-import io.dugnutt.jsonschema.loader.SchemaFactory;
+import io.dugnutt.jsonschema.loader.JsonSchemaFactory;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Test;
@@ -28,8 +28,8 @@ public class MetaSchemaTest {
 
     @Test
     public void validateMetaSchema() {
-        JsonObject jsonSchema = JsonUtils.readResourceAsJsonObject("/org/everit/json/schema/json-schema-draft-04.json");
-        Schema schema = SchemaFactory.schemaFactory().load(jsonSchema);
+        JsonObject jsonSchema = JsonUtils.readResourceAsJsonObject("/io/dugnutt/jsonschema/json-schema-draft-06.json");
+        Schema schema = JsonSchemaFactory.schemaFactory().load(jsonSchema);
         expectSuccess(schema, jsonSchema);
     }
 }

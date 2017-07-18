@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static org.junit.Assert.assertEquals;
 
 public class ReferenceSchemaTest {
@@ -47,9 +47,8 @@ public class ReferenceSchemaTest {
 
     @Test(expected = IllegalStateException.class)
     public void setterShouldWorkOnlyOnce() {
+        Assert.fail("Not there anymore");
         ReferenceSchema subject = ReferenceSchema.builder().build();
-        subject.setReferredSchema(BooleanSchema.BOOLEAN_SCHEMA);
-        subject.setReferredSchema(BooleanSchema.BOOLEAN_SCHEMA);
     }
 
     @Test

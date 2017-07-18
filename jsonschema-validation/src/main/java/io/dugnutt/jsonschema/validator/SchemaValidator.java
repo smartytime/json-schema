@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
@@ -12,9 +13,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class SchemaValidator<S extends Schema> {
 
     protected final S schema;
+    protected final SchemaValidationContext context;
 
     public SchemaValidator(S schema) {
         this.schema = checkNotNull(schema);
+        this.context = SchemaValidationContext.newContext();
+    }
+
+    public SchemaValidator(S schema, SchemaValidationContext context) {
+        this.schema = checkNotNull(schema);
+        this.context = checkNotNull(context);
     }
 
     public S schema() {
@@ -23,7 +31,7 @@ public abstract class SchemaValidator<S extends Schema> {
 
     public abstract Optional<ValidationError> validate(JsonValue toBeValidated);
 
-    protected ValidationError failure(String message, String keyword) {
+    protected ValidationError failure(String message, JsonSchemaKeyword keyword) {
         return new ValidationError(schema(), message, keyword, schema().getSchemaLocation());
     }
 
@@ -49,7 +57,7 @@ public abstract class SchemaValidator<S extends Schema> {
 
     public static ValidationError failure(Schema validating, JsonSchemaType expectedType, JsonSchemaType foundType) {
         String message = String.format("expected type: %s, found: %s", expectedType, foundType);
-        return new ValidationError(validating, message, "typeMismatch", validating.getSchemaLocation());
+        return new ValidationError(validating, message, JsonSchemaKeyword.TYPE, validating.getSchemaLocation());
     }
 
 

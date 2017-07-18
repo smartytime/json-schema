@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 
 public class LoadingTestSupport {
@@ -42,7 +42,7 @@ public class LoadingTestSupport {
 
     public static <S extends Schema, E extends Exception> E expectFailure(final Failure<S, E> failure) {
         try {
-            final SchemaFactory schemaFactory = failure.schemaFactory().orElse(schemaFactory());
+            final JsonSchemaFactory schemaFactory = failure.schemaFactory().orElse(schemaFactory());
             schemaFactory.load(failure.input());
         } catch (Throwable e) {
             failure.expectedException()
@@ -82,7 +82,7 @@ public class LoadingTestSupport {
 
         private String expectedSchemaLocation = "#";
 
-        private SchemaFactory schemaFactory;
+        private JsonSchemaFactory schemaFactory;
 
         private Class<E> expectedException;
 
@@ -150,12 +150,12 @@ public class LoadingTestSupport {
             return this;
         }
 
-        public Failure schemaFactory(SchemaFactory schemaFactory) {
+        public Failure schemaFactory(JsonSchemaFactory schemaFactory) {
             this.schemaFactory = schemaFactory;
             return this;
         }
 
-        public Optional<SchemaFactory> schemaFactory() {
+        public Optional<JsonSchemaFactory> schemaFactory() {
             return Optional.ofNullable(this.schemaFactory);
         }
 

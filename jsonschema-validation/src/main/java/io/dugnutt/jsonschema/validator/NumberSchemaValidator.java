@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.NumberSchema;
 
 import javax.json.JsonNumber;
@@ -9,8 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static javax.json.JsonValue.ValueType;
+import static io.dugnutt.jsonschema.six.JsonSchemaType.INTEGER;
 import static io.dugnutt.jsonschema.six.JsonSchemaType.NUMBER;
+import static javax.json.JsonValue.ValueType;
 
 public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
 
@@ -27,6 +29,10 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
             JsonNumber num = (JsonNumber) subject;
             List<ValidationError> errors = new ArrayList<>();
 
+            if (schema.isRequiresInteger() && !num.isIntegral()) {
+                errors.add(failure(INTEGER, num));
+            }
+
             double intSubject = num.doubleValue();
             checkMinimum(intSubject).ifPresent(errors::add);
             checkMaximum(intSubject).ifPresent(errors::add);
@@ -39,28 +45,28 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
 
     private Optional<ValidationError> checkMaximum(final double subject) {
         Number maximum = schema.getMaximum();
-        Boolean exclusiveMaximum = schema.isExclusiveMaximum();
+        Number exclusiveMaximum = schema.getExclusiveMaximum();
 
-        if (maximum != null) {
-            if (exclusiveMaximum && maximum.doubleValue() <= subject) {
-                return Optional.of(failure(subject + " is not lower than " + maximum, "exclusiveMaximum"));
-            } else if (maximum.doubleValue() < subject) {
-                return Optional.of(failure(subject + " is not lower or equal to " + maximum, "maximum"));
-            }
+        if (maximum != null && maximum.doubleValue() < subject) {
+            return Optional.of(failure(subject + " is not lower or equal to " + maximum, JsonSchemaKeyword.MAXIMUM));
+        }
+
+        if (exclusiveMaximum != null && exclusiveMaximum.doubleValue() <= subject) {
+            return Optional.of(failure(subject + " is not lower than " + maximum, JsonSchemaKeyword.EXCLUSIVE_MAXIMUM));
         }
         return Optional.empty();
     }
 
     private Optional<ValidationError> checkMinimum(final double subject) {
         Number minimum = schema.getMinimum();
-        Boolean exclusiveMinimum = schema.isExclusiveMinimum();
+        Number exclusiveMinimum = schema.getExclusiveMinimum();
 
-        if (minimum != null) {
-            if (exclusiveMinimum && subject <= minimum.doubleValue()) {
-                return Optional.of(failure(subject + " is not higher than " + minimum, "exclusiveMinimum"));
-            } else if (subject < minimum.doubleValue()) {
-                return Optional.of(failure(subject + " is not higher or equal to " + minimum, "minimum"));
-            }
+        if (minimum != null && minimum.doubleValue() > subject) {
+            return Optional.of(failure(subject + " is not higher or equal to " + minimum, JsonSchemaKeyword.MINIMUM));
+        }
+
+        if (exclusiveMinimum != null && exclusiveMinimum.doubleValue() >= subject) {
+            return Optional.of(failure(subject + " is not higher than " + minimum, JsonSchemaKeyword.EXCLUSIVE_MINIMUM));
         }
         return Optional.empty();
     }
@@ -71,7 +77,7 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
             BigDecimal remainder = BigDecimal.valueOf(subject).remainder(
                     BigDecimal.valueOf(multipleOf.doubleValue()));
             if (remainder.compareTo(BigDecimal.ZERO) != 0) {
-                return Optional.of(failure(subject + " is not a multiple of " + multipleOf, "multipleOf"));
+                return Optional.of(failure(subject + " is not a multiple of " + multipleOf, JsonSchemaKeyword.MULTIPLE_OF));
             }
         }
         return Optional.empty();

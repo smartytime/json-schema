@@ -26,7 +26,7 @@ import org.junit.Test;
 import javax.json.JsonObject;
 import java.util.Optional;
 
-import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 
 public class InvalidObjectInArrayTest {
 

@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.ObjectSchema;
 import lombok.experimental.var;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
@@ -53,17 +54,23 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     }
 
     private List<ValidationError> testAdditionalProperties(final JsonObject subject) {
-        if (!schema.isAdditionalProperties()) {
+        if (!schema.isPermitsAdditionalProperties()) {
             return schema.getAdditionalProperties(subject)
                     .map(unneeded -> String.format("extraneous key [%s] is not permitted", unneeded))
-                    .map(msg -> new ValidationError(schema, msg, "additionalProperties"))
+                    .map(msg -> new ValidationError(schema, msg, JsonSchemaKeyword.ADDITIONAL_PROPERTIES))
                     .collect(Collectors.toList());
         } else if (schema.getSchemaOfAdditionalProperties() != null) {
             List<String> additionalPropNames = schema.getAdditionalProperties(subject)
                     .collect(Collectors.toList());
             List<ValidationError> allErrors = new ArrayList<>();
-            Schema addtlSchema = schema.getSchemaOfAdditionalProperties();
+            SchemaValidator<Schema> addlPropNameValidtor = context.getFactory().createValidator(
+                    schema.getSchemaOfAdditionalProperties()
+            );
+            Schema addtlSchema = ;
             additionalPropNames.stream()
+                    .map(prop-> {
+                        addlPropNameValidtor.validate()
+                    })
                     .map(getValidationErrors(addtlSchema, subject))
                     .forEach(addErrorIfExists(allErrors));
             return allErrors;
@@ -132,7 +139,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
                 .flatMap(ifPresent -> schema.getPropertyDependencies().get(ifPresent).stream())
                 .filter(mustBePresent -> !subject.containsKey(mustBePresent))
                 .map(missingKey -> String.format("property [%s] is required", missingKey))
-                .map(excMessage -> failure(excMessage, "dependencies"))
+                .map(excMessage -> failure(excMessage, JsonSchemaKeyword.DEPENDENCIES))
                 .collect(Collectors.toList());
     }
 
@@ -140,7 +147,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         return schema.getRequiredProperties().stream()
                 .filter(key -> !subject.containsKey(key))
                 .map(missingKey -> String.format("required key [%s] not found", missingKey))
-                .map(excMessage -> failure(excMessage, "required"))
+                .map(excMessage -> failure(excMessage, JsonSchemaKeyword.REQUIRED))
                 .collect(Collectors.toList());
     }
 
@@ -160,11 +167,11 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         int actualSize = subject.size();
         if (schema.getMinProperties() != null && actualSize < schema.getMinProperties()) {
             return Optional.of(failure(String.format("minimum size: [%d], found: [%d]", schema.getMinProperties(), actualSize),
-                    "minProperties"));
+                    JsonSchemaKeyword.MIN_PROPERTIES));
         }
         if (schema.getMaxProperties() != null && actualSize > schema.getMaxProperties()) {
             return Optional.of(failure(String.format("maximum size: [%d], found: [%d]", schema.getMaxProperties(), actualSize),
-                    "maxProperties"));
+                    JsonSchemaKeyword.MAX_PROPERTIES));
         }
 
         return Optional.empty();

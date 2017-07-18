@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -82,7 +83,7 @@ public class CombinedSchema extends Schema {
     }
 
     @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
         writer.optionalWrite(combinedSchemaType.getProperty(), subSchemas);
     }
 
@@ -96,6 +97,10 @@ public class CombinedSchema extends Schema {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public static Builder builder(final Stream<Schema> subschemas) {
+        return new Builder().subschemas(subschemas.collect(Collectors.toList()));
     }
 
     public static Builder builder(final List<Schema> subschemas) {

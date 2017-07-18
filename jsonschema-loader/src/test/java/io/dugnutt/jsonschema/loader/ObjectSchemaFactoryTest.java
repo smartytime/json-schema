@@ -33,7 +33,7 @@ public class ObjectSchemaFactoryTest extends BaseLoaderTest {
         Map<String, Schema> propertySchemas = actual.getPropertySchemas();
         assertEquals(2, propertySchemas.size());
         assertEquals(BooleanSchema.BOOLEAN_SCHEMA, propertySchemas.get("boolProp"));
-        Assert.assertFalse(actual.permitsAdditionalProperties());
+        Assert.assertFalse(actual.isPermitsAdditionalProperties());
         assertEquals(2, actual.getRequiredProperties().size());
         assertEquals(2, actual.getMinProperties().intValue());
         assertEquals(3, actual.getMaxProperties().intValue());

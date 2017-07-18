@@ -16,6 +16,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.ArraySchema;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.ObjectSchema;
 import io.dugnutt.jsonschema.six.Schema;
 import lombok.experimental.var;
@@ -42,7 +43,7 @@ public class ValidationError {
     private final String schemaLocation;
     private final transient Schema violatedSchema;
     private final List<ValidationError> causingExceptions;
-    private final String keyword;
+    private final JsonSchemaKeyword keyword;
     private final String message;
     /**
      * Constructor.
@@ -54,7 +55,7 @@ public class ValidationError {
     @Deprecated
     public ValidationError(Schema violatedSchema,
                            String message,
-                           String keyword) {
+                           JsonSchemaKeyword keyword) {
         this(violatedSchema,
                 new StringBuilder("#"),
                 message,
@@ -91,7 +92,7 @@ public class ValidationError {
      */
     public ValidationError(Schema violatedSchema,
                            String message,
-                           String keyword,
+                           JsonSchemaKeyword keyword,
                            String schemaLocation) {
         this(violatedSchema,
                 new StringBuilder("#"),
@@ -119,7 +120,7 @@ public class ValidationError {
     public ValidationError(Schema violatedSchema, StringBuilder pointerToViolation,
                            String message,
                            List<ValidationError> causingExceptions,
-                           String keyword,
+                           JsonSchemaKeyword keyword,
                            String schemaLocation) {
         this.message = message;
         this.violatedSchema = violatedSchema;
@@ -133,7 +134,7 @@ public class ValidationError {
                             Schema violatedSchema,
                             String message,
                             List<ValidationError> causingExceptions,
-                            String keyword, String schemaLocation) {
+                            JsonSchemaKeyword keyword, String schemaLocation) {
         this(violatedSchema, pointerToViolation, message, causingExceptions, keyword, schemaLocation);
     }
 
@@ -197,7 +198,7 @@ public class ValidationError {
         return message;
     }
 
-    public String getKeyword() {
+    public JsonSchemaKeyword getKeyword() {
         return keyword;
     }
 
@@ -294,7 +295,7 @@ public class ValidationError {
     public JsonObject toJson() {
         final JsonProvider provider = JsonProvider.provider();
         var errorJson = provider.createObjectBuilder()
-                .add("keyword", this.keyword);
+                .add("keyword", this.keyword.key());
 
         if (pointerToViolation == null) {
             errorJson.add("pointerToViolation", JsonValue.NULL);

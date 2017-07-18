@@ -15,7 +15,7 @@
  */
 package io.dugnutt.jsonschema;
 
-import io.dugnutt.jsonschema.loader.SchemaFactory;
+import io.dugnutt.jsonschema.loader.JsonSchemaFactory;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
@@ -38,7 +38,7 @@ public class EmptyObjectTest {
                 "}");
         JsonObject schemaJson = JsonUtils.readResourceAsJsonObject("/org/everit/json/schema/json-schema-draft-04.json");
 
-        Schema schema = SchemaFactory.schemaFactory(JsonProvider.provider()).load(schemaJson);
+        Schema schema = JsonSchemaFactory.schemaFactory(JsonProvider.provider()).load(schemaJson);
         SchemaValidator<?> validator = SchemaValidatorFactory.createValidatorForSchema(schema);
         Optional<ValidationError> errors = validator.validate(jsonSubject);
         assertFalse(errors.isPresent());

@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.loader;
 
+import io.dugnutt.jsonschema.loader.reference.SchemaClient;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 import lombok.SneakyThrows;
 import io.dugnutt.jsonschema.six.SchemaException;
@@ -73,7 +74,7 @@ public class JsonPointerResolver {
         } else {
             JsonValue pointerValue = jsonPointer.getValue(document);
             if (!(pointerValue instanceof JsonObject)) {
-                throw new UnexpectedValueException(pointerValue, JsonValue.ValueType.OBJECT);
+                throw new UnexpectedValueException(jsonPointer, pointerValue, JsonValue.ValueType.OBJECT);
             }
             return new QueryResult(document, pointerValue.asJsonObject());
         }

@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.EnumSchema;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.ObjectComparator;
 
 import javax.json.JsonValue;
@@ -20,7 +21,7 @@ public class EnumSchemaValidator extends SchemaValidator<EnumSchema> {
                 .stream()
                 .anyMatch(val -> ObjectComparator.lexicalEquivalent(val, toBeValidated));
         if (!foundMatch) {
-            return Optional.of(failure(format("%s is not a valid enum value", toBeValidated), "enum"));
+            return Optional.of(failure(format("%s is not a valid enum value", toBeValidated), JsonSchemaKeyword.ENUM));
         }
         return Optional.empty();
     }

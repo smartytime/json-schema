@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.StringSchema;
 import io.dugnutt.jsonschema.validator.formatValidators.FormatValidator;
@@ -31,7 +32,7 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
 
                     getFormatValidator()
                             .map(validator -> validator.validate(stringSubject).orElse(null))
-                            .map(error -> failure(error, "format"))
+                            .map(error -> failure(error, JsonSchemaKeyword.FORMAT))
                             .ifPresent(allErrors::add);
                     return ValidationError.collectErrors(schema, allErrors);
                 }).getError();
@@ -51,11 +52,11 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
         List<ValidationError> rval = new ArrayList<>();
         if (minLength != null && actualLength < minLength) {
             rval.add(failure("expected minLength: " + minLength + ", actual: "
-                    + actualLength, "minLength"));
+                    + actualLength, JsonSchemaKeyword.MIN_LENGTH));
         }
         if (maxLength != null && actualLength > maxLength) {
             rval.add(failure("expected maxLength: " + maxLength + ", actual: "
-                    + actualLength, "maxLength"));
+                    + actualLength, JsonSchemaKeyword.MAX_LENGTH));
         }
         return rval;
     }
@@ -66,7 +67,7 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
         if (pattern != null && !pattern.matcher(subject).find()) {
             String message = String.format("string [%s] does not match pattern %s",
                     subject, pattern.pattern());
-            return Optional.of(failure(message, "pattern"));
+            return Optional.of(failure(message, JsonSchemaKeyword.PATTERN));
         }
         return Optional.empty();
     }

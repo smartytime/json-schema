@@ -1,64 +1,73 @@
 package io.dugnutt.jsonschema.loader;
 
+import io.dugnutt.jsonschema.six.JsonPath;
+import io.dugnutt.jsonschema.six.JsonPointerPath;
 import io.dugnutt.jsonschema.six.SchemaException;
-import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.net.URI;
+
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PROPERTIES;
+import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArrayBuilder;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonObjectBuilder;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * @author erosb
  */
 public class SchemaLoaderModelTest {
 
-    private SchemaLoaderModel emptySubject() {
-        return new SchemaLoaderModel(SchemaLoader.builder()
-                .rootSchemaJson(JsonUtils.blankJsonObject())
-                .schemaJson(JsonUtils.blankJsonObject()));
-    }
-
     @Test
-    public void childForString() {
-        SchemaLoaderModel ls = emptySubject();
-        SchemaLoaderModel actual = ls.childFor("hello");
-        Assert.assertEquals(asList("hello"), actual.currentJsonPath.jsonPathParts());
+    public void childForArrayIndex() {
+        SchemaLoaderModel ls = SchemaLoaderModel.createModelFor(
+                jsonObjectBuilder()
+                        .add(PROPERTIES.key(), jsonArrayBuilder()
+                                .add(jsonObjectBuilder()))
+                        .build()
+        );
+        SchemaLoaderModel actual = ls.childModel(PROPERTIES, 0);
+        Assert.assertEquals(asList("properties", "0"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
     public void childForSecond() {
         SchemaLoaderModel ls = emptySubject();
-        SchemaLoaderModel actual = ls.childFor("hello").childFor("world");
+        SchemaLoaderModel actual = ls.childModel("hello").childModel("world");
         Assert.assertEquals(asList("hello", "world"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
-    public void childForArrayIndex() {
+    public void childForString() {
         SchemaLoaderModel ls = emptySubject();
-        SchemaLoaderModel actual = ls.childFor(42);
-        Assert.assertEquals(asList("42"), actual.currentJsonPath.jsonPathParts());
+        SchemaLoaderModel actual = ls.childModel("hello");
+        Assert.assertEquals(asList("hello"), actual.currentJsonPath.jsonPathParts());
     }
 
     @Test
     public void testCreateSchemaException() {
-        SchemaLoaderModel subject = new SchemaLoaderModel(SchemaLoader.builder().schemaJson(JsonUtils.blankJsonObject()));
+        SchemaLoaderModel subject = SchemaLoaderModel.createModelFor(blankJsonObject());
         SchemaException actual = subject.createSchemaException("message");
         assertEquals("#: message", actual.getMessage());
-        // assertEquals(JsonProvider.provider().createPointer("").toURIFragment(), actual.getSchemaLocation());
-        Assert.fail("Not sure how to make this test work with jsr353");
     }
 
     @Test
-    public void childForNotnullId() {
-        SchemaLoaderModel actual = emptySubject().childForId("http://x.y");
-        assertEquals("http://x.y", actual.id.toString());
+    public void testCreateSchemaExceptionWithPath() {
+        SchemaLoaderModel subject = SchemaLoaderModel.createModelFor(jsonObjectBuilder().build())
+                .withId(URI.create("http://mysite.com#/foo/bob"))
+                .withCurrentJsonPath(new JsonPointerPath(JsonPath.jsonPath("from", "the", "base", "of", "bob")));
+
+        SchemaException actual = subject.createSchemaException("message");
+        assertEquals("#/from/the/base/of/bob: message", actual.getMessage());
     }
 
-    @Test
-    public void childForNullId() {
-        SchemaLoaderModel actual = emptySubject().childForId(null);
-        assertNull(actual.id);
+    private SchemaLoaderModel emptySubject() {
+        return SchemaLoaderModel.createModelFor(
+                jsonObjectBuilder()
+                        .add("hello", jsonObjectBuilder()
+                                .add("world", jsonObjectBuilder()))
+                        .build());
     }
 }

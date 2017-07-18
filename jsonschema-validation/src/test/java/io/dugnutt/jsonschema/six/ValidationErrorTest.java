@@ -106,7 +106,7 @@ public class ValidationErrorTest {
 
     @Test
     public void testToJson() {
-        ValidationError subject = new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, "exception message", "type",
+        ValidationError subject = new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, "exception message", JsonSchemaKeyword.TYPE,
                 "#/a/b");
         JsonObject expected = loader.readObj("exception-to-json.json");
         JsonObject actual = subject.toJson();
@@ -117,7 +117,7 @@ public class ValidationErrorTest {
     public void testToJsonWithSchemaLocation() {
         ValidationError subject =
                 new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, new StringBuilder("#/a/b"),
-                        "exception message", Collections.emptyList(), "type", "#/schema/location");
+                        "exception message", Collections.emptyList(), JsonSchemaKeyword.TYPE, "#/schema/location");
         JsonObject expected = loader.readObj("exception-to-json-with-schema-location.json");
         JsonObject actual = subject.toJson();
         assertEquals(expected, actual);
@@ -125,8 +125,8 @@ public class ValidationErrorTest {
 
     @Test
     public void throwForMultipleFailures() {
-        ValidationError input1 = new ValidationError(NullSchema.INSTANCE, "msg1", "type", "#");
-        ValidationError input2 = new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, "msg2", "type", "#");
+        ValidationError input1 = new ValidationError(NullSchema.INSTANCE, "msg1", JsonSchemaKeyword.TYPE, "#");
+        ValidationError input2 = new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, "msg2", JsonSchemaKeyword.TYPE, "#");
         final ValidationError e = ValidationError.collectErrors(rootSchema, Arrays.asList(input1, input2))
                 .orElseThrow(() -> new AssertionError("Should have failed"));
         Assert.fail("did not throw exception for 2 input exceptions");
@@ -146,7 +146,7 @@ public class ValidationErrorTest {
 
     @Test
     public void throwForSingleFailure() {
-        ValidationError input = new ValidationError(NullSchema.INSTANCE, "msg", "type", "#");
+        ValidationError input = new ValidationError(NullSchema.INSTANCE, "msg", JsonSchemaKeyword.TYPE, "#");
         var actual = verifyFailure(() -> ValidationError.collectErrors(rootSchema, newArrayList(input)));
         Assert.assertSame(input, actual);
     }
@@ -155,7 +155,7 @@ public class ValidationErrorTest {
     public void toJsonNullPointerToViolation() {
         ValidationError subject =
                 new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, null,
-                        "exception message", Collections.emptyList(), "type", null);
+                        "exception message", Collections.emptyList(), JsonSchemaKeyword.TYPE, null);
         JsonObject actual = subject.toJson();
         Assert.assertEquals(JsonObject.NULL, actual.get("pointerToViolation"));
     }
@@ -167,11 +167,11 @@ public class ValidationErrorTest {
                         new StringBuilder("#/a/0"),
                         "cause msg",
                         Collections.emptyList(),
-                        "type",
+                        JsonSchemaKeyword.TYPE,
                         null);
         ValidationError subject =
                 new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, new StringBuilder("#/a"),
-                        "exception message", Arrays.asList(cause), "type", null);
+                        "exception message", Arrays.asList(cause), JsonSchemaKeyword.TYPE, null);
         JsonObject expected = ResourceLoader.DEFAULT.readObj("exception-to-json-with-causes.json");
         JsonObject actual = subject.toJson();
         assertEquals(expected, actual);
@@ -208,17 +208,17 @@ public class ValidationErrorTest {
     }
 
     private ValidationError createTestValidationError() {
-        return new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, "Failed Validation", "type", "#");
+        return new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, "Failed Validation", JsonSchemaKeyword.TYPE, "#");
     }
 
     private ValidationError createDummyException(final String pointer) {
         return new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
-                new StringBuilder(pointer), "stuff went wrong", Collections.emptyList(), "type", "#");
+                new StringBuilder(pointer), "stuff went wrong", Collections.emptyList(), JsonSchemaKeyword.TYPE, "#");
     }
 
     private ValidationError subjectWithCauses(final ValidationError... causes) {
         if (causes.length == 0) {
-            return new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, "Failure", "type", "#");
+            return new ValidationError(BooleanSchema.BOOLEAN_SCHEMA, "Failure", JsonSchemaKeyword.TYPE, "#");
         }
         return ValidationError.collectErrors(rootSchema, Arrays.asList(causes)).orElse(null);
     }

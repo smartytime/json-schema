@@ -6,6 +6,7 @@ import io.dugnutt.jsonschema.six.BooleanSchema;
 import io.dugnutt.jsonschema.six.CombinedSchema;
 import io.dugnutt.jsonschema.six.EmptySchema;
 import io.dugnutt.jsonschema.six.EnumSchema;
+import io.dugnutt.jsonschema.six.MultipleTypeSchema;
 import io.dugnutt.jsonschema.six.NotSchema;
 import io.dugnutt.jsonschema.six.NullSchema;
 import io.dugnutt.jsonschema.six.NumberSchema;
@@ -39,7 +40,7 @@ public class SchemaValidatorFactory {
         checkNotNull(schema, "schema must not be null");
         final Function<Schema, SchemaValidator<Schema>> validatorFunction = schemaValidators.get(schema.getClass());
         if (validatorFunction == null) {
-            throw new IllegalArgumentException("Unable to locate validator for schema: " + schema);
+            throw new IllegalArgumentException("Unable to locate validator for schema: " + schema.getClass());
         }
         return (SchemaValidator<S>) validatorFunction.apply(schema);
     }
@@ -65,7 +66,10 @@ public class SchemaValidatorFactory {
         public <X extends Schema> Builder schemaValidator(Class<X> schemaClass, Function<X, SchemaValidator<X>> factory) {
             //todo:ericm What the heck???
             Class<Schema> classOfSchema = (Class<Schema>) schemaClass;
-            this.schemaValidators.put(classOfSchema, (schema)-> (SchemaValidator<Schema>) factory);
+            this.schemaValidators.put(classOfSchema, schema -> {
+                SchemaValidator<X> validator = factory.apply((X) schema);
+                return (SchemaValidator<Schema>) validator;
+            });
             return this;
         }
 
@@ -81,6 +85,7 @@ public class SchemaValidatorFactory {
             schemaValidator(NumberSchema.class, NumberSchemaValidator::new);
             schemaValidator(ReferenceSchema.class, ReferenceSchemaValidator::new);
             schemaValidator(StringSchema.class, StringSchemaValidator::new);
+            schemaValidator(MultipleTypeSchema.class, MultipleTypeSchemaValidator::new);
         }
     }
 }

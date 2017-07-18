@@ -14,7 +14,7 @@ public class BaseLoaderTest {
     public BaseLoaderTest(String resourceURL) {
         Preconditions.checkNotNull(resourceURL, "resourceURL must not be null");
         this.testsForType = JsonUtils.readResourceAsJson("/tests/" + resourceURL, JsonObject.class);
-        e = SchemaFactory.schemaFactory().load(this.testsForType);
+        e = JsonSchemaFactory.schemaFactory().load(this.testsForType);
     }
 
     protected JsonObject getJsonObjectForKey(String schemaName) {
@@ -22,6 +22,6 @@ public class BaseLoaderTest {
     }
 
     protected Schema getSchemaForKey(String propertyKey) {
-        return SchemaFactory.schemaFactory().load(getJsonObjectForKey(propertyKey));
+        return JsonSchemaFactory.schemaFactory().load(getJsonObjectForKey(propertyKey));
     }
 }

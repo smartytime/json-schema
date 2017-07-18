@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.NullSchema;
 
 import javax.json.JsonValue;
@@ -16,7 +17,7 @@ public class NullSchemaValidator extends SchemaValidator<NullSchema> {
     public Optional<ValidationError> validate(JsonValue toBeValidated) {
         checkNotNull(toBeValidated, "toBeValidated must not be null");
         if (toBeValidated.getValueType() != JsonValue.ValueType.NULL) {
-            return Optional.of(failure("expected: null, found: " + toBeValidated.getValueType(), "type"));
+            return Optional.of(failure("expected: null, found: " + toBeValidated.getValueType(), JsonSchemaKeyword.TYPE));
         }
         return Optional.empty();
     }

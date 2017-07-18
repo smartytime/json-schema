@@ -2,8 +2,8 @@ package io.dugnutt.jsonschema.six;
 
 import java.util.Objects;
 
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
 import static java.util.Objects.requireNonNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.*;
 
 /**
  * This class is used to resolve JSON pointers.
@@ -13,11 +13,14 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.*;
 public class ReferenceSchema extends Schema {
 
     private final String refValue;
-    private Schema referredSchema;
+    private final Schema referredSchema;
 
     public ReferenceSchema(final Builder builder) {
         super(builder);
         this.refValue = requireNonNull(builder.refValue, "refValue cannot be null");
+        this.referredSchema= null;
+        // checkNotNull(builder.referredSchema, "builder.referredSchema must not be null");
+        // this.referredSchema = builder.referredSchema.build();
     }
 
     public static Builder builder() {
@@ -26,10 +29,12 @@ public class ReferenceSchema extends Schema {
 
     @Override
     public boolean definesProperty(String field) {
-        if (referredSchema == null) {
-            throw new IllegalStateException("referredSchema must be injected before validation");
-        }
-        return referredSchema.definesProperty(field);
+        // if (referredSchema == null) {
+        //     throw new IllegalStateException("referredSchema must be injected before validation");
+        // }
+        // return referredSchema.definesProperty(field);
+        //todo:ericm Revisit
+        return false;
     }
 
     @Override
@@ -59,7 +64,7 @@ public class ReferenceSchema extends Schema {
     }
 
     @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
         writer.write($REF, refValue);
     }
 
@@ -73,19 +78,19 @@ public class ReferenceSchema extends Schema {
      *
      * @param referredSchema the referred schema
      */
-    public void setReferredSchema(final Schema referredSchema) {
-        if (this.referredSchema != null) {
-            throw new IllegalStateException("referredSchema can be injected only once");
-        }
-        this.referredSchema = referredSchema;
-    }
+    // public void setReferredSchema(final Schema referredSchema) {
+        // if (this.referredSchema != null) {
+        //     throw new IllegalStateException("referredSchema can be injected only once");
+        // }
+        // this.referredSchema = referredSchema;
+    // }
 
     /**
      * Builder class for {@link ReferenceSchema}.
      */
     public static class Builder extends Schema.Builder<ReferenceSchema> {
 
-        private ReferenceSchema retval;
+        private Schema.Builder<?> referredSchema;
 
         /**
          * The value of {@code "$ref"}
@@ -98,15 +103,18 @@ public class ReferenceSchema extends Schema {
          */
         @Override
         public ReferenceSchema build() {
-            if (retval == null) {
-                retval = new ReferenceSchema(this);
-            }
-            return retval;
+            return new ReferenceSchema(this);
         }
 
         public Builder refValue(String refValue) {
             this.refValue = refValue;
             return this;
         }
+
+        public Builder referredSchema(Schema.Builder<?> referredSchema) {
+            this.referredSchema = referredSchema;
+            return this;
+        }
+
     }
 }

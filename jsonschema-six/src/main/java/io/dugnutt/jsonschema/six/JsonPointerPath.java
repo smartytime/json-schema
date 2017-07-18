@@ -22,7 +22,7 @@ public class JsonPointerPath {
     @SneakyThrows
     public JsonPointerPath(String uriFragment) {
         this.uriFragment = checkNotNull(uriFragment);
-        checkArgument(uriFragment.startsWith("#"), "JSON Pointer must start with #");
+        checkArgument(uriFragment.startsWith("#"), "URI fragment must start with #");
         if (uriFragment.length() > 1) {
             checkArgument(uriFragment.startsWith("#/"));
         }

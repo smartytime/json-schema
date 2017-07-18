@@ -1,9 +1,9 @@
 package io.dugnutt.jsonschema.six;
 
-import lombok.Getter;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * This is the downside of having concrete schema implementations, but it still leaves the code more usable and readable
  * than simply loading up keywords.
  */
-@Getter
 public class MultipleTypeSchema extends Schema {
 
     private final boolean requireOne;
@@ -23,12 +22,20 @@ public class MultipleTypeSchema extends Schema {
     private MultipleTypeSchema(final MultipleTypeSchema.Builder builder) {
         super(builder);
         checkNotNull(builder.possibleSchemas, "possibleSchemas must not be null");
-        this.possibleSchemas = builder.possibleSchemas;
+        this.possibleSchemas = Collections.unmodifiableMap(builder.possibleSchemas);
         this.requireOne = builder.requireOne;
     }
 
+    public boolean isRequireOne() {
+        return requireOne;
+    }
+
+    public Optional<Schema> getSchemaForType(JsonSchemaType type) {
+        return Optional.ofNullable(possibleSchemas.get(type));
+    }
+
     @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
         //todo:ericm Do this
     }
 

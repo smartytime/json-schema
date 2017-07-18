@@ -15,7 +15,8 @@
  */
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.loader.internal.DefaultSchemaClient;
+import io.dugnutt.jsonschema.loader.reference.DefaultSchemaClient;
+import io.dugnutt.jsonschema.loader.reference.SchemaClient;
 import org.junit.Test;
 
 import javax.json.JsonObject;
@@ -30,7 +31,7 @@ public class ResolutionScopeTest extends BaseLoaderTest {
     @Test
     public void resolutionScopeTest() {
         JsonObject schemaJson = getJsonObjectForKey("resolutionScopeTest");
-        SchemaFactory.schemaFactory()
+        JsonSchemaFactory.schemaFactory()
                 .withHttpClient(new SchemaClient() {
 
                     @Override

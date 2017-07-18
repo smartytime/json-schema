@@ -10,6 +10,7 @@ import lombok.Value;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -43,6 +44,14 @@ public class JsonPath {
         List<PathPart> newPath = new ArrayList<>(this.path);
         newPath.add(new PathPart(pathToPush));
         return new JsonPath(newPath);
+    }
+
+    public Optional<String> getLastPath() {
+        if (path.size() > 0) {
+            return Optional.of(String.valueOf(path.get(path.size() - 1).getNameOrIndex()));
+        } else {
+            return Optional.empty();
+        }
     }
 
     public JsonPath child(int index) {

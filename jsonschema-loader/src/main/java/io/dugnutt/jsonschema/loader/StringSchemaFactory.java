@@ -3,8 +3,6 @@ package io.dugnutt.jsonschema.loader;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.StringSchema;
 
-import javax.json.JsonString;
-
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -12,18 +10,22 @@ import static java.util.Objects.requireNonNull;
  */
 public class StringSchemaFactory {
 
-    private SchemaLoaderModel ls;
+    private SchemaLoaderModel schemaModel;
 
-    public StringSchemaFactory(SchemaLoaderModel ls) {
-        this.ls = requireNonNull(ls, "ls cannot be null");
+    private StringSchemaFactory(SchemaLoaderModel schemaModel) {
+        this.schemaModel = requireNonNull(schemaModel, "ls cannot be null");
     }
 
-    public StringSchema.Builder load() {
+    public static StringSchema.Builder createStringSchemaBuilder(SchemaLoaderModel schemaLoaderModel) {
+        return new StringSchemaFactory(schemaLoaderModel).createStringSchemaBuilder();
+    }
+
+    public StringSchema.Builder createStringSchemaBuilder() {
         StringSchema.Builder builder = StringSchema.builder();
-        ls.schemaJson.findInt(JsonSchemaKeyword.MIN_LENGTH).ifPresent(builder::minLength);
-        ls.schemaJson.findInt(JsonSchemaKeyword.MAX_LENGTH).ifPresent(builder::maxLength);
-        ls.schemaJson.findString(JsonSchemaKeyword.PATTERN).map(JsonString::getString).ifPresent(builder::pattern);
-        ls.schemaJson.findString(JsonSchemaKeyword.FORMAT).map(JsonString::getString).ifPresent(builder::format);
+        schemaModel.schemaJson.findInt(JsonSchemaKeyword.MIN_LENGTH).ifPresent(builder::minLength);
+        schemaModel.schemaJson.findInt(JsonSchemaKeyword.MAX_LENGTH).ifPresent(builder::maxLength);
+        schemaModel.schemaJson.findString(JsonSchemaKeyword.PATTERN).ifPresent(builder::pattern);
+        schemaModel.schemaJson.findString(JsonSchemaKeyword.FORMAT).ifPresent(builder::format);
         return builder;
     }
 }

@@ -65,7 +65,7 @@ public class NotSchema extends Schema {
     }
 
     @Override
-    protected void propertiesToJson(JsonSchemaGenerator writer) {
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
         writer.write(NOT, mustNotMatch);
     }
 

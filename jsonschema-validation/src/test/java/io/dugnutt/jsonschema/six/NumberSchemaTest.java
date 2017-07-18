@@ -22,19 +22,17 @@ import org.junit.Test;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import static io.dugnutt.jsonschema.loader.SchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonNumberValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
-import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsJson;
-import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsObjectBuilder;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static org.junit.Assert.assertEquals;
 
 public class NumberSchemaTest {
 
-    private final ResourceLoader loader = new ResourceLoader("/org/everit/jsonvalidator/tostring/");
+    private final ResourceLoader loader = new ResourceLoader("/io/dugnutt/jsonschema/six/");
 
     @Test
     public void equalsVerifier() {
@@ -47,7 +45,7 @@ public class NumberSchemaTest {
 
     @Test
     public void exclusiveMaximum() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().maximum(20.0).exclusiveMaximum(true));
+        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().exclusiveMaximum(20));
         ValidationTestSupport.failureOf(subject)
                 .expectedKeyword("exclusiveMaximum")
                 .input(20)
@@ -56,7 +54,7 @@ public class NumberSchemaTest {
 
     @Test
     public void exclusiveMinimum() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().minimum(10.0).exclusiveMinimum(true));
+        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().exclusiveMinimum(10.0));
         ValidationTestSupport.failureOf(subject)
                 .expectedKeyword("exclusiveMinimum")
                 .input(10)
@@ -113,8 +111,8 @@ public class NumberSchemaTest {
     }
 
     @Test
-    public void requiresNumberFailure() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().requiresNumber(true));
+    public void requiresIntegerFailure() {
+        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().requiresInteger(true));
         ValidationTestSupport.expectFailure(subject, 10.2f);
     }
 
@@ -130,8 +128,7 @@ public class NumberSchemaTest {
     public void success() {
         final NumberSchema schema = NumberSchema.builder()
                 .minimum(10.0)
-                .maximum(11.0)
-                .exclusiveMaximum(true)
+                .exclusiveMaximum(11.0)
                 .multipleOf(10)
                 .build();
         createValidatorForSchema(schema).validate(jsonNumberValue(10.0));
@@ -139,7 +136,7 @@ public class NumberSchemaTest {
 
     @Test
     public void toStringNoExplicitType() {
-        JsonObject rawSchemaJson = readResourceAsObjectBuilder("numberschema.json")
+        JsonObject rawSchemaJson = loader.readObjectWithBuilder("numberschema.json")
                 .remove("type").build();
         String actual = schemaFactory().load(rawSchemaJson).toString();
         assertEquals(rawSchemaJson, readJsonObject(actual));
@@ -147,7 +144,7 @@ public class NumberSchemaTest {
 
     @Test
     public void toStringReqInteger() {
-        JsonObject rawSchemaJson = readResourceAsObjectBuilder("numberschema.json")
+        JsonObject rawSchemaJson = loader.readObjectWithBuilder("numberschema.json")
                 .add("type", "number").build();
         String actual = schemaFactory().load(rawSchemaJson).toString();
         assertEquals(rawSchemaJson, readJsonObject(actual));
@@ -155,7 +152,7 @@ public class NumberSchemaTest {
 
     @Test
     public void toStringTest() {
-        JsonObject rawSchemaJson = readResourceAsJson("numberschema.json", JsonObject.class);
+        JsonObject rawSchemaJson = loader.readObj("numberschema.json");
         String actual = schemaFactory().load(rawSchemaJson).toString();
         assertEquals(rawSchemaJson, readJsonObject(actual));
     }

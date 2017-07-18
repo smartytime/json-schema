@@ -10,7 +10,7 @@ import static javax.json.spi.JsonProvider.provider;
 
 public class ResourceLoader {
 
-    public static final ResourceLoader DEFAULT = new ResourceLoader("/org/everit/jsonvalidator/");
+    public static final ResourceLoader DEFAULT = new ResourceLoader("/io/dugnutt/jsonschema/six/");
 
     private final String rootPath;
 
