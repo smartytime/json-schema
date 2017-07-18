@@ -32,7 +32,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NumberSchemaTest {
 
-    private final ResourceLoader loader = new ResourceLoader("/io/dugnutt/jsonschema/six/");
+    private final ResourceLoader loader = new ResourceLoader("/io/dugnutt/jsonschema/six/tostring/");
 
     @Test
     public void equalsVerifier() {

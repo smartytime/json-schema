@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -31,11 +32,25 @@ public class ObjectSchema extends Schema {
     @Min(0)
     private final Integer maxProperties;
 
-    private final StringSchema propertyNames;
+    private final StringSchema propertyNameSchema;
     private final Map<String, Set<String>> propertyDependencies;
     private final Map<String, Schema> schemaDependencies;
     private final boolean requiresObject;
     private final Map<Pattern, Schema> patternProperties;
+
+    public Optional<Schema> getSchemaOfAdditionalProperties() {
+        return Optional.ofNullable(schemaOfAdditionalProperties);
+    }
+
+    public Optional<Schema> findPropertySchema(String propertyName) {
+        return propertySchemas != null
+                ? Optional.ofNullable(propertySchemas.get(propertyName))
+                : Optional.empty();
+    }
+
+    public Optional<Schema> getPropertyNameSchema() {
+        return Optional.ofNullable(propertyNameSchema);
+    }
 
     /**
      * Constructor.
@@ -55,7 +70,7 @@ public class ObjectSchema extends Schema {
         this.schemaDependencies = copyMap(builder.schemaDependencies);
         this.requiresObject = builder.requiresObject;
         this.patternProperties = copyMap(builder.patternProperties);
-        this.propertyNames = builder.propertyNames;
+        this.propertyNameSchema = builder.propertyNameSchema;
     }
 
     public static Builder builder() {
@@ -113,13 +128,14 @@ public class ObjectSchema extends Schema {
     }
 
     protected void writePropertiesToJson(JsonSchemaGenerator writer) {
-        //todo:ericm Add propertyNames schema
+        //todo:ericm Add propertyNameSchema schema
         writer.writeType(JsonSchemaType.OBJECT, requiresObject)
                 .optionalWrite(JsonSchemaKeyword.PROPERTIES, propertySchemas)
                 .optionalWrite(JsonSchemaKeyword.MIN_PROPERTIES, minProperties)
                 .optionalWrite(JsonSchemaKeyword.MAX_PROPERTIES, maxProperties)
                 .optionalWrite(JsonSchemaKeyword.REQUIRED, requiredProperties)
                 .optionalWrite(JsonSchemaKeyword.ADDITIONAL_PROPERTIES, schemaOfAdditionalProperties)
+                .optionalWrite(JsonSchemaKeyword.PROPERTY_NAMES, propertyNameSchema)
                 .optionalWrite(JsonSchemaKeyword.DEPENDENCIES, schemaDependencies)
                 .optionalWritePatternProperties(patternProperties);
 
@@ -201,7 +217,7 @@ public class ObjectSchema extends Schema {
         private Schema schemaOfAdditionalProperties;
         private Integer minProperties;
         private Integer maxProperties;
-        private StringSchema propertyNames;
+        private StringSchema propertyNameSchema;
 
         /**
          * Adds a property schema.
@@ -266,8 +282,8 @@ public class ObjectSchema extends Schema {
             return this;
         }
 
-        public Builder propertyNames(final StringSchema schema) {
-            this.propertyNames = schema;
+        public Builder propertyNameSchema(final StringSchema schema) {
+            this.propertyNameSchema = schema;
             return this;
         }
 

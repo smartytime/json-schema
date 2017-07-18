@@ -5,6 +5,7 @@ import io.dugnutt.jsonschema.utils.JsonUtils;
 import javax.json.JsonPointer;
 import javax.json.JsonValue;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class UnexpectedValueException extends SchemaException {
     public UnexpectedValueException(String message) {
@@ -20,6 +21,10 @@ public class UnexpectedValueException extends SchemaException {
     }
 
     public UnexpectedValueException(JsonPointerPath pointer, JsonValue element, JsonValue.ValueType... wanted) {
-        super(pointer.toURIFragment(), String.format("Found %s, but was expecting %s", element.getValueType().toString().toLowerCase(), Arrays.toString(wanted)));
+        super(pointer.toURIFragment(), String.format("Found %s, but was expecting %s", element.getValueType().toString().toLowerCase(),
+                //Convert types to lowercase
+                Arrays.stream(wanted)
+                        .map(type->type.name().toLowerCase())
+                        .collect(Collectors.joining(","))));
     }
 }

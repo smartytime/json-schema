@@ -32,6 +32,7 @@ import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValid
 import static javax.json.spi.JsonProvider.provider;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class ValidationTestSupport {
@@ -80,7 +81,7 @@ public class ValidationTestSupport {
 
         Optional<ValidationError> errors = test(failingSchema, expectedPointer, input);
         Assert.assertTrue(errors.isPresent());
-        Assert.assertSame(expectedViolatedSchema, errors.get().getViolatedSchema());
+        Assert.assertSame("Matching violation schemas", expectedViolatedSchema, errors.get().getViolatedSchema());
     }
 
     public static void expectFailure(final Schema failingSchema, final String expectedPointer,
@@ -91,19 +92,24 @@ public class ValidationTestSupport {
     public static ValidationError expectFailure(final Failure failure) {
         final SchemaValidator<?> validator = failure.validator()
                 .orElse(createValidatorForSchema(failure.schema()));
+        if (failure.input() == null) {
+            throw new RuntimeException("Invalid test configuration.  Must provide input value");
+        }
         ValidationError error = validator.validate(failure.input())
                 .orElseThrow(() -> new AssertionError(failure.schema() + " did not fail for " + failure.input()));
-        Assert.assertSame(failure.expectedViolatedSchema(), error.getViolatedSchema());
-        assertEquals(failure.expectedPointer(), error.getPointerToViolation());
-        assertEquals(failure.expectedSchemaLocation(), error.getSchemaLocation());
+        failure.expected().ifPresent(p-> Assert.assertTrue("Predicate failed validation", p.test(error)));
+        failure.expectedConsumer().ifPresent(consumer-> consumer.accept(error));
+        Assert.assertSame("Expected violated schema", failure.expectedViolatedSchema(), error.getViolatedSchema());
+        assertEquals("Pointer to violation", failure.expectedPointer(), error.getPointerToViolation());
+        assertEquals("Schema location", failure.expectedSchemaLocation(), error.getSchemaLocation());
         if (failure.expectedKeyword() != null) {
+            assertNotNull("Error expected to have a keyword, but didn't", error.getKeyword());
             assertEquals(failure.expectedKeyword(), error.getKeyword().key());
         }
         if (failure.expectedMessageFragment() != null) {
-            assertThat(error.getMessage(), containsString(failure.expectedMessageFragment()));
+            assertThat("Message fragment matches", error.getMessage(), containsString(failure.expectedMessageFragment()));
         }
-        failure.expected().ifPresent(p-> Assert.assertTrue("Predicate failed validation", p.test(error)));
-        failure.expectedConsumer().ifPresent(consumer-> consumer.accept(error));
+
         return error;
     }
 
@@ -154,6 +160,11 @@ public class ValidationTestSupport {
 
         public void expect() {
             expectFailure(this);
+        }
+
+        public Failure expectedKeyword(final JsonSchemaKeyword keyword) {
+            this.expectedKeyword = keyword.key();
+            return this;
         }
 
         public Failure expectedKeyword(final String keyword) {

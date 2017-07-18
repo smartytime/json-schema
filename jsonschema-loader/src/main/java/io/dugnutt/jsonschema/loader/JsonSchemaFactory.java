@@ -172,7 +172,7 @@ public class JsonSchemaFactory {
         schemaBuilder.schemaLocation(schemaModel.currentJsonPath.toURIFragment());
 
         schemaJson.findArray(ENUM).ifPresent(schemaBuilder::enumValues);
-        schemaJson.find(CONST).ifPresent(schemaBuilder::constValue);
+        schemaJson.findByKey(CONST).ifPresent(schemaBuilder::constValue);
 
         Stream<Schema> allOfSchemas = schemaModel.streamChildSchemaModels(ALL_OF, JsonValue.ValueType.ARRAY)
                 .map(this::createSchema);

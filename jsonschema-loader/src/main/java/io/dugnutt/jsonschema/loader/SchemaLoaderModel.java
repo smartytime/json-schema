@@ -17,6 +17,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.Wither;
 
+import javax.annotation.Nullable;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -139,7 +140,7 @@ public class SchemaLoaderModel {
     }
 
     public Optional<SchemaLoaderModel> childModel(JsonSchemaKeyword childKey) {
-        return childModel(childKey.key());
+        return Optional.ofNullable(childModel(childKey.key()));
     }
 
     public SchemaLoaderModel childModel(JsonSchemaKeyword arrayKey, int idx) {
@@ -192,7 +193,7 @@ public class SchemaLoaderModel {
 
     public boolean isCombinedSchema() {
         for (JsonSchemaKeyword combinedSchemaKeyword : COMBINED_SCHEMA_KEYWORDS) {
-            if (schemaJson.find(combinedSchemaKeyword).isPresent()) {
+            if (schemaJson.findByKey(combinedSchemaKeyword).isPresent()) {
                 return true;
             }
         }
@@ -244,7 +245,15 @@ public class SchemaLoaderModel {
         }
     }
 
-    public Stream<SchemaLoaderModel> streamChildSchemaModelsForArray(JsonSchemaKeyword schemaProperty, JsonArray toIterate) {
+    public boolean isPropertyType(JsonSchemaKeyword property, JsonValue.ValueType valueType) {
+        final JsonValue jsonValue = schemaJson.get(property.key());
+        if (jsonValue != null && jsonValue.getValueType() == valueType) {
+            return true;
+        }
+        return false;
+    }
+
+    private Stream<SchemaLoaderModel> streamChildSchemaModelsForArray(JsonSchemaKeyword schemaProperty, JsonArray toIterate) {
         return IntStream.range(0, toIterate.size())
                 .mapToObj(idx -> {
                     final JsonValue jsonValue = toIterate.get(idx);
@@ -265,7 +274,29 @@ public class SchemaLoaderModel {
     }
 
     @VisibleForTesting
-    Optional<SchemaLoaderModel> childModel(String childKey) {
+    Optional<SchemaLoaderModel> childModelIfObject(JsonSchemaKeyword keyword) {
+        final String keywordVal = keyword.key();
+        return schemaJson.findIfObject(keywordVal)
+                .map(childObject -> {
+                    final JsonPointerPath childPath = this.currentJsonPath.child(keywordVal);
+
+                    final FluentJsonObject childJsonWrapper = new FluentJsonObject(childObject, childPath);
+
+                    final URI childResolutionScope;
+                    if (childJsonWrapper.has(ID)) {
+                        childResolutionScope = ReferenceScopeResolver.resolveScope(id, childJsonWrapper.getString(ID));
+                    } else {
+                        childResolutionScope = this.resolutionScope;
+                    }
+                    return this.withCurrentJsonPath(childPath)
+                            .withSchemaJson(childJsonWrapper)
+                            .withResolutionScope(childResolutionScope);
+                });
+    }
+
+    @VisibleForTesting
+    @Nullable
+    SchemaLoaderModel childModel(String childKey) {
         return schemaJson.findObject(childKey)
                 .map(childObject -> {
                     final JsonPointerPath childPath = this.currentJsonPath.child(childKey);
@@ -281,7 +312,7 @@ public class SchemaLoaderModel {
                     return this.withCurrentJsonPath(childPath)
                             .withSchemaJson(childJsonWrapper)
                             .withResolutionScope(childResolutionScope);
-                });
+                }).orElse(null);
     }
 
     private SchemaLoaderModel internalChildModel(JsonSchemaKeyword keyWord, Object childKey, JsonValue valueAtKey) {

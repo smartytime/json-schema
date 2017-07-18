@@ -9,6 +9,7 @@ import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
+import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.util.Collection;
 import java.util.Map;
@@ -19,6 +20,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.dugnutt.jsonschema.loader.LoadingUtils.castTo;
 
 public class FluentJsonObject implements JsonObject {
     private final JsonObject wrapped;
@@ -47,7 +49,7 @@ public class FluentJsonObject implements JsonObject {
         return findString(property).orElseThrow(() -> new MissingExpectedPropertyException(wrapped, property.key()));
     }
 
-    public Optional<JsonValue> find(JsonSchemaKeyword prop) {
+    public Optional<JsonValue> findByKey(JsonSchemaKeyword prop) {
         if (wrapped.containsKey(prop.key())) {
             return Optional.of(wrapped.get(prop.key()));
         }
@@ -57,7 +59,7 @@ public class FluentJsonObject implements JsonObject {
     public Optional<JsonArray> findArray(JsonSchemaKeyword property) {
         checkNotNull(property, "property must not be null");
 
-        return find(property.key(), JsonArray.class);
+        return findByKey(property.key(), JsonArray.class);
     }
 
     public Optional<Boolean> findBoolean(JsonSchemaKeyword property) {
@@ -76,27 +78,34 @@ public class FluentJsonObject implements JsonObject {
     public Optional<Integer> findInt(JsonSchemaKeyword property) {
         checkNotNull(property, "property must not be null");
 
-        return find(property.key(), JsonNumber.class)
+        return findByKey(property.key(), JsonNumber.class)
                 .map(JsonNumber::intValue);
     }
 
     public Optional<Integer> findInteger(JsonSchemaKeyword property) {
         checkNotNull(property, "property must not be null");
 
-        return find(property.key(), JsonNumber.class)
+        return findByKey(property.key(), JsonNumber.class)
                 .map(JsonNumber::intValue);
     }
 
     public Optional<Number> findNumber(JsonSchemaKeyword property) {
         checkNotNull(property, "property must not be null");
 
-        return find(property.key(), JsonNumber.class)
+        return findByKey(property.key(), JsonNumber.class)
                 .map(JsonNumber::bigDecimalValue);
     }
 
     public Optional<JsonObject> findObject(String property) {
         checkNotNull(property, "property must not be null");
-        return find(property, JsonObject.class);
+        return findByKey(property, JsonObject.class);
+    }
+
+    public Optional<JsonObject> findIfObject(String property) {
+        checkNotNull(property, "property must not be null");
+        return findByKey(property, JsonStructure.class)
+                .filter(childJson-> JsonObject.class.isAssignableFrom(childJson.getClass()))
+                .map(JsonObject.class::cast);
     }
 
     public Optional<JsonObject> findObject(JsonSchemaKeyword property) {
@@ -106,8 +115,21 @@ public class FluentJsonObject implements JsonObject {
 
     public Optional<String> findString(JsonSchemaKeyword property) {
         checkNotNull(property, "property must not be null");
-        return find(property.key(), JsonString.class)
+        return findByKey(property.key(), JsonString.class)
                 .map(JsonString::getString);
+    }
+
+    public <X extends JsonStructure> Optional<X> findStructure(JsonSchemaKeyword keyword, Class<X> expectedClass) {
+        checkNotNull(keyword, "keyword must not be null");
+        checkNotNull(expectedClass, "expectedClass must not be null");
+
+        final String keywordVal = keyword.key();
+        final JsonPointerPath childPath = path.child(keywordVal);
+
+        return this.findByKey(keyword)
+                .map(castTo(JsonStructure.class, childPath)) //Hard cast - will error if it's not a structure
+                .filter(value -> expectedClass.isAssignableFrom(value.getClass()))
+                .map(expectedClass::cast);
     }
 
     @Override
@@ -357,12 +379,12 @@ public class FluentJsonObject implements JsonObject {
      * @param <X>      Method capture vararg to ensure type-safety for callers.
      * @return Optional.empty if the key doesn't exist, otherwise returns the value at the specified key.
      */
-    private <X extends JsonValue> Optional<X> find(String property, Class<X> expected) {
+    private <X extends JsonValue> Optional<X> findByKey(String property, Class<X> expected) {
         checkNotNull(property, "property must not be null");
         if (wrapped.containsKey(property)) {
             JsonValue jsonValue = wrapped.get(property);
             if (!expected.isAssignableFrom(jsonValue.getClass())) {
-                throw new UnexpectedValueException(path, jsonValue, expected);
+                throw new UnexpectedValueException(path.child(property), jsonValue, expected);
             }
             return Optional.of(expected.cast(jsonValue));
         }

@@ -32,7 +32,6 @@ import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class ArraySchemaTest {
 
@@ -143,12 +142,13 @@ public class ArraySchemaTest {
 
     @Test
     public void toStringAdditionalItems() {
+        final JsonObject addtlProps = JsonUtils.jsonObjectBuilder().add("type", "boolean").build();
         final JsonObject rawSchemaJson = DEFAULT.readObjectWithBuilder("tostring/arrayschema-list.json")
                 .remove("items")
-                .add("additionalItems", false)
+                .add("additionalItems", addtlProps)
                 .build();
         String actual = schemaFactory().load(rawSchemaJson).toString();
-        assertFalse(readJsonObject(actual).getBoolean("additionalItems"));
+        assertEquals(addtlProps, readJsonObject(actual).getJsonObject("additionalItems"));
     }
 
     @Test

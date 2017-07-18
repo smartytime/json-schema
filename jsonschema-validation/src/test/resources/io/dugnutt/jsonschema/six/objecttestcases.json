@@ -2,6 +2,12 @@
   "propertySchemaViolation": {
     "boolProp": "invalid"
   },
+  "propertyNameSchemaViolation": {
+    "ok_prop": "invalid",
+    "BadProperty": "BeerMan",
+    "x": "xy",
+    "this_property_name_is_too_long": "really_long_name_is_bad"
+  },
   "noProperties": {
     "hello": "world"
   },

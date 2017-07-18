@@ -27,10 +27,13 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 import javax.json.JsonPointer;
+import javax.json.JsonValue;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildValidatorWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.countCauseByJsonPointer;
@@ -44,6 +47,7 @@ import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static javax.json.spi.JsonProvider.provider;
+import static junit.framework.TestCase.assertSame;
 import static org.junit.Assert.assertEquals;
 
 public class ObjectSchemaValidatorTest {
@@ -61,14 +65,23 @@ public class ObjectSchemaValidatorTest {
     public void additionalPropertySchema() {
         String expectedSchemaLocation = "#/bool/location";
         BooleanSchema boolSchema = BooleanSchema.builder().schemaLocation(expectedSchemaLocation).build();
-        ObjectSchema subject = buildWithLocation(ObjectSchema.builder()
+        ObjectSchema schema = buildWithLocation(ObjectSchema.builder()
                 .schemaOfAdditionalProperties(boolSchema));
-        failureOf(subject)
+        failureOf(schema)
                 .input(OBJECTS.get("additionalPropertySchema"))
-                .expectedPointer("#/foo")
-                .expectedSchemaLocation(expectedSchemaLocation)
+                .expected(error->{
+                    //Other stuff
+                    assertEquals(1, error.getCauses().size());
+                    final ValidationError cause = error.getCauses().get(0);
+                    assertEquals(expectedSchemaLocation, cause.getSchemaLocation());
+                    assertEquals(TYPE, cause.getKeyword());
+                    assertSame(boolSchema, cause.getViolatedSchema());
+                })
+                .expectedPointer("#")
+                .expectedKeyword(ADDITIONAL_PROPERTIES)
+                .expectedSchemaLocation("#")
                 .expect();
-        expectFailure(subject, "#/foo", OBJECTS.get("additionalPropertySchema"));
+
     }
 
     @Test
@@ -102,10 +115,13 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void multipleAdditionalProperties() {
-        SchemaValidator<?> subject = buildValidatorWithLocation(ObjectSchema.builder().additionalProperties(false));
+        SchemaValidator<?> subject = buildValidatorWithLocation(ObjectSchema.builder().schemaOfAdditionalProperties(
+                StringSchema.builder().requiresString(true).build()
+        ));
         var error = verifyFailure(() -> subject.validate(readJsonObject("{\"a\":true,\"b\":true}")));
 
-        assertEquals("#: 2 schema violations found", error.getMessage());
+        assertEquals("#: Additional properties were invalid", error.getMessage());
+        assertEquals(ADDITIONAL_PROPERTIES, error.getKeyword());
         assertEquals(2, error.getCauses().size());
     }
 
@@ -156,8 +172,6 @@ public class ObjectSchemaValidatorTest {
                 .build();
 
         var e = verifyFailure(() -> createValidatorForSchema(subject).validate(OBJECTS.get("multipleViolations")));
-        ;
-        Assert.fail("did not throw exception for 3 schema violations");
 
         assertEquals(3, e.getCauses().size());
         assertEquals(1, countCauseByJsonPointer(e, "#"));
@@ -185,8 +199,6 @@ public class ObjectSchemaValidatorTest {
         Schema subject = newBuilder.call().addPropertySchema("nested", nested1).build();
 
         var subjectException = verifyFailure(() -> createValidatorForSchema(subject).validate(OBJECTS.get("multipleViolationsNested")));
-        ;
-        Assert.fail("did not throw exception for 9 schema violations");
 
         assertEquals("#: 9 schema violations found", subjectException.getMessage());
         assertEquals(4, subjectException.getCauses().size());
@@ -230,15 +242,8 @@ public class ObjectSchemaValidatorTest {
     }
 
     @Test
-    public void noAdditionalProperties() {
-        ObjectSchema subject = ObjectSchema.builder().additionalProperties(false).build();
-        expectFailure(subject, "#", OBJECTS.get("propertySchemaViolation"));
-    }
-
-    @Test
     public void noProperties() {
         expectSuccess(() -> createValidatorForSchema(ObjectSchema.builder().build()).validate(OBJECTS.get("noProperties")));
-        ;
     }
 
     @Test
@@ -247,7 +252,6 @@ public class ObjectSchemaValidatorTest {
             final ObjectSchema objectSchema = ObjectSchema.builder().requiresObject(false).build();
             return createValidatorForSchema(objectSchema).validate(jsonStringValue("foo"));
         });
-        ;
     }
 
     @Test
@@ -256,7 +260,6 @@ public class ObjectSchemaValidatorTest {
                 .patternProperty("b_.*", BooleanSchema.BOOLEAN_SCHEMA)
                 .build();
         expectSuccess(() -> createValidatorForSchema(schema).validate(blankJsonObject()));
-        ;
     }
 
     @Test
@@ -266,7 +269,6 @@ public class ObjectSchemaValidatorTest {
                 .patternProperty("aa.*", BooleanSchema.BOOLEAN_SCHEMA)
                 .build();
         expectSuccess(() -> createValidatorForSchema(schema).validate(OBJECTS.get("patternPropertyOverridesAdditionalPropSchema")));
-        ;
     }
 
     @Test
@@ -283,10 +285,11 @@ public class ObjectSchemaValidatorTest {
     public void patternPropsOverrideAdditionalProps() {
         final ObjectSchema schema = ObjectSchema.builder()
                 .patternProperty("^v.*", EmptySchema.EMPTY_SCHEMA)
-                .additionalProperties(false)
+                .schemaOfAdditionalProperties(
+                        BooleanSchema.builder().constValue(JsonValue.FALSE).build()
+                )
                 .build();
         expectSuccess(() -> createValidatorForSchema(schema).validate(OBJECTS.get("patternPropsOverrideAdditionalProps")));
-        ;
     }
 
     @Test
@@ -300,6 +303,24 @@ public class ObjectSchemaValidatorTest {
         failureOf(subject)
                 .input(OBJECTS.get("propertyDepViolation"))
                 .expectedKeyword("dependencies")
+                .expect();
+    }
+
+    @Test
+    public void propertyNameSchemaSchemaViolation() {
+        final StringSchema propertyNameSchema = StringSchema.builder().pattern("^[a-z_]{3,8}$").build();
+        ObjectSchema subject = ObjectSchema.builder()
+                .propertyNameSchema(propertyNameSchema)
+                .schemaLocation("#")
+                .build();
+        failureOf(subject)
+                .input(OBJECTS.getJsonObject("propertyNameSchemaViolation"))
+                .expected(error -> {
+                    Assert.assertSame("#", error.getSchemaLocation());
+                    Assert.assertSame(3, error.getViolationCount());
+                })
+                .expectedKeyword(JsonSchemaKeyword.PROPERTY_NAMES.key())
+                .expectedSchemaLocation("#")
                 .expect();
     }
 
@@ -346,12 +367,6 @@ public class ObjectSchemaValidatorTest {
                 OBJECTS.get("schemaDepViolation"));
     }
 
-    @Test(expected = SchemaException.class)
-    public void schemaForNoAdditionalProperties() {
-        ObjectSchema.builder().additionalProperties(false)
-                .schemaOfAdditionalProperties(BooleanSchema.BOOLEAN_SCHEMA).build();
-    }
-
     @Test
     public void schemaPointerIsPassedToValidationError() {
         JsonPointer pointer = provider().createPointer("/dependencies/a");
@@ -380,9 +395,6 @@ public class ObjectSchemaValidatorTest {
     @Test
     public void toStringNoAdditionalProperties() {
         JsonObject rawSchemaJson = readResourceAsJson("tostring/objectschema.json", JsonObject.class);
-        rawSchemaJson = provider().createObjectBuilder(rawSchemaJson)
-                .add("additionalProperties", false)
-                .build();
         String actual = schemaFactory().load(rawSchemaJson).toString();
         assertEquals(rawSchemaJson, readJsonObject(actual));
     }

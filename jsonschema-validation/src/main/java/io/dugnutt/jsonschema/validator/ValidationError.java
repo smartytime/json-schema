@@ -326,6 +326,10 @@ public class ValidationError {
                 '}';
     }
 
+    public ValidationError withSchema(Schema schema) {
+        return new ValidationError(pointerToViolation, schema, message, causingExceptions, keyword, schemaLocation);
+    }
+
     private static int getViolationCount(List<ValidationError> causes) {
         int causeCount = causes.stream().mapToInt(ValidationError::getViolationCount).sum();
         return Math.max(1, causeCount);

@@ -1,7 +1,6 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.ArraySchema;
-import io.dugnutt.jsonschema.six.Schema;
 
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_ITEMS;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ITEMS;
@@ -9,9 +8,7 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAX_ITEMS;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_ITEMS;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.UNIQUE_ITEMS;
 import static java.util.Objects.requireNonNull;
-import static javax.json.JsonValue.ValueType.FALSE;
-import static javax.json.JsonValue.ValueType.OBJECT;
-import static javax.json.JsonValue.ValueType.TRUE;
+import static javax.json.JsonValue.ValueType.ARRAY;
 
 /**
  * @author erosb
@@ -41,24 +38,16 @@ class ArraySchemaFactory {
                 .map(schemaFactory::createSchema)
                 .ifPresent(builder::schemaOfAdditionalItems);
 
+        schemaModel.childModelIfObject(ITEMS)
+                .map(schemaFactory::createSchema)
+                .ifPresent(builder::allItemSchema);
 
-        schemaJson.find(ITEMS).ifPresent(items -> {
-            switch (items.getValueType()) {
-                case OBJECT:
-                    final SchemaLoaderModel childSchemaModel = schemaModel.childModel(ITEMS);
-                    final Schema childSchema = schemaFactory.createSchema(childSchemaModel);
-                    builder.allItemSchema(childSchema);
-                    break;
-                case ARRAY:
-                    schemaModel.streamChildSchemaModelsForArray(ITEMS, items.asJsonArray())
-                            .map(schemaFactory::createSchema)
-                            .forEach(builder::addItemSchema);
-                    break;
+        if(schemaModel.isPropertyType(ITEMS, ARRAY)) {
+            schemaModel.streamChildSchemaModels(ITEMS)
+                    .map(schemaFactory::createSchema)
+                    .forEach(builder::addItemSchema);
+        }
 
-                default:
-                    throw schemaModel.unexpectedValueException(ITEMS, items, TRUE, FALSE, OBJECT);
-            }
-        });
         return builder;
     }
 }
