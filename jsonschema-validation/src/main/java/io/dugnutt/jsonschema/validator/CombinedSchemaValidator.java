@@ -114,7 +114,7 @@ public class CombinedSchemaValidator extends SchemaValidator<CombinedSchema> {
                         e.getMessage(),
                         failures,
                         e.getKeyword(),
-                        schema.getSchemaLocation()));
+                        schema.getDocumentLocalURI()));
     }
     /**
      * Validation criterion.

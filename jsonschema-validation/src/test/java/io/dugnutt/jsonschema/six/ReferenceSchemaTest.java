@@ -24,13 +24,14 @@ import org.junit.Test;
 import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
 import static org.junit.Assert.assertEquals;
 
 public class ReferenceSchemaTest {
 
     @Test
     public void constructorMustRunOnlyOnce() {
-        ReferenceSchema.Builder builder = ReferenceSchema.builder();
+        ReferenceSchema.Builder builder = ReferenceSchema.builder(rootSchemaLocation());
         Assert.assertSame(builder.build(), builder.build());
     }
 
@@ -38,7 +39,7 @@ public class ReferenceSchemaTest {
     public void equalsVerifier() {
         EqualsVerifier.forClass(ReferenceSchema.class)
                 .withRedefinedSuperclass()
-                .withIgnoredFields("schemaLocation")
+               .withIgnoredFields("location")
                 //there are specifically some non final fields for loading of recursive schemas
                 .suppress(Warning.NONFINAL_FIELDS)
                 .suppress(Warning.STRICT_INHERITANCE)
@@ -48,7 +49,7 @@ public class ReferenceSchemaTest {
     @Test(expected = IllegalStateException.class)
     public void setterShouldWorkOnlyOnce() {
         Assert.fail("Not there anymore");
-        ReferenceSchema subject = ReferenceSchema.builder().build();
+        ReferenceSchema subject = ReferenceSchema.builder(SchemaLocation.rootSchemaLocation()).build();
     }
 
     @Test

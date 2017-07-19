@@ -18,6 +18,7 @@ package io.dugnutt.jsonschema.six;
 import javax.json.JsonArray;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.net.URI;
 import java.util.Objects;
 
 /**
@@ -34,8 +35,8 @@ public class EnumSchema extends Schema {
         possibleValues = builder.possibleValues;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     public JsonArray getPossibleValues() {
@@ -80,8 +81,15 @@ public class EnumSchema extends Schema {
      * Builder class for {@link EnumSchema}.
      */
     public static class Builder extends Schema.Builder<EnumSchema> {
-
         private JsonArray possibleValues;
+
+        public Builder(String id) {
+            super(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         @Override
         public EnumSchema build() {
@@ -92,6 +100,5 @@ public class EnumSchema extends Schema {
             this.possibleValues = possibleValues;
             return this;
         }
-
     }
 }

@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import javax.json.JsonObject;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.function.Supplier;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static java.util.Arrays.asList;
@@ -74,7 +75,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     @Test
     public void genericProperties() {
         Schema actual = getSchemaForKey("genericProperties");
-        assertEquals("myId", actual.getId());
+        assertEquals("myId", actual.getId().toString());
         assertEquals("my title", actual.getTitle());
         assertEquals("my description", actual.getDescription());
     }
@@ -155,15 +156,20 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         assertTrue(actual.isRequiresNumber());
     }
 
+    private Supplier<AssertionError> missingReference() {
+        return () -> new AssertionError("Missing reference schema");
+    }
     @Test
     public void pointerResolution() {
         ObjectSchema actual = (ObjectSchema) getSchemaForKey("pointerResolution");
+
         ObjectSchema rectangleSchema = (ObjectSchema) ((ReferenceSchema) actual.getPropertySchemas()
                 .get("rectangle"))
-                .getReferredSchema();
+                .getReferredSchema().orElseThrow(missingReference());
         Assert.assertNotNull(rectangleSchema);
         ReferenceSchema aRef = (ReferenceSchema) rectangleSchema.getPropertySchemas().get("a");
-        assertTrue(aRef.getReferredSchema() instanceof NumberSchema);
+        Schema refSchema = aRef.getReferredSchema().orElseThrow(missingReference());
+        assertTrue(refSchema instanceof NumberSchema);
     }
 
     @Test(expected = SchemaException.class)
@@ -185,7 +191,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     public void refWithType() {
         ObjectSchema actualRoot = (ObjectSchema) getSchemaForKey("refWithType");
         ReferenceSchema actual = (ReferenceSchema) actualRoot.getPropertySchemas().get("prop");
-        ObjectSchema propSchema = (ObjectSchema) actual.getReferredSchema();
+        ObjectSchema propSchema = (ObjectSchema) actual.getReferredSchema().orElseThrow(missingReference());
         assertEquals(propSchema.getRequiredProperties(), asList("a", "b"));
     }
 
@@ -228,7 +234,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
                 .getJsonObject("objectWithSchemaDep");
         ObjectSchema schema = (ObjectSchema) schemaFactory().load(rawSchema);
 
-        String actualSchemaPointer = schema.getSchemaDependencies().get("a").getSchemaLocation();
+        String actualSchemaPointer = schema.getSchemaDependencies().get("a").getLocation().getRelativeURI().toString();
         String expectedSchemaPointer = "#/dependencies/a";
         assertEquals(expectedSchemaPointer, actualSchemaPointer);
     }
@@ -255,13 +261,13 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     @Test
     public void tupleSchema() {
         ArraySchema actual = (ArraySchema) getSchemaForKey("tupleSchema");
-        Assert.assertFalse(actual.isPermitsAdditionalItems());
         Assert.assertNull(actual.getAllItemSchema());
         assertEquals(2, actual.getItemSchemas().size());
         assertEquals(BooleanSchema.BOOLEAN_SCHEMA, actual.getItemSchemas().get(0));
         assertEquals(NullSchema.INSTANCE, actual.getItemSchemas().get(1));
     }
 
+    //todo:ericm Test nulls everywhere
     @Test(expected = SchemaException.class)
     public void unknownSchema() {
         getSchemaForKey("unknown");

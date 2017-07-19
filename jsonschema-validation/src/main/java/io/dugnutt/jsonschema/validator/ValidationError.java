@@ -25,6 +25,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,7 +41,7 @@ public class ValidationError {
 
     private static final long serialVersionUID = 6192047123024651924L;
     private final StringBuilder pointerToViolation;
-    private final String schemaLocation;
+    private final URI schemaLocation;
     private final transient Schema violatedSchema;
     private final List<ValidationError> causingExceptions;
     private final JsonSchemaKeyword keyword;
@@ -61,7 +62,7 @@ public class ValidationError {
                 message,
                 Collections.emptyList(),
                 keyword,
-                null);
+                (URI) null);
     }
 
     // /**
@@ -75,7 +76,7 @@ public class ValidationError {
     //  * @param schemaLocation a path denoting the location of the violated keyword in the schema JSON
     //  */
     // public ValidationReport(Schema violatedSchema, Class<?> expectedType,
-    //                         Object actualValue, String keyword, String schemaLocation) {
+    //                         Object actualValue, String keyword, URI schemaLocation) {
     //     this(violatedSchema, new StringBuilder("#"),
     //             "expected type: " + expectedType.getSimpleName() + ", found: "
     //                     + (actualValue == null ? "null" : actualValue.getClass().getSimpleName()),
@@ -93,7 +94,7 @@ public class ValidationError {
     public ValidationError(Schema violatedSchema,
                            String message,
                            JsonSchemaKeyword keyword,
-                           String schemaLocation) {
+                           URI schemaLocation) {
         this(violatedSchema,
                 new StringBuilder("#"),
                 message,
@@ -121,7 +122,7 @@ public class ValidationError {
                            String message,
                            List<ValidationError> causingExceptions,
                            JsonSchemaKeyword keyword,
-                           String schemaLocation) {
+                           URI schemaLocation) {
         this.message = message;
         this.violatedSchema = violatedSchema;
         this.pointerToViolation = pointerToViolation;
@@ -130,11 +131,20 @@ public class ValidationError {
         this.schemaLocation = schemaLocation;
     }
 
+    @Deprecated
+    public ValidationError(Schema violatedSchema, StringBuilder pointerToViolation,
+                           String message,
+                           List<ValidationError> causingExceptions,
+                           JsonSchemaKeyword keyword,
+                           String schemaLocation) {
+        this(violatedSchema, pointerToViolation, message, causingExceptions, keyword, URI.create(schemaLocation));
+    }
+
     private ValidationError(StringBuilder pointerToViolation,
                             Schema violatedSchema,
                             String message,
                             List<ValidationError> causingExceptions,
-                            JsonSchemaKeyword keyword, String schemaLocation) {
+                            JsonSchemaKeyword keyword, URI schemaLocation) {
         this(violatedSchema, pointerToViolation, message, causingExceptions, keyword, schemaLocation);
     }
 
@@ -167,7 +177,7 @@ public class ValidationError {
                     getViolationCount(failures) + " schema violations found",
                     new ArrayList<>(failures),
                     null,
-                    rootFailingSchema.getSchemaLocation()));
+                    rootFailingSchema.getDocumentLocalURI()));
         }
     }
 
@@ -230,7 +240,7 @@ public class ValidationError {
      * @return a path denoting the location of the violated keyword in the schema
      * @since 1.6.0
      */
-    public String getSchemaLocation() {
+    public URI getSchemaLocation() {
         return schemaLocation;
     }
 
@@ -311,7 +321,7 @@ public class ValidationError {
 
         errorJson.add("causes", arrayBuilder);
         if (schemaLocation != null) {
-            errorJson.add("schemaLocation", schemaLocation);
+            errorJson.add("schemaLocation", schemaLocation.toString());
         }
         return errorJson.build();
     }

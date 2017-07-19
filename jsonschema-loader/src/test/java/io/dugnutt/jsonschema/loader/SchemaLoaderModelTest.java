@@ -1,9 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.JsonPointerPath;
 import io.dugnutt.jsonschema.six.SchemaException;
-import org.junit.Assert;
+import io.dugnutt.jsonschema.six.SchemaLocation;
 import org.junit.Test;
 
 import java.net.URI;
@@ -12,7 +10,7 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PROPERTIES;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArrayBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonObjectBuilder;
-import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -29,21 +27,24 @@ public class SchemaLoaderModelTest {
                         .build()
         );
         SchemaLoaderModel actual = ls.childModel(PROPERTIES, 0);
-        Assert.assertEquals(asList("properties", "0"), actual.currentJsonPath.jsonPathParts());
+        assertThat(actual.getLocation().getPath())
+                .containsExactly("properties", "0");
     }
 
     @Test
     public void childForSecond() {
         SchemaLoaderModel ls = emptySubject();
         SchemaLoaderModel actual = ls.childModel("hello").childModel("world");
-        Assert.assertEquals(asList("hello", "world"), actual.currentJsonPath.jsonPathParts());
+        assertThat(actual.getLocation().getPath())
+                .containsExactly("hello", "world");
     }
 
     @Test
     public void childForString() {
         SchemaLoaderModel ls = emptySubject();
         SchemaLoaderModel actual = ls.childModel("hello");
-        Assert.assertEquals(asList("hello"), actual.currentJsonPath.jsonPathParts());
+        assertThat(actual.getLocation().getPath())
+                .containsExactly("hello");
     }
 
     @Test
@@ -55,9 +56,12 @@ public class SchemaLoaderModelTest {
 
     @Test
     public void testCreateSchemaExceptionWithPath() {
-        SchemaLoaderModel subject = SchemaLoaderModel.createModelFor(jsonObjectBuilder().build())
-                .withId(URI.create("http://mysite.com#/foo/bob"))
-                .withCurrentJsonPath(new JsonPointerPath(JsonPath.jsonPath("from", "the", "base", "of", "bob")));
+        SchemaLoaderModel subject = SchemaLoaderModel.builder()
+                .schemaJson(jsonObjectBuilder().build())
+                .location(
+                        SchemaLocation.rootSchemaLocation(URI.create("http://mysite.com#/foo/bob"))
+                                .withChildPath("from", "the", "base", "of", "bob")
+                ).build();
 
         SchemaException actual = subject.createSchemaException("message");
         assertEquals("#/from/the/base/of/bob: message", actual.getMessage());

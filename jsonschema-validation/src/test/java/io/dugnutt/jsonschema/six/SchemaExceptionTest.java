@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
 import static io.dugnutt.jsonschema.validator.SchemaValidator.failure;
 import static org.junit.Assert.assertEquals;
 
@@ -12,8 +13,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SchemaExceptionTest {
 
-    private static final NullSchema SCHEMA = NullSchema.builder()
-            .schemaLocation("#")
+    private static final NullSchema SCHEMA = NullSchema.builder(rootSchemaLocation())
             .build();
 
     @Rule
@@ -21,7 +21,7 @@ public class SchemaExceptionTest {
 
     @Test
     public void nullActual() {
-        NullSchema schema = NullSchema.builder().schemaLocation("#/required/2").build();
+        NullSchema schema = NullSchema.builder(rootSchemaLocation("#/required/2")).build();
         String actual = failure(schema, JsonSchemaType.NULL, JsonSchemaType.STRING).getErrorMessage();
         assertEquals("#/required/2: expected type: String, found: null", actual);
     }

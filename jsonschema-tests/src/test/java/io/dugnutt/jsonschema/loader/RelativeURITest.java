@@ -16,9 +16,9 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.ServletSupport;
+import io.dugnutt.jsonschema.six.SchemaLocation;
 import org.junit.Test;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsJsonObject;
@@ -36,8 +36,7 @@ public class RelativeURITest {
                 .schemaFactory();
         SchemaLoaderModel build = SchemaLoaderModel.createModelFor(
                 readResourceAsJsonObject("/org/everit/jsonschema/relative-uri/schema/main.json"))
-                .withResolutionScope(URI.create("http://localhost:1234/schema/"));
-
+                .withLocation(SchemaLocation.rootSchemaLocation("http://localhost:1234/schema/"));
         schemaFactory.createSchema(build);
     }
 }

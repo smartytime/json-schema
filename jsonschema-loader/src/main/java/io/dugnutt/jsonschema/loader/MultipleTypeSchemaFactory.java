@@ -34,7 +34,7 @@ public class MultipleTypeSchemaFactory {
     }
 
     public Schema.Builder createExplicitTypeBuilder() {
-        MultipleTypeSchema.Builder builder = new MultipleTypeSchema.Builder();
+        MultipleTypeSchema.Builder builder = new MultipleTypeSchema.Builder(schemaModel.getLocation());
         Set<JsonSchemaType> typeArray = schemaModel.getTypeArray();
         return createSchemaBuilder(typeArray, true);
     }
@@ -52,7 +52,7 @@ public class MultipleTypeSchemaFactory {
     }
 
     private Schema.Builder createSchemaBuilder(Set<JsonSchemaType> types, boolean explicitlyDeclared) {
-        MultipleTypeSchema.Builder builder = new MultipleTypeSchema.Builder();
+        MultipleTypeSchema.Builder builder = new MultipleTypeSchema.Builder(schemaModel.getLocation());
 
         if (types.size() > 1) {
             types.forEach(schemaType -> {
@@ -64,7 +64,7 @@ public class MultipleTypeSchemaFactory {
             JsonSchemaType schemaType = types.iterator().next();
             return schemaFactory.createBuilderForSchemaType(schemaModel, schemaType, explicitlyDeclared);
         } else {
-            return EmptySchema.builder();
+            return EmptySchema.builder(schemaModel.getLocation());
         }
 
         return builder;

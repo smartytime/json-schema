@@ -72,13 +72,13 @@
     }
   },
   "idInRoot" : {
-    "id" : "http://x.y"
+    "$id" : "http://x.y"
   },
   "nestedId" : {
-    "id" : "http://x.y",
+    "$id" : "http://x.y",
     "properties" : {
       "prop" : {
-        "id": "/z#zzz",
+        "$id": "/z#zzz",
         "type" : "string"
       }
     }

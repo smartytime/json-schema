@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
 import lombok.SneakyThrows;
 
+import java.net.URI;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -16,12 +17,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class JsonPointerPath {
 
-    private final String uriFragment;
+    private final URI uriFragment;
     private final JsonPath path;
 
     @SneakyThrows
     public JsonPointerPath(String uriFragment) {
-        this.uriFragment = checkNotNull(uriFragment);
+        this.uriFragment = URI.create(checkNotNull(uriFragment));
         checkArgument(uriFragment.startsWith("#"), "URI fragment must start with #");
         if (uriFragment.length() > 1) {
             checkArgument(uriFragment.startsWith("#/"));
@@ -31,7 +32,7 @@ public class JsonPointerPath {
 
         String[] path = decodedURL.split("/");
         LinkedList<String> pathList = Arrays.stream(path)
-                .map(this::unescape)
+                .map(JsonPointerPath::unescape)
                 .collect(Collectors.toCollection(LinkedList::new));
         pathList.pop(); //Remove the #
 
@@ -41,10 +42,10 @@ public class JsonPointerPath {
     @SneakyThrows
     public JsonPointerPath(JsonPath path) {
         this.path = path;
-        this.uriFragment = Streams.concat(Stream.of("#"), Arrays.stream(path.toArray()))
+        this.uriFragment = URI.create(Streams.concat(Stream.of("#"), Arrays.stream(path.toArray()))
                 .map(String::valueOf)
-                .map(this::escape)
-                .collect(Collectors.joining("/"));
+                .map(JsonPointerPath::escape)
+                .collect(Collectors.joining("/")));
     }
 
     public JsonPointerPath child(String name) {
@@ -67,15 +68,15 @@ public class JsonPointerPath {
                 .collect(Collectors.toList());
     }
 
-    public String toURIFragment() {
+    public URI toURIFragment() {
         return uriFragment;
     }
 
-    private String unescape(String token) {
+    public static String unescape(String token) {
         return token.replace("~1", "/").replace("~0", "~").replace("\\\"", "\"").replace("\\\\", "\\");
     }
 
-    private String escape(String token) {
+    public static String escape(String token) {
         return token.replace("~", "~0").replace("/", "~1").replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

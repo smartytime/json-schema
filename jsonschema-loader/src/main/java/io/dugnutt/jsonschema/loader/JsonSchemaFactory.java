@@ -4,11 +4,13 @@ import io.dugnutt.jsonschema.loader.reference.DefaultSchemaClient;
 import io.dugnutt.jsonschema.loader.reference.SchemaCache;
 import io.dugnutt.jsonschema.loader.reference.SchemaClient;
 import io.dugnutt.jsonschema.six.BooleanSchema;
+import io.dugnutt.jsonschema.six.JsonPointerPath;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.NullSchema;
 import io.dugnutt.jsonschema.six.ReferenceSchema;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.SchemaLocation;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
@@ -21,15 +23,18 @@ import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ANY_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.CONST;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
 
 /**
@@ -48,18 +53,20 @@ public class JsonSchemaFactory {
     @Wither
     private final SchemaClient httpClient;
 
-    @Wither
-    private SchemaCache schemaCache;
+    private final LinkedList<URI> creationStack = new LinkedList<>();
 
     @Wither
     private final Charset charset;
+
+    @Wither
+    private SchemaCache schemaCache;
 
     public static JsonSchemaFactory schemaFactory() {
         return schemaFactory(JsonProvider.provider());
     }
 
     public static JsonSchemaFactory schemaFactory(JsonProvider jsonProvider) {
-        return new JsonSchemaFactory(jsonProvider, new DefaultSchemaClient(), SchemaCache.builder().build(), UTF8);
+        return new JsonSchemaFactory(jsonProvider, new DefaultSchemaClient(), UTF8, SchemaCache.builder().build());
     }
 
     public Schema.Builder createBuilderForExplicitSchemaType(final SchemaLoaderModel schemaModel, final JsonSchemaType schemaType) {
@@ -76,9 +83,9 @@ public class JsonSchemaFactory {
             case INTEGER:
                 return NumberSchemaFactory.createNumberSchemaBuilder(schemaModel).requiresInteger(explicitlyDeclaredType);
             case BOOLEAN:
-                return BooleanSchema.builder();
+                return BooleanSchema.builder(schemaModel.getLocation());
             case NULL:
-                return NullSchema.builder();
+                return NullSchema.builder(schemaModel.getLocation());
             case ARRAY:
                 return ArraySchemaFactory.createArraySchemaBuilder(schemaModel, this).requiresArray(explicitlyDeclaredType);
             case OBJECT:
@@ -90,14 +97,18 @@ public class JsonSchemaFactory {
 
     public Schema createSchema(SchemaLoaderModel schemaModel) {
 
-        Optional<Schema> cachedSchema = schemaCache.getSchema(schemaModel.getId(), schemaModel.getResolutionScope());
-        if (false) {
-            return cachedSchema.get();
+        // this.creationStack.push(schemaModel.getLocation());
+        Optional<Schema> cachedSchema = schemaCache.getSchema(schemaModel.getLocation());
+        final Schema schema;
+        if (cachedSchema.isPresent()) {
+            schema = cachedSchema.get();
         } else {
-            Schema newSchema = createSchemaBuilder(schemaModel).build();
-            schemaCache.cacheSchema(schemaModel.getId(), newSchema);
-            return newSchema;
+            schema = createSchemaBuilder(schemaModel).build();
+            schemaCache.cacheSchema(schemaModel.getLocation(), schema);
         }
+        // this.creationStack.pop();
+
+        return schema;
     }
 
     // Schema.Builder builder;
@@ -161,18 +172,59 @@ public class JsonSchemaFactory {
     //     return this.loadSchema(parentModel.childModel(childKey));
     // }
 
-    Schema.Builder<?> createSchemaBuilder(SchemaLoaderModel schemaModel) {
+    public Schema load(JsonObject schemaJson) {
+        checkNotNull(schemaJson, "schemaJson must not be null");
+        SchemaLoaderModel modelToLoad = SchemaLoaderModel.createModelFor(schemaJson);
+        return createSchema(modelToLoad);
+    }
+
+    // public EnumSchema.Builder enumSchemaBuilder(JsonArray enumArray) {
+    //     checkNotNull(enumArray, "enumArray must not be null");
+    //     return ;
+    // }
+
+    public Schema load(InputStream inputJson) {
+        checkNotNull(inputJson, "inputStream must not be null");
+        return load(provider.createReader(inputJson).readObject());
+    }
+
+    public Schema load(String inputJson) {
+        checkNotNull(inputJson, "inputStream must not be null");
+        return load(provider.createReader(new StringReader(inputJson)).readObject());
+    }
+
+    /**
+     * Returns the absolute URI without its fragment part.
+     *
+     * @param fullUri the abslute URI
+     * @return the URI without the fragment part
+     */
+    static URI withoutFragment(final String fullUri) {
+        int hashmarkIdx = fullUri.indexOf('#');
+        String rval;
+        if (hashmarkIdx == -1) {
+            rval = fullUri;
+        } else {
+            rval = fullUri.substring(0, hashmarkIdx);
+        }
+        try {
+            return new URI(rval);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Schema.Builder<?> createSchemaBuilder(SchemaLoaderModel schemaModel) {
         FluentJsonObject schemaJson = schemaModel.schemaJson;
 
         final Schema.Builder<?> schemaBuilder = determineAndCreateSchemaBuilder(schemaModel);
 
-        schemaJson.findString(JsonSchemaKeyword.ID).ifPresent(schemaBuilder::id);
         schemaJson.findString(JsonSchemaKeyword.TITLE).ifPresent(schemaBuilder::title);
         schemaJson.findString(JsonSchemaKeyword.DESCRIPTION).ifPresent(schemaBuilder::description);
-        schemaBuilder.schemaLocation(schemaModel.currentJsonPath.toURIFragment());
 
         schemaJson.findArray(ENUM).ifPresent(schemaBuilder::enumValues);
         schemaJson.findByKey(CONST).ifPresent(schemaBuilder::constValue);
+        schemaModel.childModel(NOT).map(this::createSchema).ifPresent(schemaBuilder::notSchema);
 
         Stream<Schema> allOfSchemas = schemaModel.streamChildSchemaModels(ALL_OF, JsonValue.ValueType.ARRAY)
                 .map(this::createSchema);
@@ -189,21 +241,70 @@ public class JsonSchemaFactory {
         return schemaBuilder;
     }
 
-    // public EnumSchema.Builder enumSchemaBuilder(JsonArray enumArray) {
-    //     checkNotNull(enumArray, "enumArray must not be null");
-    //     return ;
-    // }
-
     private Schema.Builder<?> determineAndCreateSchemaBuilder(SchemaLoaderModel schemaModel) {
         checkNotNull(schemaModel, "model must not be null");
 
         final FluentJsonObject schemaJson = schemaModel.schemaJson;
 
-
         if (schemaModel.isRefSchema()) {
             //Ignore all other keywords when encountering a ref
             String ref = schemaJson.getString($REF);
-            return ReferenceSchema.builder().refValue(ref);
+            return ReferenceSchema.builder(schemaModel.getLocation())
+                    .referenceSchemaLoader(referenceSchema -> {
+
+                        schemaCache.cacheSchema(referenceSchema.getLocation(), referenceSchema);
+
+                        URI referenceURI = referenceSchema.getAbsoluteReferenceURI();
+                        return schemaCache.getSchema(referenceURI)
+                                .orElseGet(() -> {
+
+                            if (!referenceURI.toString().startsWith("#")) {
+                                JsonPointerResolver.QueryResult queryResult = JsonPointerResolver.forURL(httpClient, referenceURI.toString(), provider)
+                                        .query();
+
+                                JsonObject fetchedJson = queryResult.getQueryResult();
+                                JsonObject containingDocument = queryResult.getContainingDocument();
+
+                                //Root document
+                                String rootId;
+                                if (containingDocument.containsKey($ID.key())) {
+                                    rootId = containingDocument.getString($ID.key());
+                                } else if (containingDocument.containsKey("id")) {
+                                    rootId = containingDocument.getString("id");
+                                } else {
+                                    rootId = "#";
+                                }
+
+                                SchemaLocation parentLocation = SchemaLocation.rootSchemaLocation(rootId);
+                                SchemaLocation childPath = parentLocation.withChildPath(referenceURI);
+
+                                SchemaLoaderModel loaderModel = SchemaLoaderModel.builder()
+                                        .location(childPath)
+                                        .rootSchemaJson(new FluentJsonObject(containingDocument, new JsonPointerPath(parentLocation.getJsonPath())))
+                                        .schemaJson(new FluentJsonObject(fetchedJson, new JsonPointerPath(childPath.getJsonPath())))
+                                        .build();
+
+                                return createSchema(loaderModel);
+                            } else {
+                                String relativeURL = schemaModel.getLocation().getDocumentUri().relativize(referenceURI).toString();
+                                JsonPointerResolver.QueryResult query = JsonPointerResolver.forDocument(schemaModel.rootSchemaJson, relativeURL, provider).query();
+                                SchemaLocation newLocation = schemaModel.getLocation().toBuilder()
+                                        .priorResolutionScope(schemaModel.getLocation().getDocumentUri())
+                                        .jsonPath(new JsonPointerPath(relativeURL).jsonPath())
+                                        .id(referenceURI)
+                                        .build();
+
+                                SchemaLoaderModel loaderModel = schemaModel.toBuilder()
+                                        .location(newLocation)
+                                        .schemaJson(new FluentJsonObject(query.getQueryResult(), new JsonPointerPath(newLocation.getJsonPath())))
+                                        .build();
+                                return createSchema(loaderModel);
+                            }
+
+
+                        });
+                    })
+                    .referencedURL(ref);
         } else if (schemaModel.hasExplicitTypeValue()) {
             // If this is for an explicit type, we can effectively ignore all other keywords, and only
             // load the keywords for this type.
@@ -260,42 +361,5 @@ public class JsonSchemaFactory {
         // } else {
         //     throw schemaModel.createSchemaException("Unable to determine type");
         // }
-    }
-
-    public Schema load(JsonObject schemaJson) {
-        checkNotNull(schemaJson, "schemaJson must not be null");
-        SchemaLoaderModel modelToLoad = SchemaLoaderModel.createModelFor(schemaJson);
-        return createSchema(modelToLoad);
-    }
-
-    public Schema load(InputStream inputJson) {
-        checkNotNull(inputJson, "inputStream must not be null");
-        return load(provider.createReader(inputJson).readObject());
-    }
-
-    public Schema load(String inputJson) {
-        checkNotNull(inputJson, "inputStream must not be null");
-        return load(provider.createReader(new StringReader(inputJson)).readObject());
-    }
-
-    /**
-     * Returns the absolute URI without its fragment part.
-     *
-     * @param fullUri the abslute URI
-     * @return the URI without the fragment part
-     */
-    static URI withoutFragment(final String fullUri) {
-        int hashmarkIdx = fullUri.indexOf('#');
-        String rval;
-        if (hashmarkIdx == -1) {
-            rval = fullUri;
-        } else {
-            rval = fullUri.substring(0, hashmarkIdx);
-        }
-        try {
-            return new URI(rval);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

@@ -59,7 +59,7 @@ public class JsonObjectTest extends BaseLoaderTest {
         JsonObject schema = getJsonObjectForKey("nestedId");
         SchemaLoaderModel modelFor = SchemaLoaderModel.createModelFor(schema);
         SchemaLoaderModel grandChild = modelFor.childModel(JsonSchemaKeyword.PROPERTIES).get().childModel("prop");
-        assertEquals("http://x.y/z#zzz", grandChild.getResolutionScope().toString());
+        assertEquals("http://x.y/z#zzz", grandChild.getLocation().getAbsoluteLocation().toString());
     }
 
     @Test

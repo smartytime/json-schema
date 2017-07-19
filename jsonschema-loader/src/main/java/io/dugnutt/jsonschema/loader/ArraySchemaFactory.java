@@ -28,7 +28,7 @@ class ArraySchemaFactory {
     }
 
     ArraySchema.Builder createArraySchemaBuilder() {
-        ArraySchema.Builder builder = ArraySchema.builder();
+        ArraySchema.Builder builder = ArraySchema.builder(schemaModel.getLocation());
         final FluentJsonObject schemaJson = schemaModel.schemaJson;
 
         schemaJson.findInteger(MIN_ITEMS).ifPresent(builder::minItems);

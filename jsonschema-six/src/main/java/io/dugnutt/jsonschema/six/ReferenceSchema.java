@@ -1,7 +1,12 @@
 package io.dugnutt.jsonschema.six;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
 import static java.util.Objects.requireNonNull;
 
@@ -12,19 +17,36 @@ import static java.util.Objects.requireNonNull;
  */
 public class ReferenceSchema extends Schema {
 
-    private final String refValue;
+    @NotNull
+    private final URI referenceURI;
+
+    @NotNull
+    private final URI absoluteReferenceURI;
+
+    @Nullable
     private final Schema referredSchema;
 
     public ReferenceSchema(final Builder builder) {
         super(builder);
-        this.refValue = requireNonNull(builder.refValue, "refValue cannot be null");
-        this.referredSchema= null;
-        // checkNotNull(builder.referredSchema, "builder.referredSchema must not be null");
-        // this.referredSchema = builder.referredSchema.build();
+        this.referenceURI = URI.create(requireNonNull(builder.refValue, "refValue cannot be null"));
+        this.absoluteReferenceURI = builder.getLocation().getDocumentUri().resolve(referenceURI);
+        if (builder.referenceSchemaLoader != null) {
+            this.referredSchema = checkNotNull(builder.referenceSchemaLoader.loadReferenceSchema(this));
+        } else {
+            this.referredSchema = null;
+        }
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public URI getReferenceURI() {
+        return referenceURI;
+    }
+
+    public URI getAbsoluteReferenceURI() {
+        return referenceURI;
+    }
+
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     @Override
@@ -39,7 +61,7 @@ public class ReferenceSchema extends Schema {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), referredSchema, refValue);
+        return Objects.hash(super.hashCode(), referredSchema, referenceURI);
     }
 
     @Override
@@ -50,7 +72,7 @@ public class ReferenceSchema extends Schema {
         if (o instanceof ReferenceSchema) {
             ReferenceSchema that = (ReferenceSchema) o;
             return that.canEqual(this) &&
-                    Objects.equals(refValue, that.refValue) &&
+                    Objects.equals(referenceURI, that.referenceURI) &&
                     Objects.equals(referredSchema, that.referredSchema) &&
                     super.equals(that);
         } else {
@@ -65,11 +87,11 @@ public class ReferenceSchema extends Schema {
 
     @Override
     protected void writePropertiesToJson(JsonSchemaGenerator writer) {
-        writer.write($REF, refValue);
+        writer.write($REF, referenceURI.toString());
     }
 
-    public Schema getReferredSchema() {
-        return referredSchema;
+    public Optional<Schema> getReferredSchema() {
+        return Optional.ofNullable(referredSchema);
     }
 
     /**
@@ -79,35 +101,43 @@ public class ReferenceSchema extends Schema {
      * @param referredSchema the referred schema
      */
     // public void setReferredSchema(final Schema referredSchema) {
-        // if (this.referredSchema != null) {
-        //     throw new IllegalStateException("referredSchema can be injected only once");
-        // }
-        // this.referredSchema = referredSchema;
+    // if (this.referredSchema != null) {
+    //     throw new IllegalStateException("referredSchema can be injected only once");
+    // }
+    // this.referredSchema = referredSchema;
     // }
 
     /**
      * Builder class for {@link ReferenceSchema}.
      */
     public static class Builder extends Schema.Builder<ReferenceSchema> {
-
         private Schema.Builder<?> referredSchema;
-
         /**
          * The value of {@code "$ref"}
          */
         private String refValue = "";
+        private ReferenceSchemaLoader referenceSchemaLoader;
 
-        /**
-         * This method caches its result, so multiple invocations will return referentially the same
-         * {@link ReferenceSchema} instance.
-         */
+        public Builder(String id) {
+            super(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
+
         @Override
         public ReferenceSchema build() {
             return new ReferenceSchema(this);
         }
 
-        public Builder refValue(String refValue) {
+        public Builder referencedURL(String refValue) {
             this.refValue = refValue;
+            return this;
+        }
+
+        public Builder referenceSchemaLoader(ReferenceSchemaLoader referenceSchemaLoader) {
+            this.referenceSchemaLoader = referenceSchemaLoader;
             return this;
         }
 
@@ -115,6 +145,5 @@ public class ReferenceSchema extends Schema {
             this.referredSchema = referredSchema;
             return this;
         }
-
     }
 }

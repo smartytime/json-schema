@@ -62,7 +62,6 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         List<ValidationError> errors = new ArrayList<>();
         Schema allItemSchema = schema.getAllItemSchema();
         List<Schema> itemSchemas = schema.getItemSchemas();
-        boolean additionalItems = schema.isPermitsAdditionalItems();
         Schema schemaOfAdditionalItems = schema.getSchemaOfAdditionalItems();
 
         if (allItemSchema != null) {
@@ -71,10 +70,6 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
                     allItemSchema,
                     errors::add);
         } else if (itemSchemas != null) {
-            if (!additionalItems && subject.size() > itemSchemas.size()) {
-                errors.add(failure(String.format("expected: [%d] array items, found: [%d]",
-                        itemSchemas.size(), subject.size()), JsonSchemaKeyword.ITEMS));
-            }
             int itemValidationUntil = Math.min(subject.size(), itemSchemas.size());
             validateItemsAgainstSchema(IntStream.range(0, itemValidationUntil),
                     subject,

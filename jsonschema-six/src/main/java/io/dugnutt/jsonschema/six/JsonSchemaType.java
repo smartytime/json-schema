@@ -23,7 +23,9 @@ public enum JsonSchemaType {
         return valueOf(type.name());
     }
     public static JsonSchemaType fromString(String type) {
-        checkNotNull(type, "type must not be null");
+        if (type == null) {
+            return NULL;
+        }
         return valueOf(type.toUpperCase());
     }
 

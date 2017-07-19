@@ -15,20 +15,22 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import java.net.URI;
+
+import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
+
 /**
  * Boolean schema validator.
  */
 public class BooleanSchema extends Schema {
 
-    public static BooleanSchema BOOLEAN_SCHEMA = builder().build();
+    public static BooleanSchema BOOLEAN_SCHEMA = builder(rootSchemaLocation()).build();
 
     BooleanSchema(final Builder builder) {
         super(builder);
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
+    public static Builder builder(SchemaLocation location) {        return new Builder(location);    }
 
     @Override
     protected boolean canEqual(final Object other) {
@@ -62,6 +64,13 @@ public class BooleanSchema extends Schema {
      * Builder class for {@link BooleanSchema}.
      */
     public static class Builder extends Schema.Builder<BooleanSchema> {
+        public Builder(String id) {
+            super(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         @Override
         public BooleanSchema build() {

@@ -1,8 +1,10 @@
 package io.dugnutt.jsonschema.loader.reference;
 
+import com.google.common.collect.Streams;
 import io.dugnutt.jsonschema.six.JsonPath;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.SchemaLocation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -16,6 +18,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -32,12 +35,19 @@ public class SchemaCache {
     @NonNull
     private final Map<URI, Schema> cachedSchemas;
 
+    // @NonNull
+    // private final Map<URI, Supplier<Schema>> loadingStack;
+
     public void cacheDocumentLocalSchema(URI documentURI, URI schemaURI, Schema schema) {
         checkNotNull(schema, "schema must not be null");
         checkNotNull(documentURI, "documentURI must not be null");
         checkNotNull(schemaURI, "schemaURI must not be null");
 
         getDocumentLocalCache(documentURI).put(schemaURI, schema);
+    }
+
+    public void cacheSchema(String schemaURL, Schema schema) {
+        this.cacheSchema(URI.create(schemaURL), schema);
     }
 
     public void cacheSchema(URI schemaURL, Schema schema) {
@@ -59,11 +69,23 @@ public class SchemaCache {
     //         throw forModel.createSchemaException(e.getMessage());
     //     }
     // }
-    public Optional<Schema> getSchema(URI schemaURI, URI scopedTo) {
-        return Optional.ofNullable(cachedSchemas.getOrDefault(
-                schemaURI, //Look in cache
-                getDocumentLocalSchema(schemaURI, scopedTo)) // else scope to document
-        );
+    public void cacheSchema(SchemaLocation location, Schema schema) {
+        URI absoluteLocation = location.getAbsoluteLocation();
+        URI jsonPointerLocation = location.getFullJsonPathURI();
+        this.cacheSchema(absoluteLocation, schema);
+        this.cacheSchema(jsonPointerLocation, schema);
+    }
+
+    public Optional<Schema> getSchema(SchemaLocation schemaLocation) {
+        //A schema can be cached a bunch of places.
+        return Stream.of(schemaLocation.getAbsoluteLocation(), schemaLocation.getFullJsonPathURI())
+                .filter(cachedSchemas::containsKey)
+                .map(cachedSchemas::get)
+                .findAny();
+    }
+
+    public Optional<Schema> getSchema(URI schemaURI) {
+        return Optional.ofNullable(cachedSchemas.get(schemaURI));
     }
 
     // JsonObject withoutRef(JsonObject original) {
@@ -89,8 +111,8 @@ public class SchemaCache {
         } else if (structure.getValueType() == JsonValue.ValueType.OBJECT) {
             JsonObject jsonObject = structure.asJsonObject();
             final URI newURIPath;
-            if (jsonObject.containsKey(JsonSchemaKeyword.ID.key())) {
-                String idValue = jsonObject.getString(JsonSchemaKeyword.ID.key());
+            if (jsonObject.containsKey(JsonSchemaKeyword.$ID.key())) {
+                String idValue = jsonObject.getString(JsonSchemaKeyword.$ID.key());
                 newURIPath = ReferenceScopeResolver.resolveScope(currentURIPath, idValue);
             }
         }

@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.six;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,12 +27,12 @@ public class MultipleTypeSchema extends Schema {
         this.requireOne = builder.requireOne;
     }
 
-    public boolean isRequireOne() {
-        return requireOne;
-    }
-
     public Optional<Schema> getSchemaForType(JsonSchemaType type) {
         return Optional.ofNullable(possibleSchemas.get(type));
+    }
+
+    public boolean isRequireOne() {
+        return requireOne;
     }
 
     @Override
@@ -43,10 +44,11 @@ public class MultipleTypeSchema extends Schema {
         private final Map<JsonSchemaType, Schema> possibleSchemas = new HashMap<>();
         private boolean requireOne;
 
-
-        public Builder requireOne(boolean requireOne) {
-            this.requireOne = requireOne;
-            return this;
+        public Builder(String id) {
+            super(id);
+        }
+        public Builder(SchemaLocation location) {
+            super(location);
         }
 
         public Builder addPossibleSchema(JsonSchemaType forType, Schema schema) {
@@ -59,6 +61,11 @@ public class MultipleTypeSchema extends Schema {
         @Override
         public MultipleTypeSchema build() {
             return new MultipleTypeSchema(this);
+        }
+
+        public Builder requireOne(boolean requireOne) {
+            this.requireOne = requireOne;
+            return this;
         }
     }
 }

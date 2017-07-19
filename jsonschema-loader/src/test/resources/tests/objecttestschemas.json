@@ -64,7 +64,9 @@
         "type": "string"
       }
     },
-    "additionalProperties": false,
+    "additionalProperties": {
+      "type": null
+    },
     "required": [
       "boolProp",
       "stringProp"

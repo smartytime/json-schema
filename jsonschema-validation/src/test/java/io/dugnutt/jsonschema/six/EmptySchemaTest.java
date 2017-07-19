@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
+import static io.dugnutt.jsonschema.six.SchemaLocation.*;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.EmptySchemaValidator.EMPTY_SCHEMA_VALIDATOR;
 
@@ -32,7 +33,7 @@ public class EmptySchemaTest {
     public void equalsVerifier() {
         EqualsVerifier.forClass(EmptySchema.class)
                 .withRedefinedSuperclass()
-                .withIgnoredFields("schemaLocation")
+               .withIgnoredFields("location")
                 .suppress(Warning.STRICT_INHERITANCE)
                 .verify();
     }
@@ -45,7 +46,8 @@ public class EmptySchemaTest {
 
     @Test
     public void testBuilder() {
-        Assert.assertEquals(EmptySchema.builder().build(), EmptySchema.builder().build());
+        Assert.assertEquals(EmptySchema.builder(rootSchemaLocation()).build(),
+                EmptySchema.builder(rootSchemaLocation()).build());
     }
 
     @Test
@@ -80,7 +82,7 @@ public class EmptySchemaTest {
     }
 
     private JsonObject json(final String title, final String description, final String id) {
-        String jsonFromString = EmptySchema.builder().title(title).description(description).id(id)
+        String jsonFromString = EmptySchema.builder(SchemaLocation.rootSchemaLocation(id)).title(title).description(description)
                 .build().toString();
         return JsonUtils.readJsonObject(jsonFromString);
     }

@@ -5,7 +5,7 @@ import com.google.common.base.CaseFormat;
 public enum JsonSchemaKeyword {
     $SCHEMA,
     $REF,
-    ID,
+    $ID,
     TITLE,
     DEFINITIONS,
     DESCRIPTION,

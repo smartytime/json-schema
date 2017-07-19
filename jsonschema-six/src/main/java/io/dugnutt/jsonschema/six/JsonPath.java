@@ -54,6 +54,14 @@ public class JsonPath {
         }
     }
 
+    public String toJsonPointer() {
+        return path.isEmpty() ? "" : "/" + path.stream()
+                .map(PathPart::getNameOrIndex)
+                .map(Object::toString)
+                .map(JsonPointerPath::escape)
+                .collect(Collectors.joining("/"));
+    }
+
     public JsonPath child(int index) {
         List<PathPart> newPath = new ArrayList<>(this.path);
         newPath.add(new PathPart(index));
@@ -93,6 +101,10 @@ public class JsonPath {
 
         public boolean isRoot() {
             return name == null && index == null;
+        }
+
+        public String toString() {
+            return getNameOrIndex().toString();
         }
     }
 }

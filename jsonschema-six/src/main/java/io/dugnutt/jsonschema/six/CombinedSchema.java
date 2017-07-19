@@ -17,6 +17,7 @@ package io.dugnutt.jsonschema.six;
 
 import lombok.Getter;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +44,30 @@ public class CombinedSchema extends Schema {
         super(builder);
         this.combinedSchemaType = requireNonNull(builder.combinedSchemaType, "criterion cannot be null");
         this.subSchemas = requireNonNull(builder.subschemas, "subSchemas cannot be null");
+    }
+
+    public static Builder allOf(SchemaLocation location, final List<Schema> schemas) {
+        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.AllOf);
+    }
+
+    public static Builder anyOf(SchemaLocation location, final List<Schema> schemas) {
+        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.AnyOf);
+    }
+
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
+    }
+
+    public static Builder builder(SchemaLocation location, final Stream<Schema> subschemas) {
+        return new Builder(location).subschemas(subschemas.collect(Collectors.toList()));
+    }
+
+    public static Builder builder(SchemaLocation location, final List<Schema> subschemas) {
+        return new Builder(location).subschemas(subschemas);
+    }
+
+    public static Builder oneOf(SchemaLocation location, final List<Schema> schemas) {
+        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.OneOf);
     }
 
     @Override
@@ -87,38 +112,20 @@ public class CombinedSchema extends Schema {
         writer.optionalWrite(combinedSchemaType.getProperty(), subSchemas);
     }
 
-    public static Builder allOf(final List<Schema> schemas) {
-        return builder(schemas).combinedSchemaType(CombinedSchemaType.AllOf);
-    }
-
-    public static Builder anyOf(final List<Schema> schemas) {
-        return builder(schemas).combinedSchemaType(CombinedSchemaType.AnyOf);
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static Builder builder(final Stream<Schema> subschemas) {
-        return new Builder().subschemas(subschemas.collect(Collectors.toList()));
-    }
-
-    public static Builder builder(final List<Schema> subschemas) {
-        return new Builder().subschemas(subschemas);
-    }
-
-    public static Builder oneOf(final List<Schema> schemas) {
-        return builder(schemas).combinedSchemaType(CombinedSchemaType.OneOf);
-    }
-
     /**
      * Builder class for {@link CombinedSchema}.
      */
     public static class Builder extends Schema.Builder<CombinedSchema> {
-
         private CombinedSchemaType combinedSchemaType;
-
         private List<Schema> subschemas = new ArrayList<>();
+
+        public Builder(String id) {
+            super(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         @Override
         public CombinedSchema build() {

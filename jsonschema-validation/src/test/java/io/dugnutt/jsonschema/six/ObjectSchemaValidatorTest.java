@@ -34,6 +34,7 @@ import java.util.concurrent.Callable;
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildValidatorWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.countCauseByJsonPointer;
@@ -56,7 +57,7 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void additionalPropertiesOnEmptyObject() {
-        expectSuccess(() -> new ObjectSchemaValidator(ObjectSchema.builder()
+        expectSuccess(() -> new ObjectSchemaValidator(ObjectSchema.builder(rootSchemaLocation())
                 .schemaOfAdditionalProperties(BooleanSchema.BOOLEAN_SCHEMA).build())
                 .validate(OBJECTS.getJsonObject("emptyObject")));
     }
@@ -64,8 +65,8 @@ public class ObjectSchemaValidatorTest {
     @Test
     public void additionalPropertySchema() {
         String expectedSchemaLocation = "#/bool/location";
-        BooleanSchema boolSchema = BooleanSchema.builder().schemaLocation(expectedSchemaLocation).build();
-        ObjectSchema schema = buildWithLocation(ObjectSchema.builder()
+        BooleanSchema boolSchema = BooleanSchema.builder(rootSchemaLocation()).location(expectedSchemaLocation).build();
+        ObjectSchema schema = buildWithLocation(ObjectSchema.builder(rootSchemaLocation())
                 .schemaOfAdditionalProperties(boolSchema));
         failureOf(schema)
                 .input(OBJECTS.get("additionalPropertySchema"))
@@ -88,14 +89,14 @@ public class ObjectSchemaValidatorTest {
     public void equalsVerifier() {
         EqualsVerifier.forClass(ObjectSchema.class)
                 .withRedefinedSuperclass()
-                .withIgnoredFields("schemaLocation")
+               .withIgnoredFields("location")
                 .suppress(Warning.STRICT_INHERITANCE)
                 .verify();
     }
 
     @Test
     public void maxPropertiesFailure() {
-        ObjectSchema subject = buildWithLocation(ObjectSchema.builder().maxProperties(2));
+        ObjectSchema subject = buildWithLocation(ObjectSchema.builder(rootSchemaLocation()).maxProperties(2));
         failureOf(subject)
                 .input(OBJECTS.get("maxPropertiesFailure"))
                 .expectedPointer("#")
@@ -105,7 +106,7 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void minPropertiesFailure() {
-        ObjectSchema subject = buildWithLocation(ObjectSchema.builder().minProperties(2));
+        ObjectSchema subject = buildWithLocation(ObjectSchema.builder(rootSchemaLocation()).minProperties(2));
         failureOf(subject)
                 .input(OBJECTS.get("minPropertiesFailure"))
                 .expectedPointer("#")
@@ -115,8 +116,8 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void multipleAdditionalProperties() {
-        SchemaValidator<?> subject = buildValidatorWithLocation(ObjectSchema.builder().schemaOfAdditionalProperties(
-                StringSchema.builder().requiresString(true).build()
+        SchemaValidator<?> subject = buildValidatorWithLocation(ObjectSchema.builder(rootSchemaLocation()).schemaOfAdditionalProperties(
+                StringSchema.builder(rootSchemaLocation()).requiresString(true).build()
         ));
         var error = verifyFailure(() -> subject.validate(readJsonObject("{\"a\":true,\"b\":true}")));
 
@@ -127,17 +128,17 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void multipleSchemaDepViolation() {
-        Schema billingAddressSchema = new StringSchema();
-        Schema billingNameSchema = StringSchema.builder().minLength(4).build();
-        ObjectSchema subject = ObjectSchema.builder()
-                .addPropertySchema("name", new StringSchema())
-                .addPropertySchema("credit_card", NumberSchema.builder().build())
-                .schemaDependency("credit_card", ObjectSchema.builder()
+        Schema billingAddressSchema = StringSchema.builder(rootSchemaLocation()).build();
+        Schema billingNameSchema = StringSchema.builder(rootSchemaLocation()).minLength(4).build();
+        ObjectSchema subject = ObjectSchema.builder(rootSchemaLocation())
+                .addPropertySchema("name", StringSchema.builder(rootSchemaLocation()).build())
+                .addPropertySchema("credit_card", NumberSchema.builder(rootSchemaLocation()).build())
+                .schemaDependency("credit_card", ObjectSchema.builder(rootSchemaLocation())
                         .addPropertySchema("billing_address", billingAddressSchema)
                         .addRequiredProperty("billing_address")
                         .addPropertySchema("billing_name", billingNameSchema)
                         .build())
-                .schemaDependency("name", ObjectSchema.builder()
+                .schemaDependency("name", ObjectSchema.builder(rootSchemaLocation())
                         .addRequiredProperty("age")
                         .build())
                 .build();
@@ -164,9 +165,9 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void multipleViolations() {
-        Schema subject = ObjectSchema.builder()
-                .addPropertySchema("numberProp", new NumberSchema())
-                .patternProperty("^string.*", new StringSchema())
+        Schema subject = ObjectSchema.builder(rootSchemaLocation())
+                .addPropertySchema("numberProp", new NumberSchema(rootSchemaLocation()))
+                .patternProperty("^string.*", new StringSchema(rootSchemaLocation()))
                 .addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA)
                 .addRequiredProperty("boolProp")
                 .build();
@@ -188,9 +189,9 @@ public class ObjectSchemaValidatorTest {
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     public void multipleViolationsNested() throws Exception {
-        Callable<ObjectSchema.Builder> newBuilder = () -> ObjectSchema.builder()
-                .addPropertySchema("numberProp", new NumberSchema())
-                .patternProperty("^string.*", new StringSchema())
+        Callable<ObjectSchema.Builder> newBuilder = () -> ObjectSchema.builder(rootSchemaLocation())
+                .addPropertySchema("numberProp", NumberSchema.builder(rootSchemaLocation()).build())
+                .patternProperty("^string.*", StringSchema.builder(rootSchemaLocation()).build())
                 .addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA)
                 .addRequiredProperty("boolProp");
 
@@ -243,20 +244,20 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void noProperties() {
-        expectSuccess(() -> createValidatorForSchema(ObjectSchema.builder().build()).validate(OBJECTS.get("noProperties")));
+        expectSuccess(() -> createValidatorForSchema(ObjectSchema.builder(rootSchemaLocation()).build()).validate(OBJECTS.get("noProperties")));
     }
 
     @Test
     public void notRequireObject() {
         expectSuccess(() -> {
-            final ObjectSchema objectSchema = ObjectSchema.builder().requiresObject(false).build();
+            final ObjectSchema objectSchema = ObjectSchema.builder(rootSchemaLocation()).requiresObject(false).build();
             return createValidatorForSchema(objectSchema).validate(jsonStringValue("foo"));
         });
     }
 
     @Test
     public void patternPropertyOnEmptyObjct() {
-        final ObjectSchema schema = ObjectSchema.builder()
+        final ObjectSchema schema = ObjectSchema.builder(rootSchemaLocation())
                 .patternProperty("b_.*", BooleanSchema.BOOLEAN_SCHEMA)
                 .build();
         expectSuccess(() -> createValidatorForSchema(schema).validate(blankJsonObject()));
@@ -264,8 +265,8 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void patternPropertyOverridesAdditionalPropSchema() {
-        final ObjectSchema schema = ObjectSchema.builder()
-                .schemaOfAdditionalProperties(new NumberSchema())
+        final ObjectSchema schema = ObjectSchema.builder(rootSchemaLocation())
+                .schemaOfAdditionalProperties(new NumberSchema(rootSchemaLocation()))
                 .patternProperty("aa.*", BooleanSchema.BOOLEAN_SCHEMA)
                 .build();
         expectSuccess(() -> createValidatorForSchema(schema).validate(OBJECTS.get("patternPropertyOverridesAdditionalPropSchema")));
@@ -273,9 +274,9 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void patternPropertyViolation() {
-        ObjectSchema subject = ObjectSchema.builder()
+        ObjectSchema subject = ObjectSchema.builder(rootSchemaLocation())
                 .patternProperty("^b_.*", BooleanSchema.BOOLEAN_SCHEMA)
-                .patternProperty("^s_.*", new StringSchema())
+                .patternProperty("^s_.*", new StringSchema(rootSchemaLocation()))
                 .build();
         expectFailure(subject, BooleanSchema.BOOLEAN_SCHEMA, "#/b_1",
                 OBJECTS.get("patternPropertyViolation"));
@@ -283,10 +284,10 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void patternPropsOverrideAdditionalProps() {
-        final ObjectSchema schema = ObjectSchema.builder()
+        final ObjectSchema schema = ObjectSchema.builder(rootSchemaLocation())
                 .patternProperty("^v.*", EmptySchema.EMPTY_SCHEMA)
                 .schemaOfAdditionalProperties(
-                        BooleanSchema.builder().constValue(JsonValue.FALSE).build()
+                        BooleanSchema.builder(rootSchemaLocation()).constValue(JsonValue.FALSE).build()
                 )
                 .build();
         expectSuccess(() -> createValidatorForSchema(schema).validate(OBJECTS.get("patternPropsOverrideAdditionalProps")));
@@ -295,7 +296,7 @@ public class ObjectSchemaValidatorTest {
     @Test
     public void propertyDepViolation() {
         ObjectSchema subject = buildWithLocation(
-                ObjectSchema.builder()
+                ObjectSchema.builder(rootSchemaLocation())
                         .addPropertySchema("ifPresent", NullSchema.INSTANCE)
                         .addPropertySchema("mustBePresent", BooleanSchema.BOOLEAN_SCHEMA)
                         .propertyDependency("ifPresent", "mustBePresent")
@@ -308,10 +309,10 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void propertyNameSchemaSchemaViolation() {
-        final StringSchema propertyNameSchema = StringSchema.builder().pattern("^[a-z_]{3,8}$").build();
-        ObjectSchema subject = ObjectSchema.builder()
+        final StringSchema propertyNameSchema = StringSchema.builder(rootSchemaLocation()).pattern("^[a-z_]{3,8}$").build();
+        ObjectSchema subject = ObjectSchema.builder(rootSchemaLocation())
                 .propertyNameSchema(propertyNameSchema)
-                .schemaLocation("#")
+                .location("#")
                 .build();
         failureOf(subject)
                 .input(OBJECTS.getJsonObject("propertyNameSchemaViolation"))
@@ -326,7 +327,7 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void propertySchemaViolation() {
-        ObjectSchema subject = ObjectSchema.builder()
+        ObjectSchema subject = ObjectSchema.builder(rootSchemaLocation())
                 .addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA).build();
         expectFailure(subject, BooleanSchema.BOOLEAN_SCHEMA, "#/boolProp",
                 OBJECTS.get("propertySchemaViolation"));
@@ -334,13 +335,13 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void requireObject() {
-        expectFailure(buildWithLocation(ObjectSchema.builder()), "#", jsonStringValue("foo"));
+        expectFailure(buildWithLocation(ObjectSchema.builder(rootSchemaLocation())), "#", jsonStringValue("foo"));
     }
 
     @Test
     public void requiredProperties() {
         ObjectSchema subject = buildWithLocation(
-                ObjectSchema.builder()
+                ObjectSchema.builder(rootSchemaLocation())
                         .addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA)
                         .addPropertySchema("nullProp", NullSchema.INSTANCE)
                         .addRequiredProperty("boolProp")
@@ -354,11 +355,11 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void schemaDepViolation() {
-        Schema billingAddressSchema = new StringSchema();
-        ObjectSchema subject = ObjectSchema.builder()
-                .addPropertySchema("name", new StringSchema())
-                .addPropertySchema("credit_card", NumberSchema.builder().build())
-                .schemaDependency("credit_card", ObjectSchema.builder()
+        Schema billingAddressSchema = new StringSchema(rootSchemaLocation());
+        ObjectSchema subject = ObjectSchema.builder(rootSchemaLocation())
+                .addPropertySchema("name", new StringSchema(rootSchemaLocation()))
+                .addPropertySchema("credit_card", NumberSchema.builder(rootSchemaLocation()).build())
+                .schemaDependency("credit_card", ObjectSchema.builder(rootSchemaLocation())
                         .addPropertySchema("billing_address", billingAddressSchema)
                         .addRequiredProperty("billing_address")
                         .build())
@@ -370,16 +371,16 @@ public class ObjectSchemaValidatorTest {
     @Test
     public void schemaPointerIsPassedToValidationError() {
         JsonPointer pointer = provider().createPointer("/dependencies/a");
-        Schema subject = ObjectSchema.builder().requiresObject(true)
+        Schema subject = ObjectSchema.builder(rootSchemaLocation()).requiresObject(true)
                 .minProperties(1)
-                .schemaLocation("#/dependencies/a").build();
+                .location("#/dependencies/a").build();
         var e = verifyFailure(() -> createValidatorForSchema(subject).validate(provider().createValue(1)));
         assertEquals("#/dependencies/a", e.getSchemaLocation());
     }
 
     @Test
     public void testImmutability() {
-        ObjectSchema.Builder builder = ObjectSchema.builder();
+        ObjectSchema.Builder builder = ObjectSchema.builder(rootSchemaLocation());
         builder.propertyDependency("a", "b");
         builder.schemaDependency("a", BooleanSchema.BOOLEAN_SCHEMA);
         builder.patternProperty("aaa", BooleanSchema.BOOLEAN_SCHEMA);
@@ -425,7 +426,7 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void typeFailure() {
-        failureOf(ObjectSchema.builder())
+        failureOf(ObjectSchema.builder(rootSchemaLocation()))
                 .expectedKeyword("type")
                 .input("a")
                 .expect();

@@ -15,19 +15,21 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import java.net.URI;
+
 /**
  * A schema not specifying any restrictions, ie. accepting any values.
  */
 public class EmptySchema extends Schema {
 
-    public static EmptySchema EMPTY_SCHEMA = builder().build();
+    public static EmptySchema EMPTY_SCHEMA = builder(SchemaLocation.rootSchemaLocation()).build();
 
     public EmptySchema(final Builder builder) {
         super(builder);
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     @Override
@@ -57,6 +59,13 @@ public class EmptySchema extends Schema {
      * Builder class for {@link EmptySchema}.
      */
     public static class Builder extends Schema.Builder<EmptySchema> {
+        public Builder(String id) {
+            super(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         @Override
         public EmptySchema build() {

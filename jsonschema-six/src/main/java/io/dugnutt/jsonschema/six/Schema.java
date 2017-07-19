@@ -1,19 +1,28 @@
 package io.dugnutt.jsonschema.six;
 
 import lombok.Getter;
-import org.hibernate.validator.constraints.URL;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import javax.json.stream.JsonGenerator;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ANY_OF;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.CONST;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
 
 /**
  * Superclass of all other schema validator classes of this package.
@@ -21,17 +30,15 @@ import java.util.stream.Stream;
 @Getter
 public abstract class Schema {
 
-    @URL
-    protected final String schemaLocation;
+    @NotNull
+    @NonNull
+    protected final SchemaLocation location;
 
     @Nullable
     private final String title;
 
     @Nullable
     private final String description;
-
-    @NotBlank
-    private final String id;
 
     private final CombinedSchema allOfSchema;
     private final CombinedSchema anyOfSchema;
@@ -48,14 +55,18 @@ public abstract class Schema {
     protected Schema(final Builder<?> builder) {
         this.title = builder.title;
         this.description = builder.description;
-        this.id = builder.id;
-        this.schemaLocation = builder.schemaLocation;
         this.enumValues = builder.enumValues;
         this.constValue = builder.constValue;
         this.allOfSchema = builder.allOfSchema;
         this.anyOfSchema = builder.anyOfSchema;
         this.oneOfSchema = builder.oneOfSchema;
         this.notSchema = builder.notSchema;
+        if(builder.location != null) {
+            this.location = checkNotNull(builder.location, "builder.location must not be null");
+        } else {
+            checkNotNull(builder.id, "builder.id must not be null");
+            this.location = SchemaLocation.rootSchemaLocation(builder.id);
+        }
     }
 
     /**
@@ -104,9 +115,17 @@ public abstract class Schema {
         return false;
     }
 
+    public URI getDocumentLocalURI() {
+        return location.getRelativeURI();
+    }
+
+    public URI getId() {
+        return location.getId();
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(title, description, id);
+        return Objects.hash(title, description, location.getId());
     }
 
     @Override
@@ -119,7 +138,7 @@ public abstract class Schema {
             return schema.canEqual(this) &&
                     Objects.equals(title, schema.title) &&
                     Objects.equals(description, schema.description) &&
-                    Objects.equals(id, schema.id);
+                    Objects.equals(location.getId(), schema.location.getId());
         } else {
             return false;
         }
@@ -141,11 +160,22 @@ public abstract class Schema {
         toJson(new JsonSchemaGenerator(generator));
     }
 
-    protected final JsonSchemaGenerator toJson(final JsonSchemaGenerator writer) {
+    protected JsonSchemaGenerator toJson(final JsonSchemaGenerator writer) {
         writer.object();
+        if (!"#".equals(location.getAbsoluteLocation().toString())) {
+            writer.optionalWrite(JsonSchemaKeyword.$ID, location.getId());
+        }
         writer.optionalWrite(JsonSchemaKeyword.TITLE, title);
         writer.optionalWrite(JsonSchemaKeyword.DESCRIPTION, description);
-        writer.optionalWrite(JsonSchemaKeyword.ID, id);
+
+        writer.optionalWrite(ENUM, enumValues);
+
+        writer.optionalWrite(NOT, notSchema);
+        writer.optionalWrite(CONST, constValue);
+        writer.optionalWrite(ALL_OF, allOfSchema);
+        writer.optionalWrite(ANY_OF, anyOfSchema);
+        writer.optionalWrite(ONE_OF, oneOfSchema);
+
         writePropertiesToJson(writer);
         writer.endObject();
         return writer;
@@ -181,10 +211,23 @@ public abstract class Schema {
      */
     public abstract static class Builder<S extends Schema> {
 
+        public Builder(String id) {
+            this.id = URI.create(id);
+            this.location = SchemaLocation.rootSchemaLocation(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            checkNotNull(location, "location must not be null");
+            this.location = location;
+        }
+
         private String title;
         private String description;
-        private String id;
-        private String schemaLocation;
+
+        private SchemaLocation location;
+
+        private URI id;
+
         private JsonArray enumValues;
         private JsonValue constValue;
         private CombinedSchema allOfSchema;
@@ -192,10 +235,14 @@ public abstract class Schema {
         private CombinedSchema oneOfSchema;
         private Schema notSchema;
 
+        public SchemaLocation getLocation() {
+            return location;
+        }
+
         public Builder<S> allOfSchemas(Stream<Schema> schema) {
             List<Schema> schemas = schema.collect(Collectors.toList());
             if (schemas.size() > 0) {
-                this.allOfSchema = CombinedSchema.allOf(schemas).build();
+                this.allOfSchema = CombinedSchema.allOf(location.withChildPath(ALL_OF), schemas).build();
             }
 
             return this;
@@ -204,7 +251,8 @@ public abstract class Schema {
         public Builder<S> anyOfSchemas(Stream<Schema> schema) {
             List<Schema> schemas = schema.collect(Collectors.toList());
             if (schemas.size() > 0) {
-                this.anyOfSchema = CombinedSchema.anyOf(schemas).build();
+                this.anyOfSchema = CombinedSchema.anyOf(location.withChildPath(ANY_OF), schemas)
+                        .build();
             }
 
             return this;
@@ -227,28 +275,33 @@ public abstract class Schema {
             return this;
         }
 
-        public Builder<S> id(final String id) {
-            this.id = id;
-            return this;
-        }
-
         public Builder<S> notSchema(Schema schema) {
             this.notSchema = schema;
             return this;
         }
 
+        public Builder<S> location(String locationUri) {
+            checkNotNull(locationUri, "locationUri must not be null");
+            this.location = SchemaLocation.rootSchemaLocation(locationUri);
+            return this;
+        }
+
+        public Builder<S> location(SchemaLocation location) {
+            checkNotNull(location, "location must not be null");
+            this.location = location;
+            return this;
+        }
+
+
+
         public Builder<S> oneOfSchemas(Stream<Schema> schema) {
             List<Schema> schemas = schema.collect(Collectors.toList());
             if (schemas.size() > 0) {
-                this.oneOfSchema = CombinedSchema.oneOf(schemas).build();
+                this.oneOfSchema = CombinedSchema.oneOf(location.withChildPath(ONE_OF), schemas).build();
             }
             return this;
         }
 
-        public Builder<S> schemaLocation(String schemaLocation) {
-            this.schemaLocation = schemaLocation;
-            return this;
-        }
 
         public Builder<S> title(final String title) {
             this.title = title;

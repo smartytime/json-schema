@@ -15,10 +15,11 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import java.net.URI;
 import java.util.Objects;
 
-import static java.util.Objects.requireNonNull;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
+import static java.util.Objects.requireNonNull;
 
 /**
  * {@code Not} schema validator.
@@ -32,8 +33,8 @@ public class NotSchema extends Schema {
         this.mustNotMatch = requireNonNull(builder.mustNotMatch, "mustNotMatch cannot be null");
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     public Schema getMustNotMatch() {
@@ -41,9 +42,15 @@ public class NotSchema extends Schema {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mustNotMatch);
+    }
+
+    @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
+        }
         if (o instanceof NotSchema) {
             NotSchema that = (NotSchema) o;
             return that.canEqual(this) &&
@@ -52,11 +59,6 @@ public class NotSchema extends Schema {
         } else {
             return false;
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), mustNotMatch);
     }
 
     @Override
@@ -73,8 +75,15 @@ public class NotSchema extends Schema {
      * Builder class for {@link NotSchema}.
      */
     public static class Builder extends Schema.Builder<NotSchema> {
-
         private Schema mustNotMatch;
+
+        public Builder(String id) {
+            super(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         @Override
         public NotSchema build() {
@@ -85,6 +94,5 @@ public class NotSchema extends Schema {
             this.mustNotMatch = mustNotMatch;
             return this;
         }
-
     }
 }

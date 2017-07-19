@@ -15,20 +15,22 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import java.net.URI;
+
+import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
+
 /**
  * {@code Null} schema validator.
  */
 public class NullSchema extends Schema {
 
-    public static final NullSchema INSTANCE = new NullSchema(builder());
+    public static final NullSchema INSTANCE = builder(rootSchemaLocation()).build();
 
     public NullSchema(final Builder builder) {
         super(builder);
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
+    public static Builder builder(SchemaLocation location) {        return new Builder(location);    }
 
     @Override
     public boolean equals(Object o) {
@@ -61,6 +63,7 @@ public class NullSchema extends Schema {
      * Builder class for {@link NullSchema}.
      */
     public static class Builder extends Schema.Builder<NullSchema> {
+public Builder(String id) {            super(id);        }        public Builder(SchemaLocation location) {            super(location);        }
 
         @Override
         public NullSchema build() {

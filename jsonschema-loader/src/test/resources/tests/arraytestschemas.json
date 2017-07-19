@@ -13,7 +13,7 @@
     "additionalItems": "invalid"
   },
   "arrayByAdditionalItems": {
-    "additionalItems": false
+    "additionalItems": {"type": null}
   },
   "arrayByItems": {
     "items": []

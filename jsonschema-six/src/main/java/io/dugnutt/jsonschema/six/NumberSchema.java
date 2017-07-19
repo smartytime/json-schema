@@ -23,8 +23,8 @@ public class NumberSchema extends Schema {
     private final Number exclusiveMinimum;
     private final Number exclusiveMaximum;
 
-    public NumberSchema() {
-        this(builder());
+    public NumberSchema(SchemaLocation schemaLocation) {
+        this(builder(schemaLocation));
     }
 
     /**
@@ -43,8 +43,8 @@ public class NumberSchema extends Schema {
         this.requiresInteger = builder.requiresInteger;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     @Override
@@ -92,8 +92,19 @@ public class NumberSchema extends Schema {
      * Builder class for {@link NumberSchema}.
      */
     public static class Builder extends Schema.Builder<NumberSchema> {
-
         private boolean requiresNumber = true;
+
+        public Builder() {
+            super(SchemaLocation.rootSchemaLocation());
+        }
+
+        public Builder(String id) {
+            super(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         @Override
         public NumberSchema build() {

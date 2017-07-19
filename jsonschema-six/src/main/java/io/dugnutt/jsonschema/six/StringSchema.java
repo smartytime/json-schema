@@ -21,8 +21,8 @@ public class StringSchema extends Schema {
     private final FormatType formatType;
     private final String format;
 
-    public StringSchema() {
-        this(builder());
+    public StringSchema(SchemaLocation schemaLocation) {
+        this(builder(schemaLocation));
     }
 
     /**
@@ -44,8 +44,8 @@ public class StringSchema extends Schema {
         this.formatType = FormatType.fromFormat(builder.format);
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     public FormatType getFormatType() {
@@ -100,7 +100,6 @@ public class StringSchema extends Schema {
                 .optionalWrite(JsonSchemaKeyword.MAX_LENGTH, maxLength)
                 .optionalWrite(pattern)
                 .optionalWrite(formatType);
-
     }
 
     public boolean requiresString() {
@@ -119,12 +118,17 @@ public class StringSchema extends Schema {
      * Builder class for {@link StringSchema}.
      */
     public static class Builder extends Schema.Builder<StringSchema> {
-
         public String format;
         private Integer minLength;
         private Integer maxLength;
         private String pattern;
         private boolean requiresString = true;
+        public Builder(String id) {
+            super(id);
+        }
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         // private FormatValidator formatValidator = FormatValidator.NONE;
 

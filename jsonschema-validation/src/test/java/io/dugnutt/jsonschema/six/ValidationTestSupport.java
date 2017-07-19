@@ -38,11 +38,11 @@ import static org.junit.Assert.assertThat;
 public class ValidationTestSupport {
 
     public static <S extends Schema> S buildWithLocation(Schema.Builder<S> builder) {
-        return builder.schemaLocation("#").build();
+        return builder.location("#").build();
     }
 
     public static SchemaValidator buildValidatorWithLocation(Schema.Builder builder) {
-        return createValidatorForSchema(builder.schemaLocation("#").build());
+        return createValidatorForSchema(builder.location("#").build());
     }
 
     public static long countCauseByJsonPointer(final ValidationError root, final String pointer) {
@@ -101,7 +101,7 @@ public class ValidationTestSupport {
         failure.expectedConsumer().ifPresent(consumer-> consumer.accept(error));
         Assert.assertSame("Expected violated schema", failure.expectedViolatedSchema(), error.getViolatedSchema());
         assertEquals("Pointer to violation", failure.expectedPointer(), error.getPointerToViolation());
-        assertEquals("Schema location", failure.expectedSchemaLocation(), error.getSchemaLocation());
+        assertEquals("Schema location", failure.expectedSchemaLocation(), error.getSchemaLocation().toString());
         if (failure.expectedKeyword() != null) {
             assertNotNull("Error expected to have a keyword, but didn't", error.getKeyword());
             assertEquals(failure.expectedKeyword(), error.getKeyword().key());

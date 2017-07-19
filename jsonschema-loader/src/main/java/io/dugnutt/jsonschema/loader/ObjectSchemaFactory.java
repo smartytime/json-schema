@@ -37,7 +37,7 @@ class ObjectSchemaFactory {
     }
 
     private ObjectSchema.Builder createObjectSchemaBuilder() {
-        ObjectSchema.Builder builder = ObjectSchema.builder();
+        ObjectSchema.Builder builder = ObjectSchema.builder(schemaModel.getLocation());
         FluentJsonObject schemaJson = schemaModel.schemaJson;
         schemaJson.findInt(MIN_PROPERTIES).ifPresent(builder::minProperties);
         schemaJson.findInt(MAX_PROPERTIES).ifPresent(builder::maxProperties);
@@ -80,7 +80,7 @@ class ObjectSchemaFactory {
             switch (dependencyStructure.getValueType()) {
                 case OBJECT:
                     SchemaLoaderModel dependencyModel = schemaModel.childModel(DEPENDENCIES, dependencyKey, dependencyStructure);
-                    builder.schemaDependency(dependencyKey, schemaFactory.createSchemaBuilder(dependencyModel).build());
+                    builder.schemaDependency(dependencyKey, schemaFactory.createSchema(dependencyModel));
                     break;
                 case ARRAY:
                     dependencyStructure.asJsonArray().getValuesAs(JsonString::getString)

@@ -43,7 +43,7 @@
   },
   "tupleSchema": {
     "type": "array",
-    "additionalItems": false,
+    "additionalItems": {"type": null},
     "items": [
       {
         "type": "boolean"
@@ -248,7 +248,7 @@
     "default": 0
   },
   "genericProperties": {
-    "id": "myId",
+    "$id": "myId",
     "title": "my title",
     "description": "my description"
   },
@@ -285,31 +285,31 @@
     }
   },
   "resolutionScopeTest": {
-    "id": "http://x.y.z/rootschema.json#",
+    "$id": "http://x.y.z/rootschema.json#",
     "schema1": {
-      "id": "#foo"
+      "$id": "#foo"
     },
     "schema2": {
-      "id": "otherschema.json",
+      "$id": "otherschema.json",
       "nested": {
-        "id": "#bar"
+        "$id": "#bar"
       },
       "alsonested": {
-        "id": "t/inner.json#a"
+        "$id": "t/inner.json#a"
       }
     },
     "schema3": {
-      "id": "some://where.else/completely#"
+      "$id": "some://where.else/completely#"
     }
   },
   "remotePointerResolution": {
-    "id": "http://example.org/",
+    "$id": "http://example.org/",
     "properties": {
       "prop": {
         "$ref": "asd"
       },
       "idPathChange": {
-        "id": "http://example.org/rootschema.json",
+        "$id": "http://example.org/rootschema.json",
         "properties": {
           "prop": {
             "$ref": "otherschema.json"
@@ -317,7 +317,7 @@
         }
       },
       "folderChange": {
-        "id": "http://example.org/folder/",
+        "$id": "http://example.org/folder/",
         "properties": {
           "schemaInFolder": {
             "$ref": "subschemaInFolder.json"
@@ -340,7 +340,7 @@
     }
   },
   "schemaWithId": {
-    "id": "http://example.org/schema/",
+    "$id": "http://example.org/schema/",
     "properties": {
       "prop": {
         "$ref": "schema.json"
@@ -354,7 +354,7 @@
         "dependencies": {
           "2ndLevel": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": {"type": null},
             "patternProperties": {
               "2ndL.*l$": {
                 "type": "object",
@@ -363,13 +363,13 @@
                     "type": "string"
                   }
                 },
-                "additionalProperties": false
+                "additionalProperties": {"type": null}
               }
             }
           }
         }
       }
     },
-    "additionalProperties": false
+    "additionalProperties": {"type": null}
   }
 }

@@ -29,7 +29,7 @@ public abstract class SchemaValidator<S extends Schema> {
 
     public static ValidationError failure(Schema validating, JsonSchemaType expectedType, JsonSchemaType foundType) {
         String message = String.format("expected type: %s, found: %s", expectedType, foundType);
-        return new ValidationError(validating, message, JsonSchemaKeyword.TYPE, validating.getSchemaLocation());
+        return new ValidationError(validating, message, JsonSchemaKeyword.TYPE, validating.getDocumentLocalURI());
     }
 
     public ValidationError failure(String message, JsonSchemaKeyword keyword, List<ValidationError> causes) {
@@ -37,7 +37,7 @@ public abstract class SchemaValidator<S extends Schema> {
         Preconditions.checkNotNull(keyword, "keyword must not be null");
         Preconditions.checkNotNull(message, "message must not be null");
         return new ValidationError(this.schema(), new StringBuilder("#"), message, causes, keyword,
-                this.schema().getSchemaLocation());
+                this.schema().getDocumentLocalURI());
     }
 
     public S schema() {
@@ -47,7 +47,7 @@ public abstract class SchemaValidator<S extends Schema> {
     public abstract Optional<ValidationError> validate(JsonValue toBeValidated);
 
     protected ValidationError failure(String message, JsonSchemaKeyword keyword) {
-        return new ValidationError(schema(), message, keyword, schema().getSchemaLocation());
+        return new ValidationError(schema(), message, keyword, schema().getDocumentLocalURI());
     }
 
     protected ValidationError failure(JsonSchemaType expectedType, JsonValue value) {

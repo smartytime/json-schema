@@ -6,6 +6,7 @@ import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,13 @@ public class JsonSchemaGenerator {
         return this;
     }
 
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword name, URI value) {
+        if (value != null) {
+            wrapped.write(name.key(), value.toString());
+        }
+        return this;
+    }
+
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword name, Integer value) {
         if (value != null) {
             wrapped.write(name.key(), value);
@@ -74,6 +82,13 @@ public class JsonSchemaGenerator {
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Schema schema) {
         if (schema != null) {
             write(property, schema);
+        }
+        return this;
+    }
+
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, CombinedSchema schema) {
+        if (schema != null && schema.getSubSchemas().size()>0) {
+            schema.writePropertiesToJson(this);
         }
         return this;
     }
@@ -141,6 +156,13 @@ public class JsonSchemaGenerator {
     public JsonSchemaGenerator optionalWrite(Pattern pattern) {
         if (pattern != null) {
             write(JsonSchemaKeyword.PATTERN, pattern.pattern());
+        }
+        return this;
+    }
+
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword keyword, JsonValue value) {
+        if (value != null) {
+            wrapped.write(keyword.key(), value);
         }
         return this;
     }

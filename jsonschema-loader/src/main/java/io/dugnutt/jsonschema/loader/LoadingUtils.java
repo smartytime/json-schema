@@ -1,10 +1,10 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonPointerPath;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 
 import javax.json.JsonValue;
+import java.net.URI;
 import java.util.function.Function;
 
 public class LoadingUtils {
@@ -17,7 +17,7 @@ public class LoadingUtils {
      * @param <Y>        Type parameter for the type we want
      * @return Cast of the function's input
      */
-    public static <Y extends JsonValue> Function<JsonValue, Y> castTo(Class<Y> targetType, JsonPointerPath path) {
+    public static <Y extends JsonValue> Function<JsonValue, Y> castTo(Class<Y> targetType, URI path) {
         Class<? extends JsonValue> targetTypeCompilerLikes = targetType;
         return value -> {
             if (!targetType.isAssignableFrom(value.getClass())) {

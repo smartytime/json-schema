@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
+import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static org.junit.Assert.assertEquals;
 
@@ -29,7 +30,7 @@ public class NullSchemaTest {
 
     @Test
     public void failure() {
-        ValidationTestSupport.failureOf(NullSchema.builder())
+        ValidationTestSupport.failureOf(NullSchema.builder(rootSchemaLocation()))
                 .expectedKeyword("type")
                 .input("null")
                 .expect();
@@ -45,7 +46,7 @@ public class NullSchemaTest {
     public void equalsVerifier() {
         EqualsVerifier.forClass(NullSchema.class)
                 .withRedefinedSuperclass()
-                .withIgnoredFields("schemaLocation")
+               .withIgnoredFields("location")
                 .suppress(Warning.STRICT_INHERITANCE)
                 .verify();
     }

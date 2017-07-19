@@ -127,7 +127,7 @@ public class FluentJsonObject implements JsonObject {
         final JsonPointerPath childPath = path.child(keywordVal);
 
         return this.findByKey(keyword)
-                .map(castTo(JsonStructure.class, childPath)) //Hard cast - will error if it's not a structure
+                .map(castTo(JsonStructure.class, childPath.toURIFragment())) //Hard cast - will error if it's not a structure
                 .filter(value -> expectedClass.isAssignableFrom(value.getClass()))
                 .map(expectedClass::cast);
     }
@@ -197,6 +197,9 @@ public class FluentJsonObject implements JsonObject {
 
     public String getString(JsonSchemaKeyword property) {
         try {
+            if (wrapped.isNull(property.key())) {
+                return null;
+            }
             return wrapped.getString(property.key());
         } catch (ClassCastException e) {
             throw new UnexpectedValueException(path, wrapped.get(property.key()), ValueType.STRING);

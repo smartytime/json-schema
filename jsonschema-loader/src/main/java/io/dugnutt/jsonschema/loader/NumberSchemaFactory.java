@@ -22,7 +22,7 @@ public class NumberSchemaFactory {
     }
 
     public NumberSchema.Builder createNumberSchemaBuilder() {
-        NumberSchema.Builder builder = NumberSchema.builder();
+        NumberSchema.Builder builder = NumberSchema.builder(schemaModel.getLocation());
         final FluentJsonObject schemaJson = schemaModel.schemaJson;
         schemaJson.findNumber(MINIMUM).ifPresent(builder::minimum);
         schemaJson.findNumber(MAXIMUM).ifPresent(builder::maximum);

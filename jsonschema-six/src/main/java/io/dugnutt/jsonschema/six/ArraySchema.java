@@ -39,7 +39,6 @@ public class ArraySchema extends Schema {
     private final boolean needsUniqueItems;
     private final Schema allItemSchema;
     private final Schema containsSchema;
-    private final boolean permitsAdditionalItems;
     private final List<Schema> itemSchemas;
     private final boolean requiresArray;
     private final Schema schemaOfAdditionalItems;
@@ -58,11 +57,6 @@ public class ArraySchema extends Schema {
         this.itemSchemas = builder.itemSchemas;
         this.containsSchema = builder.containsSchema;
 
-        if (!builder.additionalItems && allItemSchema != null) {
-            permitsAdditionalItems = true;
-        } else {
-            permitsAdditionalItems = builder.schemaOfAdditionalItems != null || builder.additionalItems;
-        }
         this.schemaOfAdditionalItems = builder.schemaOfAdditionalItems;
         if (!(allItemSchema == null || itemSchemas == null)) {
             throw new SchemaException("cannot perform both tuple and list validation");
@@ -70,14 +64,14 @@ public class ArraySchema extends Schema {
         this.requiresArray = builder.requiresArray;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), minItems, maxItems, needsUniqueItems, allItemSchema,
-                permitsAdditionalItems, itemSchemas, requiresArray, schemaOfAdditionalItems);
+                itemSchemas, requiresArray, schemaOfAdditionalItems);
     }
 
     @Override
@@ -89,7 +83,6 @@ public class ArraySchema extends Schema {
             ArraySchema that = (ArraySchema) o;
             return that.canEqual(this) &&
                     needsUniqueItems == that.needsUniqueItems &&
-                    permitsAdditionalItems == that.permitsAdditionalItems &&
                     requiresArray == that.requiresArray &&
                     Objects.equals(minItems, that.minItems) &&
                     Objects.equals(maxItems, that.maxItems) &&
@@ -113,7 +106,6 @@ public class ArraySchema extends Schema {
                 .writeIfTrue(JsonSchemaKeyword.UNIQUE_ITEMS, needsUniqueItems)
                 .optionalWrite(JsonSchemaKeyword.MIN_ITEMS, minItems)
                 .optionalWrite(JsonSchemaKeyword.MAX_ITEMS, maxItems)
-                .writeIfFalse(JsonSchemaKeyword.ADDITIONAL_ITEMS, permitsAdditionalItems)
                 .optionalWrite(JsonSchemaKeyword.ITEMS, allItemSchema)
                 .optionalWrite(JsonSchemaKeyword.ITEMS, itemSchemas)
                 .optionalWrite(JsonSchemaKeyword.ADDITIONAL_ITEMS, schemaOfAdditionalItems);
@@ -123,24 +115,22 @@ public class ArraySchema extends Schema {
      * Builder class for {@link ArraySchema}.
      */
     public static class Builder extends Schema.Builder<ArraySchema> {
-
         private boolean requiresArray = true;
-
         private Integer minItems;
-
         private Integer maxItems;
-
         private boolean uniqueItems = false;
-
         private Schema allItemSchema;
-
         private List<Schema> itemSchemas = null;
-
-        private boolean additionalItems = true;
-
         private Schema schemaOfAdditionalItems;
-
         private Schema containsSchema;
+
+        public Builder(String id) {
+            super(id);
+        }
+
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         /**
          * Adds an item schema for tuple validation. The array items of the subject under validation
@@ -159,24 +149,19 @@ public class ArraySchema extends Schema {
             return this;
         }
 
-        public Builder additionalItems(final boolean additionalItems) {
-            this.additionalItems = additionalItems;
-            return this;
-        }
-
         public Builder allItemSchema(final Schema allItemSchema) {
             this.allItemSchema = allItemSchema;
-            return this;
-        }
-
-        public Builder containsSchema(final Schema containsSchema) {
-            this.containsSchema = containsSchema;
             return this;
         }
 
         @Override
         public ArraySchema build() {
             return new ArraySchema(this);
+        }
+
+        public Builder containsSchema(final Schema containsSchema) {
+            this.containsSchema = containsSchema;
+            return this;
         }
 
         public Builder maxItems(final Integer maxItems) {

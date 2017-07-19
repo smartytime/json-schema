@@ -46,7 +46,6 @@ public class ArraySchemaFactoryTest extends BaseLoaderTest {
         assertNotNull(actual);
         assertEquals(2, actual.getMinItems().intValue());
         assertEquals(3, actual.getMaxItems().intValue());
-        assertTrue(actual.isPermitsAdditionalItems());
         Assert.assertEquals(NullSchema.INSTANCE, actual.getAllItemSchema());
     }
 
@@ -54,7 +53,7 @@ public class ArraySchemaFactoryTest extends BaseLoaderTest {
     public void invalidAdditionalItems() {
         failWith(UnexpectedValueException.class)
                 .input(getJsonObjectForKey("invalidAdditionalItems"))
-                .expectedSchemaLocation("#")
+                .expectedSchemaLocation("#/additionalItems")
                 .expect();
     }
 
@@ -62,7 +61,10 @@ public class ArraySchemaFactoryTest extends BaseLoaderTest {
     public void invalidArrayItemSchema() {
         failWith(UnexpectedValueException.class)
                 .input(getJsonObjectForKey("invalidArrayItemSchema"))
-                .expectedSchemaLocation("#")
+                .expectedSchemaLocation("#/items/0")
+                .expected(err->{
+                    System.out.println();
+                })
                 .expect();
     }
 
@@ -71,7 +73,7 @@ public class ArraySchemaFactoryTest extends BaseLoaderTest {
         final JsonObject schemaJson = getJsonObjectForKey("invalidItemsArraySchema");
         failWith(UnexpectedValueException.class)
                 .input(schemaJson)
-                .expectedSchemaLocation("#")
+                .expectedSchemaLocation("#/items")
                 .expect();
     }
 }

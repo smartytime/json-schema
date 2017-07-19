@@ -38,20 +38,6 @@ public class ObjectSchema extends Schema {
     private final boolean requiresObject;
     private final Map<Pattern, Schema> patternProperties;
 
-    public Optional<Schema> getSchemaOfAdditionalProperties() {
-        return Optional.ofNullable(schemaOfAdditionalProperties);
-    }
-
-    public Optional<Schema> findPropertySchema(String propertyName) {
-        return propertySchemas != null
-                ? Optional.ofNullable(propertySchemas.get(propertyName))
-                : Optional.empty();
-    }
-
-    public Optional<Schema> getPropertyNameSchema() {
-        return Optional.ofNullable(propertyNameSchema);
-    }
-
     /**
      * Constructor.
      *
@@ -73,8 +59,8 @@ public class ObjectSchema extends Schema {
         this.propertyNameSchema = builder.propertyNameSchema;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     public boolean definesProperty(String field) {
@@ -128,7 +114,6 @@ public class ObjectSchema extends Schema {
     }
 
     protected void writePropertiesToJson(JsonSchemaGenerator writer) {
-        //todo:ericm Add propertyNameSchema schema
         writer.writeType(JsonSchemaType.OBJECT, requiresObject)
                 .optionalWrite(JsonSchemaKeyword.PROPERTIES, propertySchemas)
                 .optionalWrite(JsonSchemaKeyword.MIN_PROPERTIES, minProperties)
@@ -142,11 +127,25 @@ public class ObjectSchema extends Schema {
         describePropertyDependenciesTo(writer);
     }
 
+    public Optional<Schema> findPropertySchema(String propertyName) {
+        return propertySchemas != null
+                ? Optional.ofNullable(propertySchemas.get(propertyName))
+                : Optional.empty();
+    }
+
     public Stream<String> getAdditionalProperties(final JsonObject subject) {
         Set<String> names = subject.keySet();
         return names.stream()
                 .filter(key -> !propertySchemas.containsKey(key))
                 .filter(key -> !matchesAnyPattern(key));
+    }
+
+    public Optional<Schema> getPropertyNameSchema() {
+        return Optional.ofNullable(propertyNameSchema);
+    }
+
+    public Optional<Schema> getSchemaOfAdditionalProperties() {
+        return Optional.ofNullable(schemaOfAdditionalProperties);
     }
 
     private static <K, V> Map<K, V> copyMap(final Map<K, V> original) {
@@ -207,7 +206,6 @@ public class ObjectSchema extends Schema {
      * Builder class for {@link ObjectSchema}.
      */
     public static class Builder extends Schema.Builder<ObjectSchema> {
-
         private final Map<Pattern, Schema> patternProperties = new HashMap<>();
         private final Map<String, Schema> propertySchemas = new HashMap<>();
         private final Set<String> requiredProperties = new HashSet<String>(0);
@@ -218,6 +216,13 @@ public class ObjectSchema extends Schema {
         private Integer minProperties;
         private Integer maxProperties;
         private StringSchema propertyNameSchema;
+
+        public Builder(String id) {
+            super(id);
+        }
+        public Builder(SchemaLocation location) {
+            super(location);
+        }
 
         /**
          * Adds a property schema.
