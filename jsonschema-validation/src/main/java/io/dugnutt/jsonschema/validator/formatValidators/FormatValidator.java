@@ -15,6 +15,8 @@
  */
 package io.dugnutt.jsonschema.validator.formatValidators;
 
+import io.dugnutt.jsonschema.six.FormatType;
+
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -34,7 +36,7 @@ public interface FormatValidator {
     /**
      * Static factory method for {@code FormatValidator} implementations supporting the
      * {@code formatName}s mandated by the json schema spec.
-     *
+     * <p>
      * <ul>
      * <li>date-time</li>
      * <li>email</li>
@@ -44,27 +46,43 @@ public interface FormatValidator {
      * <li>ipv6</li>
      * </ul>
      *
-     * @param formatName one of the 6 built-in formats.
+     * @param format one of the 6 built-in formats.
      * @return a {@code FormatValidator} implementation handling the {@code formatName} format.
      */
-    static FormatValidator forFormat(final String formatName) {
-        requireNonNull(formatName, "formatName cannot be null");
+    static FormatValidator forFormat(final FormatType format) {
+        requireNonNull(format, "format cannot be null");
+        String formatName = format.toString();
         switch (formatName) {
-        case "date-time":
-            return new DateTimeFormatValidator();
-        case "email":
-            return new EmailFormatValidator();
-        case "hostname":
-            return new HostnameFormatValidator();
-        case "uri":
-            return new URIFormatValidator();
-        case "ipv4":
-            return new IPV4Validator();
-        case "ipv6":
-            return new IPV6Validator();
-        default:
-            throw new IllegalArgumentException("unsupported format: " + formatName);
+            case "date-time":
+                return new DateTimeFormatValidator();
+            case "email":
+                return new EmailFormatValidator();
+            case "hostname":
+                return new HostnameFormatValidator();
+            case "uri":
+                return new URIFormatValidator();
+            case "ipv4":
+                return new IPV4Validator();
+            case "ipv6":
+                return new IPV6Validator();
+            default:
+                throw new IllegalArgumentException("unsupported format: " + formatName);
         }
+    }
+
+    /**
+     * Provides the name of this format.
+     * <p>
+     * Unless specified otherwise the {@link SchemaLoader} will use this
+     * name to recognize string schemas using this format.
+     * <p>
+     * The default implementation of this method returns {@code "unnamed-format"}. It is strongly
+     * recommended for implementations to give a more meaningful name by overriding this method.
+     *
+     * @return the format name.
+     */
+    default String formatName() {
+        return "unnamed-format";
     }
 
     /**
@@ -78,20 +96,4 @@ public interface FormatValidator {
      * {@link Optional#empty() an empty optional}.
      */
     Optional<String> validate(String subject);
-
-    /**
-     * Provides the name of this format.
-     *
-     * Unless specified otherwise the {@link SchemaLoader} will use this
-     * name to recognize string schemas using this format.
-     *
-     * The default implementation of this method returns {@code "unnamed-format"}. It is strongly
-     * recommended for implementations to give a more meaningful name by overriding this method.
-     *
-     * @return the format name.
-     */
-    default String formatName() {
-        return "unnamed-format";
-    }
-
 }

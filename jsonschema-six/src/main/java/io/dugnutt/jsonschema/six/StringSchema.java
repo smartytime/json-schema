@@ -52,6 +52,10 @@ public class StringSchema extends Schema {
         return formatType;
     }
 
+    public String getFormat() {
+        return format;
+    }
+
     public Integer getMaxLength() {
         return maxLength;
     }

@@ -17,19 +17,19 @@ public class MultipleTypeSchemaFactory {
             .filter(k -> k.hasSpecificType())
             .collect(Collectors.toSet());
 
-    private final SchemaLoaderModel schemaModel;
+    private final SchemaLoadingContext schemaModel;
     private final JsonSchemaFactory schemaFactory;
 
-    public MultipleTypeSchemaFactory(SchemaLoaderModel schemaModel, JsonSchemaFactory schemaFactory) {
+    public MultipleTypeSchemaFactory(SchemaLoadingContext schemaModel, JsonSchemaFactory schemaFactory) {
         this.schemaModel = checkNotNull(schemaModel);
         this.schemaFactory = checkNotNull(schemaFactory);
     }
 
-    public static Schema.Builder createExplicitTypeBuilder(SchemaLoaderModel schemaModel, JsonSchemaFactory schemaFactory) {
+    public static Schema.Builder createExplicitTypeBuilder(SchemaLoadingContext schemaModel, JsonSchemaFactory schemaFactory) {
         return new MultipleTypeSchemaFactory(schemaModel, schemaFactory).createExplicitTypeBuilder();
     }
 
-    public static Schema.Builder createSchemaBuilderFromProperties(SchemaLoaderModel schemaModel, JsonSchemaFactory schemaFactory) {
+    public static Schema.Builder createSchemaBuilderFromProperties(SchemaLoadingContext schemaModel, JsonSchemaFactory schemaFactory) {
         return new MultipleTypeSchemaFactory(schemaModel, schemaFactory).createSchemaBuilderFromProperties();
     }
 

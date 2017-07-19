@@ -4,8 +4,6 @@ import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.six.SchemaLocation;
 import org.junit.Test;
 
-import java.net.URI;
-
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PROPERTIES;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArrayBuilder;
@@ -16,50 +14,50 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author erosb
  */
-public class SchemaLoaderModelTest {
+public class SchemaLoadingContextTest {
 
     @Test
     public void childForArrayIndex() {
-        SchemaLoaderModel ls = SchemaLoaderModel.createModelFor(
+        SchemaLoadingContext ls = SchemaLoadingContext.createModelFor(
                 jsonObjectBuilder()
                         .add(PROPERTIES.key(), jsonArrayBuilder()
                                 .add(jsonObjectBuilder()))
                         .build()
         );
-        SchemaLoaderModel actual = ls.childModel(PROPERTIES, 0);
+        SchemaLoadingContext actual = ls.childModel(PROPERTIES, 0);
         assertThat(actual.getLocation().getPath())
                 .containsExactly("properties", "0");
     }
 
     @Test
     public void childForSecond() {
-        SchemaLoaderModel ls = emptySubject();
-        SchemaLoaderModel actual = ls.childModel("hello").childModel("world");
+        SchemaLoadingContext ls = emptySubject();
+        SchemaLoadingContext actual = ls.childModel("hello").childModel("world");
         assertThat(actual.getLocation().getPath())
                 .containsExactly("hello", "world");
     }
 
     @Test
     public void childForString() {
-        SchemaLoaderModel ls = emptySubject();
-        SchemaLoaderModel actual = ls.childModel("hello");
+        SchemaLoadingContext ls = emptySubject();
+        SchemaLoadingContext actual = ls.childModel("hello");
         assertThat(actual.getLocation().getPath())
                 .containsExactly("hello");
     }
 
     @Test
     public void testCreateSchemaException() {
-        SchemaLoaderModel subject = SchemaLoaderModel.createModelFor(blankJsonObject());
+        SchemaLoadingContext subject = SchemaLoadingContext.createModelFor(blankJsonObject());
         SchemaException actual = subject.createSchemaException("message");
         assertEquals("#: message", actual.getMessage());
     }
 
     @Test
     public void testCreateSchemaExceptionWithPath() {
-        SchemaLoaderModel subject = SchemaLoaderModel.builder()
+        SchemaLoadingContext subject = SchemaLoadingContext.builder()
                 .schemaJson(jsonObjectBuilder().build())
                 .location(
-                        SchemaLocation.rootSchemaLocation(URI.create("http://mysite.com#/foo/bob"))
+                        SchemaLocation.schemaLocation("http://mysite.com#/foo/bob")
                                 .withChildPath("from", "the", "base", "of", "bob")
                 ).build();
 
@@ -67,8 +65,8 @@ public class SchemaLoaderModelTest {
         assertEquals("#/from/the/base/of/bob: message", actual.getMessage());
     }
 
-    private SchemaLoaderModel emptySubject() {
-        return SchemaLoaderModel.createModelFor(
+    private SchemaLoadingContext emptySubject() {
+        return SchemaLoadingContext.createModelFor(
                 jsonObjectBuilder()
                         .add("hello", jsonObjectBuilder()
                                 .add("world", jsonObjectBuilder()))

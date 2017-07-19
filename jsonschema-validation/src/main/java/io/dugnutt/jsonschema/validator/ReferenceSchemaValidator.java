@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.ReferenceSchemaLoader;
 import io.dugnutt.jsonschema.six.ReferenceSchema;
+import io.dugnutt.jsonschema.six.ReferenceSchemaLoader;
 import io.dugnutt.jsonschema.six.Schema;
 
 import javax.json.JsonValue;
@@ -16,6 +16,16 @@ public class ReferenceSchemaValidator extends SchemaValidator<ReferenceSchema> {
         refLoader = null;
     }
 
+    public ReferenceSchemaValidator(ReferenceSchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+        this.refLoader = null;
+    }
+
+    public ReferenceSchemaValidator(ReferenceSchema schema, SchemaValidatorFactory factory, ReferenceSchemaLoader refLoader) {
+        super(schema, factory);
+        this.refLoader = refLoader;
+    }
+
     @Override
     public Optional<ValidationError> validate(JsonValue toBeValidated) {
         Schema refSchema = this.schema.getReferredSchema()
@@ -25,7 +35,7 @@ public class ReferenceSchemaValidator extends SchemaValidator<ReferenceSchema> {
             throw new IllegalStateException("referredSchema must be injected before validation");
         }
 
-        return SchemaValidatorFactory.createValidatorForSchema(refSchema)
+        return factory.createValidator(refSchema)
                 .validate(toBeValidated);
     }
 }

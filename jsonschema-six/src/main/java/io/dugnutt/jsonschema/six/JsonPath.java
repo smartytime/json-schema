@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.Value;
 
 import java.util.ArrayList;
@@ -13,14 +14,31 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class JsonPath {
     @NonNull
     @Getter
     private final List<PathPart> path;
+
+    @SneakyThrows
+    public JsonPath(String jsonPointer) {
+        checkArgument(jsonPointer.startsWith("/"), "JSON pointer must start with /");
+
+        final String[] parts = jsonPointer.split("/");
+        if (parts.length > 0) {
+            this.path = unmodifiableList(Arrays.stream(parts, 1, parts.length)
+                    .map(PathPart::new)
+                    .collect(Collectors.toList()));
+        } else {
+            this.path = emptyList();
+        }
+
+    }
 
     public static JsonPath jsonPath(String... path) {
         return new JsonPath(Arrays.stream(path)
@@ -35,6 +53,10 @@ public class JsonPath {
         return new JsonPath(baseParts);
     }
 
+    public static JsonPath parse(String jsonPointer) {
+        return new JsonPath(jsonPointer);
+    }
+
     public static JsonPath rootPath() {
         return new JsonPath(emptyList());
     }
@@ -46,6 +68,12 @@ public class JsonPath {
         return new JsonPath(newPath);
     }
 
+    public JsonPath child(int index) {
+        List<PathPart> newPath = new ArrayList<>(this.path);
+        newPath.add(new PathPart(index));
+        return new JsonPath(newPath);
+    }
+
     public Optional<String> getLastPath() {
         if (path.size() > 0) {
             return Optional.of(String.valueOf(path.get(path.size() - 1).getNameOrIndex()));
@@ -54,22 +82,16 @@ public class JsonPath {
         }
     }
 
+    public Object[] toArray() {
+        return path.stream().map(PathPart::getNameOrIndex).toArray();
+    }
+
     public String toJsonPointer() {
         return path.isEmpty() ? "" : "/" + path.stream()
                 .map(PathPart::getNameOrIndex)
                 .map(Object::toString)
                 .map(JsonPointerPath::escape)
                 .collect(Collectors.joining("/"));
-    }
-
-    public JsonPath child(int index) {
-        List<PathPart> newPath = new ArrayList<>(this.path);
-        newPath.add(new PathPart(index));
-        return new JsonPath(newPath);
-    }
-
-    public Object[] toArray() {
-        return path.stream().map(PathPart::getNameOrIndex).toArray();
     }
 
     @Value

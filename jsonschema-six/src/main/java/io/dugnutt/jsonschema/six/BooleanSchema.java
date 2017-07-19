@@ -15,16 +15,14 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import java.net.URI;
-
-import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
+import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 
 /**
  * Boolean schema validator.
  */
 public class BooleanSchema extends Schema {
 
-    public static BooleanSchema BOOLEAN_SCHEMA = builder(rootSchemaLocation()).build();
+    public static BooleanSchema BOOLEAN_SCHEMA = builder(SchemaLocation.schemaLocation()).build();
 
     BooleanSchema(final Builder builder) {
         super(builder);

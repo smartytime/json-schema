@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.six;
 
 import javax.annotation.Nullable;
+import javax.json.JsonObject;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.Objects;
@@ -29,20 +30,20 @@ public class ReferenceSchema extends Schema {
     public ReferenceSchema(final Builder builder) {
         super(builder);
         this.referenceURI = URI.create(requireNonNull(builder.refValue, "refValue cannot be null"));
-        this.absoluteReferenceURI = builder.getLocation().getDocumentUri().resolve(referenceURI);
-        if (builder.referenceSchemaLoader != null) {
-            this.referredSchema = checkNotNull(builder.referenceSchemaLoader.loadReferenceSchema(this));
+        final SchemaLocation currentLocation = builder.getLocation();
+        this.absoluteReferenceURI = currentLocation.getResolutionScope().resolve(referenceURI);
+        final SchemaFactory loader = builder.referenceSchemaLoader;
+        if (loader != null) {
+            final Optional<JsonPath> jsonPath = loader.resolveURILocally(currentLocation.getDocumentURI(), absoluteReferenceURI, builder.rootJsonObject);
+            if (jsonPath.isPresent()) {
+                this.referredSchema = checkNotNull(loader.dereferenceLocalSchema(this, jsonPath.get(),
+                        builder.rootJsonObject));
+            } else {
+                this.referredSchema = checkNotNull(loader.dereferenceRemoteSchema(this));
+            }
         } else {
-            this.referredSchema = null;
+            referredSchema = null;
         }
-    }
-
-    public URI getReferenceURI() {
-        return referenceURI;
-    }
-
-    public URI getAbsoluteReferenceURI() {
-        return referenceURI;
     }
 
     public static Builder builder(SchemaLocation location) {
@@ -90,6 +91,14 @@ public class ReferenceSchema extends Schema {
         writer.write($REF, referenceURI.toString());
     }
 
+    public URI getAbsoluteReferenceURI() {
+        return absoluteReferenceURI;
+    }
+
+    public URI getReferenceURI() {
+        return referenceURI;
+    }
+
     public Optional<Schema> getReferredSchema() {
         return Optional.ofNullable(referredSchema);
     }
@@ -116,7 +125,8 @@ public class ReferenceSchema extends Schema {
          * The value of {@code "$ref"}
          */
         private String refValue = "";
-        private ReferenceSchemaLoader referenceSchemaLoader;
+        private SchemaFactory referenceSchemaLoader;
+        private JsonObject rootJsonObject;
 
         public Builder(String id) {
             super(id);
@@ -131,13 +141,16 @@ public class ReferenceSchema extends Schema {
             return new ReferenceSchema(this);
         }
 
-        public Builder referencedURL(String refValue) {
-            this.refValue = refValue;
+        public Builder referenceSchemaLoader(SchemaFactory referenceSchemaLoader, JsonObject rootJsonObject) {
+            checkNotNull(referenceSchemaLoader, "referenceSchemaLoader must not be null");
+            checkNotNull(rootJsonObject, "rootJsonObject must not be null");
+            this.referenceSchemaLoader = referenceSchemaLoader;
+            this.rootJsonObject = rootJsonObject;
             return this;
         }
 
-        public Builder referenceSchemaLoader(ReferenceSchemaLoader referenceSchemaLoader) {
-            this.referenceSchemaLoader = referenceSchemaLoader;
+        public Builder referencedURL(String refValue) {
+            this.refValue = refValue;
             return this;
         }
 

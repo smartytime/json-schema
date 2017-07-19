@@ -15,6 +15,7 @@ import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.six.StringSchema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -25,7 +26,6 @@ import java.io.InputStream;
 import java.util.function.Supplier;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static java.util.Arrays.asList;
 import static javax.json.spi.JsonProvider.provider;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -42,10 +42,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         Assert.assertNotNull(actual);
     }
 
-    @Test
-    public void builderhasDefaultFormatValidators() {
-        Assert.fail("Verify enum validator");
-    }
+    //todo:ericm Verify format validators + custom
 
     @Test
     public void emptyPatternProperties() {
@@ -192,7 +189,8 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         ObjectSchema actualRoot = (ObjectSchema) getSchemaForKey("refWithType");
         ReferenceSchema actual = (ReferenceSchema) actualRoot.getPropertySchemas().get("prop");
         ObjectSchema propSchema = (ObjectSchema) actual.getReferredSchema().orElseThrow(missingReference());
-        assertEquals(propSchema.getRequiredProperties(), asList("a", "b"));
+        Assertions.assertThat(propSchema.getRequiredProperties())
+                .containsExactly("a", "b");
     }
 
     @Test
@@ -234,7 +232,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
                 .getJsonObject("objectWithSchemaDep");
         ObjectSchema schema = (ObjectSchema) schemaFactory().load(rawSchema);
 
-        String actualSchemaPointer = schema.getSchemaDependencies().get("a").getLocation().getRelativeURI().toString();
+        String actualSchemaPointer = schema.getSchemaDependencies().get("a").getLocation().getJsonPointerFragment().toString();
         String expectedSchemaPointer = "#/dependencies/a";
         assertEquals(expectedSchemaPointer, actualSchemaPointer);
     }

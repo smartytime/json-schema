@@ -15,16 +15,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class SchemaValidator<S extends Schema> {
 
     protected final S schema;
-    protected final SchemaValidationContext context;
+    protected final SchemaValidatorFactory factory;
 
     public SchemaValidator(S schema) {
         this.schema = checkNotNull(schema);
-        this.context = SchemaValidationContext.newContext();
+        this.factory = SchemaValidatorFactory.DEFAULT_VALIDATOR;
     }
 
-    public SchemaValidator(S schema, SchemaValidationContext context) {
+    public SchemaValidator(S schema, SchemaValidatorFactory factory) {
         this.schema = checkNotNull(schema);
-        this.context = checkNotNull(context);
+        this.factory = checkNotNull(factory);
     }
 
     public static ValidationError failure(Schema validating, JsonSchemaType expectedType, JsonSchemaType foundType) {
@@ -33,7 +33,6 @@ public abstract class SchemaValidator<S extends Schema> {
     }
 
     public ValidationError failure(String message, JsonSchemaKeyword keyword, List<ValidationError> causes) {
-        //todo:ericm Figure out this pointer business.
         Preconditions.checkNotNull(keyword, "keyword must not be null");
         Preconditions.checkNotNull(message, "message must not be null");
         return new ValidationError(this.schema(), new StringBuilder("#"), message, causes, keyword,

@@ -9,6 +9,10 @@ public class EmptySchemaValidator extends SchemaValidator<EmptySchema> {
 
     public static EmptySchemaValidator EMPTY_SCHEMA_VALIDATOR = new EmptySchemaValidator(EmptySchema.EMPTY_SCHEMA);
 
+    public EmptySchemaValidator(EmptySchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
+
     public EmptySchemaValidator(EmptySchema schema) {
         super(schema);
     }

@@ -13,6 +13,10 @@ public class NullSchemaValidator extends SchemaValidator<NullSchema> {
         super(schema);
     }
 
+    public NullSchemaValidator(NullSchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
+
     @Override
     public Optional<ValidationError> validate(JsonValue toBeValidated) {
         checkNotNull(toBeValidated, "toBeValidated must not be null");

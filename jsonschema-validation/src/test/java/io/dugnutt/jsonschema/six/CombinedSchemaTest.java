@@ -26,7 +26,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
+import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
@@ -36,8 +36,8 @@ import static org.junit.Assert.assertTrue;
 public class CombinedSchemaTest {
 
     private static final List<Schema> SUBSCHEMAS = asList(
-            NumberSchema.builder(rootSchemaLocation()).multipleOf(10).build(),
-            NumberSchema.builder(rootSchemaLocation()).multipleOf(3).build());
+            NumberSchema.builder(SchemaLocation.schemaLocation()).multipleOf(10).build(),
+            NumberSchema.builder(SchemaLocation.schemaLocation()).multipleOf(3).build());
 
     public void allCriterionFailure() {
         verifyFailure(() -> CombinedSchemaValidator.ALL_CRITERION.validate(10, 1));
@@ -59,9 +59,9 @@ public class CombinedSchemaTest {
 
     public void anyOfInvalid() {
         verifyFailure(() -> {
-            CombinedSchema combinedSchema = CombinedSchema.anyOf(SchemaLocation.rootSchemaLocation(), asList(
-                    StringSchema.builder(SchemaLocation.rootSchemaLocation()).maxLength(2).build(),
-                    StringSchema.builder(SchemaLocation.rootSchemaLocation()).minLength(4).build()))
+            CombinedSchema combinedSchema = CombinedSchema.anyOf(SchemaLocation.schemaLocation(), asList(
+                    StringSchema.builder(SchemaLocation.schemaLocation()).maxLength(2).build(),
+                    StringSchema.builder(SchemaLocation.schemaLocation()).minLength(4).build()))
                     .build();
             return createValidatorForSchema(combinedSchema)
                     .validate(JsonUtils.readValue("\"foo\""));
@@ -79,9 +79,9 @@ public class CombinedSchemaTest {
 
     @Test
     public void factories() {
-        CombinedSchema.allOf(rootSchemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
-        CombinedSchema.anyOf(rootSchemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
-        CombinedSchema.oneOf(rootSchemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
+        CombinedSchema.allOf(SchemaLocation.schemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
+        CombinedSchema.anyOf(SchemaLocation.schemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
+        CombinedSchema.oneOf(SchemaLocation.schemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
     }
 
     public void oneCriterionFailure() {
@@ -95,7 +95,7 @@ public class CombinedSchemaTest {
 
     @Test
     public void reportCauses() {
-        CombinedSchema combinedSchema = CombinedSchema.allOf(rootSchemaLocation(), SUBSCHEMAS).build();
+        CombinedSchema combinedSchema = CombinedSchema.allOf(SchemaLocation.schemaLocation(), SUBSCHEMAS).build();
         Optional<ValidationError> error = createValidatorForSchema((CombinedSchema) combinedSchema).validate(JsonUtils.readValue("24"));
         assertTrue("Has an error", error.isPresent());
         Assert.assertEquals(1, error.get().getCauses().size());
@@ -103,7 +103,7 @@ public class CombinedSchemaTest {
 
     @Test
     public void validateAll() {
-        ValidationTestSupport.failureOf(CombinedSchema.allOf(rootSchemaLocation(), SUBSCHEMAS))
+        ValidationTestSupport.failureOf(CombinedSchema.allOf(SchemaLocation.schemaLocation(), SUBSCHEMAS))
                 .input("20")
                 .expectedKeyword("allOf")
                 .expect();
@@ -111,7 +111,7 @@ public class CombinedSchemaTest {
 
     @Test
     public void validateAny() {
-        ValidationTestSupport.failureOf(CombinedSchema.anyOf(rootSchemaLocation(), SUBSCHEMAS))
+        ValidationTestSupport.failureOf(CombinedSchema.anyOf(SchemaLocation.schemaLocation(), SUBSCHEMAS))
                 .input("5")
                 .expectedKeyword("anyOf")
                 .expect();
@@ -119,7 +119,7 @@ public class CombinedSchemaTest {
 
     @Test
     public void validateOne() {
-        ValidationTestSupport.failureOf(CombinedSchema.oneOf(SchemaLocation.rootSchemaLocation(), SUBSCHEMAS))
+        ValidationTestSupport.failureOf(CombinedSchema.oneOf(SchemaLocation.schemaLocation(), SUBSCHEMAS))
                 .input("30")
                 .expectedKeyword("oneOf")
                 .expect();

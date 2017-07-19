@@ -23,16 +23,16 @@ import static javax.json.JsonValue.ValueType.OBJECT;
  */
 class ObjectSchemaFactory {
 
-    private final SchemaLoaderModel schemaModel;
+    private final SchemaLoadingContext schemaModel;
 
     private final JsonSchemaFactory schemaFactory;
 
-    ObjectSchemaFactory(SchemaLoaderModel model, JsonSchemaFactory schemaFactory) {
+    ObjectSchemaFactory(SchemaLoadingContext model, JsonSchemaFactory schemaFactory) {
         this.schemaModel = checkNotNull(model, "model cannot be null");
         this.schemaFactory = checkNotNull(schemaFactory, "schemaFactory cannot be null");
     }
 
-    public static ObjectSchema.Builder createObjectSchemaBuilder(SchemaLoaderModel schemaModel, JsonSchemaFactory schemaFactory) {
+    public static ObjectSchema.Builder createObjectSchemaBuilder(SchemaLoadingContext schemaModel, JsonSchemaFactory schemaFactory) {
         return new ObjectSchemaFactory(schemaModel, schemaFactory).createObjectSchemaBuilder();
     }
 
@@ -79,7 +79,7 @@ class ObjectSchemaFactory {
         schemaJson.findObject(DEPENDENCIES).ifPresent(dependencyObject -> dependencyObject.forEach((dependencyKey, dependencyStructure) -> {
             switch (dependencyStructure.getValueType()) {
                 case OBJECT:
-                    SchemaLoaderModel dependencyModel = schemaModel.childModel(DEPENDENCIES, dependencyKey, dependencyStructure);
+                    SchemaLoadingContext dependencyModel = schemaModel.childModel(DEPENDENCIES, dependencyKey, dependencyStructure);
                     builder.schemaDependency(dependencyKey, schemaFactory.createSchema(dependencyModel));
                     break;
                 case ARRAY:

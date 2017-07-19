@@ -15,7 +15,7 @@ public interface ReferenceSchemaFactory {
      * @param forModel Represents the location in the schema that we're trying to load a reference for
      * @return
      */
-    ReferenceSchema.Builder createReferenceSchemaBuilder(SchemaLoaderModel forModel);
+    ReferenceSchema.Builder createReferenceSchemaBuilder(SchemaLoadingContext forModel);
 
 
 }

@@ -10,14 +10,14 @@ import static java.util.Objects.requireNonNull;
  */
 public class StringSchemaFactory {
 
-    private SchemaLoaderModel schemaModel;
+    private SchemaLoadingContext schemaModel;
 
-    private StringSchemaFactory(SchemaLoaderModel schemaModel) {
+    private StringSchemaFactory(SchemaLoadingContext schemaModel) {
         this.schemaModel = requireNonNull(schemaModel, "ls cannot be null");
     }
 
-    public static StringSchema.Builder createStringSchemaBuilder(SchemaLoaderModel schemaLoaderModel) {
-        return new StringSchemaFactory(schemaLoaderModel).createStringSchemaBuilder();
+    public static StringSchema.Builder createStringSchemaBuilder(SchemaLoadingContext schemaLoadingContext) {
+        return new StringSchemaFactory(schemaLoadingContext).createStringSchemaBuilder();
     }
 
     public StringSchema.Builder createStringSchemaBuilder() {

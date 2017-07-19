@@ -91,7 +91,7 @@ public class DefinesPropertyTest extends BaseLoaderTest {
 
     @Test
     public void definesPropertyIfSubschemaMatchCountIsAcceptedByCriterion() {
-        SchemaLocation location = SchemaLocation.rootSchemaLocation();
+        SchemaLocation location = SchemaLocation.schemaLocation();
         CombinedSchema subject = CombinedSchema.builder(location)
                 .subschema(ObjectSchema.builder(location).addPropertySchema("a", BooleanSchema.BOOLEAN_SCHEMA).build())
                 .subschema(ObjectSchema.builder(location).addPropertySchema("b", BooleanSchema.BOOLEAN_SCHEMA).build())

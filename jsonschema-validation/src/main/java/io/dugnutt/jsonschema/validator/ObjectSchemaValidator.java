@@ -33,6 +33,10 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         super(schema);
     }
 
+    public ObjectSchemaValidator(ObjectSchema schema, SchemaValidatorFactory context) {
+        super(schema, context);
+    }
+
     @Override
     public Optional<ValidationError> validate(JsonValue subject) {
 
@@ -63,7 +67,6 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     }
 
     private Optional<ValidationError> testAdditionalProperties(final JsonObject subject) {
-        final SchemaValidatorFactory factory = context.getFactory();
         final List<ValidationError> additionalPropertyErrors = new ArrayList<>();
         schema.getSchemaOfAdditionalProperties()
                 .map(factory::createValidator)
@@ -96,7 +99,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
                     .filter(regexMatches(pattern))
                     .forEach(propertyName -> {
                         final JsonValue propertyValue = subject.get(propertyName);
-                        final Optional<ValidationError> error = context.getFactory().createValidator(patternSchema)
+                        final Optional<ValidationError> error = factory.createValidator(patternSchema)
                                 .validate(propertyValue)
                                 .map(err -> err.prepend(propertyName));
                         error.ifPresent(allErrors::add);
@@ -115,8 +118,6 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     }
 
     private List<ValidationError> testProperties(final JsonObject subject) {
-        final SchemaValidatorFactory factory = context.getFactory();
-
         final List<ValidationError> propertyErrors = new ArrayList<>();
         final List<ValidationError> propertyNameErrors = new ArrayList<>();
 
@@ -136,7 +137,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
             propertyNameValidator.ifPresent(validator -> {
                 //The validators work against json objects, not raw java objects, so we need to
                 //wrap this in a JsonString here.
-                final JsonString jsonValue = context.getProvider().createValue(propertyName);
+                final JsonString jsonValue = this.factory.getProvider().createValue(propertyName);
                 validator.validate(jsonValue)
                         .map(err -> err.prepend(propertyName))
                         .ifPresent(propertyNameErrors::add);
@@ -176,7 +177,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         List<ValidationError> errors = new ArrayList<>();
         schema.getSchemaDependencies().forEach((propName, schema) -> {
             if (subject.containsKey(propName)) {
-                context.getFactory().createValidator(schema)
+                factory.createValidator(schema)
                         .validate(subject)
                         .ifPresent(errors::add);
             }

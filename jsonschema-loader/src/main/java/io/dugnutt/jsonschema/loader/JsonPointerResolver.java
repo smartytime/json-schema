@@ -1,9 +1,9 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.loader.reference.SchemaClient;
+import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 import lombok.SneakyThrows;
-import io.dugnutt.jsonschema.six.SchemaException;
 
 import javax.json.JsonException;
 import javax.json.JsonObject;
@@ -11,8 +11,10 @@ import javax.json.JsonPointer;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.function.Supplier;
 
 import static com.google.common.base.Charsets.UTF_8;
@@ -84,7 +86,7 @@ public class JsonPointerResolver {
         return new JsonPointerResolver(() -> document, fragment, provider);
     }
 
-    static final JsonPointerResolver forURL(SchemaClient schemaClient, String url, JsonProvider provider) {
+    static final JsonPointerResolver forURL(SchemaClient schemaClient, String url, Charset charset,  JsonProvider provider) {
         int poundIdx = url.indexOf('#');
         String uriFragment;
         String toFetch;
@@ -95,13 +97,22 @@ public class JsonPointerResolver {
             uriFragment = url.substring(poundIdx);
             toFetch = url.substring(0, poundIdx);
         }
-        return new JsonPointerResolver(() -> fetchDocument(schemaClient, toFetch, provider), uriFragment, provider);
+        return new JsonPointerResolver(() -> fetchDocument(schemaClient, toFetch, charset, provider), uriFragment, provider);
     }
 
     @SneakyThrows
-    private static JsonObject fetchDocument(final SchemaClient client, final String url, final JsonProvider provider) {
+    private static JsonObject fetchDocument(final SchemaClient client, final String url,
+                                            Charset charset, final JsonProvider provider) {
         try (InputStream responseStream = client.get(url)) {
-            return provider.createReader(responseStream).readObject();
+            if (responseStream == null) {
+                throw new SchemaException(url, "Unable to retrieve schema from URL: " + url);
+            }
+            final InputStreamReader inputStreamReader = new InputStreamReader(responseStream, charset);
+            return provider.createReader(inputStreamReader).readObject();
+        } catch (SchemaException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new SchemaException(url, "Unable to retrieve schema due to exception: " + e);
         }
     }
 

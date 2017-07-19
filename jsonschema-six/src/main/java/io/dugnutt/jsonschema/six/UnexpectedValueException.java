@@ -15,7 +15,7 @@ public class UnexpectedValueException extends SchemaException {
     }
 
     public UnexpectedValueException(SchemaLocation schemaLocation, JsonValue element, JsonValue.ValueType... wanted) {
-        this(schemaLocation.getRelativeURI(), element, wanted);
+        this(schemaLocation.getJsonPointerFragment(), element, wanted);
 
     }
     public UnexpectedValueException(JsonPointerPath pointer, JsonValue element, Class<? extends JsonValue>... wanted) {

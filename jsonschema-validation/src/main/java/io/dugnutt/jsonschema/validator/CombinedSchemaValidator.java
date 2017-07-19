@@ -15,6 +15,10 @@ import static java.lang.String.format;
 
 public class CombinedSchemaValidator extends SchemaValidator<CombinedSchema> {
 
+    public CombinedSchemaValidator(CombinedSchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
+
     /**
      * Validation criterion for {@code allOf} schemas.
      */

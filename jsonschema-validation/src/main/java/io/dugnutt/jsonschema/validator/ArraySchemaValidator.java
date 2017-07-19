@@ -20,6 +20,10 @@ import static javax.json.JsonValue.ValueType;
 
 public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
 
+    public ArraySchemaValidator(ArraySchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
+
     public ArraySchemaValidator(ArraySchema schema) {
         super(schema);
     }
@@ -85,7 +89,7 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
 
         Schema containsSchema = schema.getContainsSchema();
         if (containsSchema != null) {
-            SchemaValidator<Schema> containsValidator = context.getFactory().createValidator(containsSchema);
+            SchemaValidator<Schema> containsValidator = factory.createValidator(containsSchema);
             Optional<JsonValue> containsValid = subject.stream()
                     .filter(arrayItem -> !containsValidator.validate(arrayItem).isPresent())
                     .findAny();

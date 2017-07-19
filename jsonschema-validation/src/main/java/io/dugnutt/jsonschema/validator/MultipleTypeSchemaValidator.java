@@ -14,11 +14,15 @@ public class MultipleTypeSchemaValidator extends SchemaValidator<MultipleTypeSch
         super(schema);
     }
 
+    public MultipleTypeSchemaValidator(MultipleTypeSchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
+
     @Override
     public Optional<ValidationError> validate(JsonValue subject) {
         JsonSchemaType inputType = JsonUtils.schemaTypeFor(subject);
         return this.schema.getSchemaForType(inputType)
-                .map(schema -> context.getFactory().createValidator(schema).validate(subject))
+                .map(schema -> factory.createValidator(schema).validate(subject))
                 .orElseGet(()->{
                     if (schema.isRequireOne()) {
                         return Optional.of(failure("invalid.type", JsonSchemaKeyword.TYPE));

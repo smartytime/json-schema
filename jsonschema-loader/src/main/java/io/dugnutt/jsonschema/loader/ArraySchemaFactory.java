@@ -15,15 +15,15 @@ import static javax.json.JsonValue.ValueType.ARRAY;
  */
 class ArraySchemaFactory {
 
-    private final SchemaLoaderModel schemaModel;
+    private final SchemaLoadingContext schemaModel;
     private final JsonSchemaFactory schemaFactory;
 
-    private ArraySchemaFactory(SchemaLoaderModel schemaModel, JsonSchemaFactory schemaFactory) {
+    private ArraySchemaFactory(SchemaLoadingContext schemaModel, JsonSchemaFactory schemaFactory) {
         this.schemaModel = requireNonNull(schemaModel, "schemaModel cannot be null");
         this.schemaFactory = requireNonNull(schemaFactory, "schemaFactory cannot be null");
     }
 
-    public static ArraySchema.Builder createArraySchemaBuilder(SchemaLoaderModel schemaModel, JsonSchemaFactory schemaFactory) {
+    public static ArraySchema.Builder createArraySchemaBuilder(SchemaLoadingContext schemaModel, JsonSchemaFactory schemaFactory) {
         return new ArraySchemaFactory(schemaModel, schemaFactory).createArraySchemaBuilder();
     }
 

@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import javax.json.JsonValue;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
+import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
@@ -31,7 +31,7 @@ public class NotSchemaTest {
 
     @Test
     public void failure() {
-        NotSchema subject = ValidationTestSupport.buildWithLocation(NotSchema.builder(rootSchemaLocation()).mustNotMatch(BooleanSchema.BOOLEAN_SCHEMA));
+        NotSchema subject = ValidationTestSupport.buildWithLocation(NotSchema.builder(SchemaLocation.schemaLocation()).mustNotMatch(BooleanSchema.BOOLEAN_SCHEMA));
         ValidationTestSupport.failureOf(subject)
                 .input(JsonValue.TRUE)
                 .expectedKeyword("not")
@@ -40,7 +40,7 @@ public class NotSchemaTest {
 
     @Test
     public void success() {
-        final NotSchema notSchema = NotSchema.builder(rootSchemaLocation()).mustNotMatch(BooleanSchema.BOOLEAN_SCHEMA).build();
+        final NotSchema notSchema = NotSchema.builder(SchemaLocation.schemaLocation()).mustNotMatch(BooleanSchema.BOOLEAN_SCHEMA).build();
         expectSuccess(() -> createValidatorForSchema(notSchema).validate(jsonStringValue("foo")));;
     }
 
@@ -55,7 +55,7 @@ public class NotSchemaTest {
 
     @Test
     public void toStringTest() {
-        NotSchema subject = NotSchema.builder(rootSchemaLocation())
+        NotSchema subject = NotSchema.builder(SchemaLocation.schemaLocation())
                 .mustNotMatch(BooleanSchema.BOOLEAN_SCHEMA)
                 .build();
         String actual = subject.toString();

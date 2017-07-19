@@ -41,6 +41,6 @@ public class InvalidObjectInArrayTest {
     }
 
     private JsonObject readObject(final String fileName) {
-        return JsonUtils.readJsonObject(getClass().getResourceAsStream("/org/everit/json/schema/invalidobjectinarray/" + fileName));
+        return JsonUtils.readJsonObject(getClass().getResourceAsStream("/io/dugnutt/json/schema/invalidobjectinarray/" + fileName));
     }
 }

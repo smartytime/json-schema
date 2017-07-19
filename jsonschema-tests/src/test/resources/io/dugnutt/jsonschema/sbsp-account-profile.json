@@ -1,6 +1,6 @@
 {
   "$schema": "http://schema.sbsp.io/sbsp-schema-base.json",
-  "id": "http://schema.sbsp.io/sbsp-account-profile.json",
+  "$id": "http://schema.sbsp.io/sbsp-account-profile.json",
   "version": "0.0.0",
   "title": "Profile",
   "description": "Information about your company",

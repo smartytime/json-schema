@@ -3,7 +3,6 @@ package io.dugnutt.jsonschema.validator;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.StringSchema;
-import io.dugnutt.jsonschema.validator.formatValidators.FormatValidator;
 
 import javax.json.JsonString;
 import javax.json.JsonValue;
@@ -15,6 +14,9 @@ import java.util.regex.Pattern;
 import static io.dugnutt.jsonschema.validator.ChainedValidator.firstCheck;
 
 public class StringSchemaValidator extends SchemaValidator<StringSchema> {
+    public StringSchemaValidator(StringSchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
 
     public StringSchemaValidator(StringSchema schema) {
         super(schema);
@@ -27,22 +29,19 @@ public class StringSchemaValidator extends SchemaValidator<StringSchema> {
                 .thenCheckAs(JsonString.class, s -> {
                     String stringSubject = s.getString();
                     List<ValidationError> allErrors = new ArrayList<>();
-                    allErrors.addAll(testLength(stringSubject));
+
+                    //Test the string's length
+                    testLength(stringSubject).forEach(allErrors::add);
+
+                    //Test the pattern
                     testPattern(stringSubject).ifPresent(allErrors::add);
 
-                    getFormatValidator()
+                    factory.getFormatValidator(schema.getFormat())
                             .map(validator -> validator.validate(stringSubject).orElse(null))
                             .map(error -> failure(error, JsonSchemaKeyword.FORMAT))
                             .ifPresent(allErrors::add);
                     return ValidationError.collectErrors(schema, allErrors);
                 }).getError();
-    }
-
-    private Optional<FormatValidator> getFormatValidator() {
-        if (schema.getFormatType() != null) {
-            return Optional.of(FormatValidator.forFormat(schema.getFormatType().toString()));
-        }
-        return Optional.empty();
     }
 
     private List<ValidationError> testLength(final String subject) {

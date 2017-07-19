@@ -1,8 +1,7 @@
 package io.dugnutt.jsonschema.loader.reference;
 
-import com.google.common.collect.Streams;
 import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.RecursiveJsonIterator;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaLocation;
 import lombok.AllArgsConstructor;
@@ -12,6 +11,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import java.net.URI;
@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
 
 /**
  * @author erosb
@@ -30,10 +31,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class SchemaCache {
 
     @NonNull
-    private final Map<URI, Map<URI, Schema>> documentLocalSchemas;
+    @lombok.Builder.Default
+    private final Map<URI, Map<URI, JsonPath>> documentIdRefs = new HashMap<>();
 
     @NonNull
-    private final Map<URI, Schema> cachedSchemas;
+    @lombok.Builder.Default
+    private final Map<URI, Schema> absoluteSchemaCache = new HashMap<>();
 
     // @NonNull
     // private final Map<URI, Supplier<Schema>> loadingStack;
@@ -51,13 +54,13 @@ public class SchemaCache {
     }
 
     public void cacheSchema(URI schemaURL, Schema schema) {
-        cachedSchemas.put(schemaURL, schema);
+        absoluteSchemaCache.put(schemaURL, schema);
     }
 
     /**
      * Retrieves a reference or pointer schema for the given loader model.
      *
-     * @param forModel Represents the location in the schema that we're trying to load a reference for
+     * @param location Represents the location in the schema that we're trying to load a reference for
      * @return
      */
     // @Override
@@ -70,7 +73,7 @@ public class SchemaCache {
     //     }
     // }
     public void cacheSchema(SchemaLocation location, Schema schema) {
-        URI absoluteLocation = location.getAbsoluteLocation();
+        URI absoluteLocation = location.getAbsoluteURI();
         URI jsonPointerLocation = location.getFullJsonPathURI();
         this.cacheSchema(absoluteLocation, schema);
         this.cacheSchema(jsonPointerLocation, schema);
@@ -78,14 +81,40 @@ public class SchemaCache {
 
     public Optional<Schema> getSchema(SchemaLocation schemaLocation) {
         //A schema can be cached a bunch of places.
-        return Stream.of(schemaLocation.getAbsoluteLocation(), schemaLocation.getFullJsonPathURI())
-                .filter(cachedSchemas::containsKey)
-                .map(cachedSchemas::get)
+        return getSchema(schemaLocation.getAbsoluteURI(), schemaLocation.getFullJsonPathURI());
+    }
+
+    public Optional<Schema> getSchema(URI... possibilities) {
+        //A schema can be cached a bunch of places.
+        return Stream.of(possibilities)
+                .filter(absoluteSchemaCache::containsKey)
+                .map(absoluteSchemaCache::get)
                 .findAny();
     }
 
     public Optional<Schema> getSchema(URI schemaURI) {
-        return Optional.ofNullable(cachedSchemas.get(schemaURI));
+        final Schema cacheHit = absoluteSchemaCache.get(schemaURI);
+        return Optional.ofNullable(cacheHit);
+    }
+
+    public Optional<JsonPath> resolveURIToDocument(URI documentURI, URI absoluteURI, JsonObject document) {
+        checkNotNull(documentURI, "documentURI must not be null");
+        checkNotNull(document, "document must not be null");
+        checkNotNull(absoluteURI, "absoluteURI must not be null");
+
+        final JsonPath pathForURI = documentIdRefs.computeIfAbsent(documentURI, key -> {
+            Map<URI, JsonPath> values = new HashMap<>();
+            RecursiveJsonIterator.visitDocument(document, (keyOrIndex, val, path) -> {
+                if ($ID.key().equals(keyOrIndex)) {
+                    final URI $idAsURI = URI.create(((JsonString) val).getString());
+                    values.put($idAsURI, path);
+                }
+            });
+
+            return values;
+        }).get(absoluteURI);
+
+        return Optional.ofNullable(pathForURI);
     }
 
     // JsonObject withoutRef(JsonObject original) {
@@ -97,7 +126,8 @@ public class SchemaCache {
     // }
 
     private Map<URI, Schema> getDocumentLocalCache(URI documentURI) {
-        return documentLocalSchemas.computeIfAbsent(documentURI, u -> new HashMap<>());
+        // return documentIdRefs.computeIfAbsent(documentURI, u -> new HashMap<>());
+        return null;
     }
 
     @Nullable
@@ -111,8 +141,8 @@ public class SchemaCache {
         } else if (structure.getValueType() == JsonValue.ValueType.OBJECT) {
             JsonObject jsonObject = structure.asJsonObject();
             final URI newURIPath;
-            if (jsonObject.containsKey(JsonSchemaKeyword.$ID.key())) {
-                String idValue = jsonObject.getString(JsonSchemaKeyword.$ID.key());
+            if (jsonObject.containsKey($ID.key())) {
+                String idValue = jsonObject.getString($ID.key());
                 newURIPath = ReferenceScopeResolver.resolveScope(currentURIPath, idValue);
             }
         }
@@ -169,13 +199,11 @@ public class SchemaCache {
     }
 
     public static class Builder {
-        private Map<URI, Schema> cachedSchemas = new HashMap<>();
-        private Map<URI, Map<URI, Schema>> documentLocalSchemas = new HashMap<>();
 
         public Builder cacheSchema(URI key, Schema toCache) {
             checkNotNull(key, "key must not be null");
             checkNotNull(toCache, "toCache must not be null");
-            this.cachedSchemas.put(key, toCache);
+            this.cacheSchema(key, toCache);
             return this;
         }
     }

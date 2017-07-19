@@ -11,6 +11,10 @@ import static java.lang.String.format;
 
 public class EnumSchemaValidator extends SchemaValidator<EnumSchema> {
 
+    public EnumSchemaValidator(EnumSchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
+
     public EnumSchemaValidator(EnumSchema schema) {
         super(schema);
     }

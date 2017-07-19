@@ -234,7 +234,7 @@ public class ValidationTestSupport {
         }
 
         public Failure nullInput() {
-            this.input = null;
+            this.input = JsonValue.NULL;
             return this;
         }
 

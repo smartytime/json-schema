@@ -9,6 +9,10 @@ import java.util.Optional;
 
 public class NotSchemaValidator extends SchemaValidator<NotSchema> {
 
+    public NotSchemaValidator(NotSchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
+
     public NotSchemaValidator(NotSchema schema) {
         super(schema);
     }

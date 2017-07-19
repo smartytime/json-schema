@@ -61,7 +61,7 @@ public class IssueTest {
         List<Object[]> rval = new ArrayList<>();
         try {
             File issuesDir = new File(
-                    IssueTest.class.getResource("/org/everit/jsonschema/issues").toURI());
+                    IssueTest.class.getResource("/io/dugnutt/jsonschema/issues").toURI());
             for (File issue : issuesDir.listFiles()) {
                 rval.add(new Object[] {issue, issue.getName()});
             }

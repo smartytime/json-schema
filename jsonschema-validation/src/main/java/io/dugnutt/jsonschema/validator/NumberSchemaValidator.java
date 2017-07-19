@@ -20,6 +20,10 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
         super(schema);
     }
 
+    public NumberSchemaValidator(NumberSchema schema, SchemaValidatorFactory factory) {
+        super(schema, factory);
+    }
+
     @Override
     public Optional<ValidationError> validate(final JsonValue subject) {
         ValueType schemaType = subject.getValueType();

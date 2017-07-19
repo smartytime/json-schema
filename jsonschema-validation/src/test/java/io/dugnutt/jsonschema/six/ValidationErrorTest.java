@@ -34,7 +34,7 @@ import static org.junit.Assert.assertEquals;
 public class ValidationErrorTest {
 
     public static final ResourceLoader loader = ResourceLoader.DEFAULT;
-    private final Schema rootSchema = ObjectSchema.builder(SchemaLocation.rootSchemaLocation()).build();
+    private final Schema rootSchema = ObjectSchema.builder(SchemaLocation.schemaLocation()).build();
 
     @Test
     public void fragmentEscapingBoth() {

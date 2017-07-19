@@ -11,14 +11,14 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MULTIPLE_OF;
 
 public class NumberSchemaFactory {
 
-    private final SchemaLoaderModel schemaModel;
+    private final SchemaLoadingContext schemaModel;
 
-    public NumberSchemaFactory(SchemaLoaderModel schemaModel) {
+    public NumberSchemaFactory(SchemaLoadingContext schemaModel) {
         this.schemaModel = checkNotNull(schemaModel);
     }
 
-    public static NumberSchema.Builder createNumberSchemaBuilder(SchemaLoaderModel schemaLoaderModel) {
-        return new NumberSchemaFactory(schemaLoaderModel).createNumberSchemaBuilder();
+    public static NumberSchema.Builder createNumberSchemaBuilder(SchemaLoadingContext schemaLoadingContext) {
+        return new NumberSchemaFactory(schemaLoadingContext).createNumberSchemaBuilder();
     }
 
     public NumberSchema.Builder createNumberSchemaBuilder() {

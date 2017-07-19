@@ -24,16 +24,10 @@ import org.junit.Test;
 import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
+import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static org.junit.Assert.assertEquals;
 
 public class ReferenceSchemaTest {
-
-    @Test
-    public void constructorMustRunOnlyOnce() {
-        ReferenceSchema.Builder builder = ReferenceSchema.builder(rootSchemaLocation());
-        Assert.assertSame(builder.build(), builder.build());
-    }
 
     @Test
     public void equalsVerifier() {
@@ -49,12 +43,12 @@ public class ReferenceSchemaTest {
     @Test(expected = IllegalStateException.class)
     public void setterShouldWorkOnlyOnce() {
         Assert.fail("Not there anymore");
-        ReferenceSchema subject = ReferenceSchema.builder(SchemaLocation.rootSchemaLocation()).build();
+        ReferenceSchema subject = ReferenceSchema.builder(schemaLocation()).build();
     }
 
     @Test
     public void toStringTest() {
-        JsonObject rawSchemaJson = JsonUtils.readResourceAsJson("tostring/ref.json", JsonObject.class);
+        JsonObject rawSchemaJson = ResourceLoader.DEFAULT.readObj("tostring/ref.json");
         String actual = schemaFactory().load(rawSchemaJson).toString();
         System.out.println(actual);
         assertEquals(rawSchemaJson.get("/properties"),

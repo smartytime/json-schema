@@ -56,14 +56,15 @@ import static javax.json.JsonValue.ValueType.TRUE;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(toBuilder = true)
-public class SchemaLoaderModel {
+public class SchemaLoadingContext {
 
     public static final Set<JsonSchemaKeyword> COMBINED_SCHEMA_KEYWORDS = Sets.newHashSet(ALL_OF, ANY_OF, ONE_OF);
     /**
      * The parent json document (when loading a subschema)
      */
     @NonNull
-    protected final FluentJsonObject rootSchemaJson;
+    protected final JsonObject rootSchemaJson;
+
     /**
      * The path to the current schema being loaded
      */
@@ -104,16 +105,15 @@ public class SchemaLoaderModel {
     // }
 
     @SneakyThrows
-    public static SchemaLoaderModel createModelFor(JsonObject rootSchema) {
-        final URI id;
+    public static SchemaLoadingContext createModelFor(JsonObject rootSchema) {
+        final SchemaLocation rootSchemaLocation;
         if (rootSchema.containsKey($ID.key())) {
             String $id = rootSchema.getString($ID.key());
-            id = URI.create($id);
+            rootSchemaLocation = SchemaLocation.schemaLocation($id);
         } else {
-            id = URI.create("#");
+            rootSchemaLocation = SchemaLocation.schemaLocation();
         }
 
-        SchemaLocation rootSchemaLocation = SchemaLocation.rootSchemaLocation(id);
         JsonPointerPath jsonPointerPath = new JsonPointerPath(rootSchemaLocation.getJsonPath());
         FluentJsonObject schemaJson = new FluentJsonObject(rootSchema, jsonPointerPath);
         return builder()
@@ -123,22 +123,22 @@ public class SchemaLoaderModel {
                 .build();
     }
 
-    public Optional<SchemaLoaderModel> childModel(JsonSchemaKeyword childKey) {
+    public Optional<SchemaLoadingContext> childModel(JsonSchemaKeyword childKey) {
         return Optional.ofNullable(childModel(childKey.key()));
     }
 
-    public SchemaLoaderModel childModel(JsonSchemaKeyword arrayKey, int idx) {
+    public SchemaLoadingContext childModel(JsonSchemaKeyword arrayKey, int idx) {
         JsonArray jsonArray = schemaJson.getJsonArray(arrayKey.key());
         JsonValue indexValue = jsonArray.get(idx);
         return internalChildModel(arrayKey, idx, indexValue);
     }
 
-    public SchemaLoaderModel childModel(JsonSchemaKeyword keyWord, String childKey, JsonValue valueAtKey) {
+    public SchemaLoadingContext childModel(JsonSchemaKeyword keyWord, String childKey, JsonValue valueAtKey) {
         return internalChildModel(keyWord, childKey, valueAtKey);
     }
 
     public SchemaException createSchemaException(String message) {
-        return new SchemaException(location.getRelativeURI(), message);
+        return new SchemaException(location.getJsonPointerFragment(), message);
     }
 
     public JsonSchemaType getExplicitType() {
@@ -154,12 +154,12 @@ public class SchemaLoaderModel {
     }
 
     public String getPropertyName() {
-        return location.getJsonPath().getLastPath().orElseThrow(() -> new SchemaException(location.getRelativeURI(), "Invalid path"));
+        return location.getJsonPath().getLastPath().orElseThrow(() -> new SchemaException(location.getJsonPointerFragment(), "Invalid path"));
     }
 
     public Set<JsonSchemaType> getTypeArray() {
         return schemaJson.getJsonArray(TYPE.key())
-                .getValuesAs(castTo(JsonString.class, location.withChildPath(TYPE.key()).getRelativeURI())) // This ensures that any classCast exceptions get bubbled correctly
+                .getValuesAs(castTo(JsonString.class, location.withChildPath(TYPE.key()).getJsonPointerFragment())) // This ensures that any classCast exceptions get bubbled correctly
                 .stream()
                 .map(JsonString::getString)
                 .map(JsonSchemaType::fromString)
@@ -219,7 +219,7 @@ public class SchemaLoaderModel {
                 .anyMatch(schemaJson::containsKey);
     }
 
-    public Stream<SchemaLoaderModel> streamChildSchemaModels(JsonSchemaKeyword schemaProperty, JsonValue.ValueType... validTypes) {
+    public Stream<SchemaLoadingContext> streamChildSchemaModels(JsonSchemaKeyword schemaProperty, JsonValue.ValueType... validTypes) {
         checkNotNull(schemaProperty, "array must not be null");
 
         if (!schemaJson.containsKey(schemaProperty.key())) {
@@ -255,7 +255,7 @@ public class SchemaLoaderModel {
     }
 
     @VisibleForTesting
-    Optional<SchemaLoaderModel> childModelIfObject(JsonSchemaKeyword keyword) {
+    Optional<SchemaLoadingContext> childModelIfObject(JsonSchemaKeyword keyword) {
         final String keywordVal = keyword.key();
         return schemaJson.findIfObject(keywordVal)
                 .map(childObject -> {
@@ -283,7 +283,7 @@ public class SchemaLoaderModel {
 
     @VisibleForTesting
     @Nullable
-    SchemaLoaderModel childModel(String childKey) {
+    SchemaLoadingContext childModel(String childKey) {
         return schemaJson.findObject(childKey)
                 .map(childObject -> {
                     final SchemaLocation childPath = getChildLocationWithId(childObject, childKey);
@@ -297,7 +297,7 @@ public class SchemaLoaderModel {
                 }).orElse(null);
     }
 
-    private Stream<SchemaLoaderModel> streamChildSchemaModelsForArray(JsonSchemaKeyword schemaProperty, JsonArray toIterate) {
+    private Stream<SchemaLoadingContext> streamChildSchemaModelsForArray(JsonSchemaKeyword schemaProperty, JsonArray toIterate) {
         return IntStream.range(0, toIterate.size())
                 .mapToObj(idx -> {
                     final JsonValue jsonValue = toIterate.get(idx);
@@ -305,7 +305,7 @@ public class SchemaLoaderModel {
                 });
     }
 
-    private SchemaLoaderModel internalChildModel(JsonSchemaKeyword keyWord, Object childKey, JsonValue valueAtKey) {
+    private SchemaLoadingContext internalChildModel(JsonSchemaKeyword keyWord, Object childKey, JsonValue valueAtKey) {
         checkNotNull(keyWord, "keyWord must not be null");
         checkNotNull(childKey, "childKey must not be null");
         checkNotNull(valueAtKey, "valueAtKey must not be null");
@@ -335,15 +335,15 @@ public class SchemaLoaderModel {
                 .build();
     }
 
-    private Stream<SchemaLoaderModel> streamChildSchemasByKey(JsonSchemaKeyword schemaProperty, JsonObject toIterate) {
+    private Stream<SchemaLoadingContext> streamChildSchemasByKey(JsonSchemaKeyword schemaProperty, JsonObject toIterate) {
         return toIterate.entrySet().stream()
                 .map(entry -> this.childModel(schemaProperty, entry.getKey(), entry.getValue()));
     }
 
-    public static class SchemaLoaderModelBuilder {
+    public static class SchemaLoadingContextBuilder {
         private JsonObject plainJson;
 
-        public SchemaLoaderModelBuilder location(SchemaLocation location) {
+        public SchemaLoadingContextBuilder location(SchemaLocation location) {
             if (plainJson != null) {
                 this.schemaJson(new FluentJsonObject(plainJson, new JsonPointerPath(location.getJsonPath())));
             }
@@ -351,7 +351,7 @@ public class SchemaLoaderModel {
             return this;
         }
 
-        public SchemaLoaderModelBuilder schemaJson(FluentJsonObject schemaJson) {
+        public SchemaLoadingContextBuilder schemaJson(FluentJsonObject schemaJson) {
             if (this.rootSchemaJson == null) {
                 this.rootSchemaJson = schemaJson;
             }
@@ -359,7 +359,7 @@ public class SchemaLoaderModel {
             return this;
         }
 
-        public SchemaLoaderModelBuilder schemaJson(JsonObject jsonObject) {
+        public SchemaLoadingContextBuilder schemaJson(JsonObject jsonObject) {
             this.plainJson = storeIfNoLocationPresent(jsonObject);
             return this;
         }

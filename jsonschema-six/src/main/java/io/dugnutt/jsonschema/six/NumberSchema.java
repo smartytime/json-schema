@@ -95,7 +95,7 @@ public class NumberSchema extends Schema {
         private boolean requiresNumber = true;
 
         public Builder() {
-            super(SchemaLocation.rootSchemaLocation());
+            super(SchemaLocation.schemaLocation());
         }
 
         public Builder(String id) {

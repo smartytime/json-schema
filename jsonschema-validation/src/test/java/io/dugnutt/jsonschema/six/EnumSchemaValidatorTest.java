@@ -31,7 +31,7 @@ import javax.json.JsonValue;
 import java.util.HashSet;
 import java.util.Set;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.rootSchemaLocation;
+import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonArray;
@@ -112,7 +112,7 @@ public class EnumSchemaValidatorTest {
     }
 
     private EnumSchema.Builder subject() {
-        return EnumSchema.builder(rootSchemaLocation()).possibleValues(possibleValues.build());
+        return EnumSchema.builder(SchemaLocation.schemaLocation()).possibleValues(possibleValues.build());
     }
 
     private Set<Object> asSet(final JsonArray array) {

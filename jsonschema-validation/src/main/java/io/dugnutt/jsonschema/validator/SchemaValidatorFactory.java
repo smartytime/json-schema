@@ -6,6 +6,7 @@ import io.dugnutt.jsonschema.six.BooleanSchema;
 import io.dugnutt.jsonschema.six.CombinedSchema;
 import io.dugnutt.jsonschema.six.EmptySchema;
 import io.dugnutt.jsonschema.six.EnumSchema;
+import io.dugnutt.jsonschema.six.FormatType;
 import io.dugnutt.jsonschema.six.MultipleTypeSchema;
 import io.dugnutt.jsonschema.six.NotSchema;
 import io.dugnutt.jsonschema.six.NullSchema;
@@ -18,9 +19,10 @@ import io.dugnutt.jsonschema.validator.formatValidators.FormatValidator;
 import lombok.Builder;
 import lombok.NonNull;
 
+import javax.json.spi.JsonProvider;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -34,26 +36,46 @@ public class SchemaValidatorFactory {
     private final Map<String, FormatValidator> customFormatValidators;
 
     @NonNull
-    private final Map<Class<Schema>, Function<Schema, SchemaValidator<Schema>>> schemaValidators;
+    private final Map<Class<Schema>, Factory<?>> schemaValidators;
 
-    public <S extends Schema> SchemaValidator<S> createValidator(S schema) {
-        checkNotNull(schema, "schema must not be null");
-        final Function<Schema, SchemaValidator<Schema>> validatorFunction = schemaValidators.get(schema.getClass());
-        if (validatorFunction == null) {
-            throw new IllegalArgumentException("Unable to locate validator for schema: " + schema.getClass());
-        }
-        return (SchemaValidator<S>) validatorFunction.apply(schema);
-    }
+    private final JsonProvider provider;
 
     public static SchemaValidator<?> createValidatorForSchema(Schema schema) {
         return DEFAULT_VALIDATOR.createValidator(schema);
     }
 
+    public <S extends Schema> SchemaValidator<S> createValidator(S schema) {
+        checkNotNull(schema, "schema must not be null");
+        final Factory<S> validatorFunction = (Factory<S>) schemaValidators.get(schema.getClass());
+        if (validatorFunction == null) {
+            throw new IllegalArgumentException("Unable to locate validator for schema: " + schema.getClass());
+        }
+        return validatorFunction.createValidator(schema, this);
+    }
+
+    public Optional<FormatValidator> getFormatValidator(String input) {
+        if (input == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(customFormatValidators.get(input));
+    }
+
+    public JsonProvider getProvider() {
+        return provider;
+    }
+
+    @FunctionalInterface
+    static interface Factory<X extends Schema> {
+        SchemaValidator<X> createValidator(X schema, SchemaValidatorFactory factory);
+    }
+
     public static class Builder {
         public Builder() {
+            this.provider = JsonProvider.provider();
             this.customFormatValidators = new HashMap<>();
             this.schemaValidators = new HashMap<>();
             initCoreSchemaValidators();
+            initCoreFormatValidators();
         }
 
         public Builder customFormatValidator(String format, FormatValidator formatValidator) {
@@ -63,13 +85,10 @@ public class SchemaValidatorFactory {
             return this;
         }
 
-        public <X extends Schema> Builder schemaValidator(Class<X> schemaClass, Function<X, SchemaValidator<X>> factory) {
+        public <X extends Schema> Builder schemaValidator(Class<X> schemaClass, Factory<X> factory) {
             //todo:ericm What the heck???
             Class<Schema> classOfSchema = (Class<Schema>) schemaClass;
-            this.schemaValidators.put(classOfSchema, schema -> {
-                SchemaValidator<X> validator = factory.apply((X) schema);
-                return (SchemaValidator<Schema>) validator;
-            });
+            this.schemaValidators.put(classOfSchema, factory);
             return this;
         }
 
@@ -86,6 +105,12 @@ public class SchemaValidatorFactory {
             schemaValidator(ReferenceSchema.class, ReferenceSchemaValidator::new);
             schemaValidator(StringSchema.class, StringSchemaValidator::new);
             schemaValidator(MultipleTypeSchema.class, MultipleTypeSchemaValidator::new);
+        }
+
+        private void initCoreFormatValidators() {
+            for (FormatType formatType : FormatType.values()) {
+                customFormatValidators.put(formatType.toString(), FormatValidator.forFormat(formatType));
+            }
         }
     }
 }

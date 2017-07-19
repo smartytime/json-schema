@@ -23,15 +23,14 @@ import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
-import static io.dugnutt.jsonschema.utils.JsonUtils.readResourceAsJsonObject;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 
 public class PointerBubblingTest {
 
     private static final ResourceLoader loader = ResourceLoader.DEFAULT;
-    private final JsonObject allSchemas = readResourceAsJsonObject("testschemas.json");
+    private final JsonObject allSchemas = loader.readObj("testschemas.json");
     private final Schema rectangleSchema = schemaFactory().load(allSchemas.getJsonObject("pointerResolution"));
-    private final JsonObject testInputs = readResourceAsJsonObject("objecttestcases.json");
+    private final JsonObject testInputs = loader.readObj("objecttestcases.json");
 
     @Test
     public void rectangleMultipleFailures() {

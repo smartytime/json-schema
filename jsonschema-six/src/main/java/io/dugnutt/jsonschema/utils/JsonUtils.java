@@ -125,15 +125,6 @@ public class JsonUtils {
         }
     }
 
-    public static JsonObject readResourceAsJsonObject(String resourceURL) {
-        return readResourceAsJson(resourceURL, JsonObject.class);
-    }
-
-    public static JsonObjectBuilder readResourceAsObjectBuilder(String resourceURL) {
-        final JsonObject baseObject = readResourceAsJson(resourceURL, JsonObject.class);
-        return provider().createObjectBuilder(baseObject);
-    }
-
     public static <V extends JsonValue> V readResourceAsJson(String resourceURL, Class<V> jsonValue) {
         return readValue(JsonUtils.class.getResourceAsStream(resourceURL), jsonValue);
     }

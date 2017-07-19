@@ -36,7 +36,7 @@ public class EmptyObjectTest {
                 "  \"type\": \"object\",\n" +
                 "  \"properties\": {}\n" +
                 "}");
-        JsonObject schemaJson = JsonUtils.readResourceAsJsonObject("/org/everit/json/schema/json-schema-draft-04.json");
+        JsonObject schemaJson = ResourceLoader.DEFAULT.readObj("json-schema-draft-06.json");
 
         Schema schema = JsonSchemaFactory.schemaFactory(JsonProvider.provider()).load(schemaJson);
         SchemaValidator<?> validator = SchemaValidatorFactory.createValidatorForSchema(schema);

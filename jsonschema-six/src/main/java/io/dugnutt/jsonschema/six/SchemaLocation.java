@@ -2,82 +2,101 @@ package io.dugnutt.jsonschema.six;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Getter
 @Builder(toBuilder = true)
 public class SchemaLocation {
+
+    @Nullable
     private final URI id;
 
+    /**
+     * Path within the containing document
+     */
+    @NonNull
     private final JsonPath jsonPath;
 
-    private final URI priorResolutionScope;
+    /**
+     * Resolution scope for this location
+     */
+    @NonNull
+    private final URI resolutionScope;
 
-    private final URI documentUri;
+    @NonNull
+    private final URI documentURI;
 
-    private final URI absoluteLocation;
+    @NonNull
+    private final URI absoluteURI;
 
     //Just for lombok... Grrrr
-    public SchemaLocation(URI id, JsonPath jsonPath, URI resolutionScope, URI documentUri) {
-        this(id, jsonPath, resolutionScope, documentUri, null);
+    public SchemaLocation(URI id, JsonPath jsonPath, URI resolutionScope, URI documentURI) {
+        this(id, jsonPath, resolutionScope, documentURI, null);
     }
 
-    private SchemaLocation(URI id, JsonPath jsonPath, URI priorResolutionScope, URI documentUri, URI absoluteLocation) {
+    private SchemaLocation(URI id, JsonPath jsonPath, URI resolutionScope, URI documentURI, URI absoluteURI) {
         this.id = id;
         this.jsonPath = jsonPath;
-        this.priorResolutionScope = priorResolutionScope;
-        this.documentUri = documentUri;
+        this.resolutionScope = resolutionScope;
+        this.documentURI = documentURI;
         if (id != null) {
-            this.absoluteLocation = priorResolutionScope.resolve(this.id);
+            this.absoluteURI = resolutionScope.resolve(this.id);
         } else {
-            this.absoluteLocation = getRelativeURI();
+            this.absoluteURI = resolutionScope.resolve(getJsonPointerFragment());
         }
     }
 
-    public static SchemaLocation rootSchemaLocation() {
-        return rootSchemaLocation(URI.create("#"));
+    public static SchemaLocation schemaLocation() {
+        // If there's not ID for a base schema, assign a URN to avoid any false positive cache hits.
+        final URI baseURN = URI.create("urn:" + UUID.randomUUID().toString());
+        return SchemaLocation.builder()
+                .documentURI(baseURN)
+                .jsonPath(JsonPath.rootPath())
+                .resolutionScope(baseURN)
+                .build();
     }
 
-    public static SchemaLocation rootSchemaLocation(URI rootDocument) {
+    public static SchemaLocation schemaLocation(URI rootDocument) {
         checkNotNull(rootDocument, "rootDocument must not be null");
         return new SchemaLocation(rootDocument, JsonPath.jsonPath(), rootDocument, rootDocument);
     }
 
-    public List<String> getPath() {
-        return Arrays.stream(jsonPath.toArray()).map(Object::toString).collect(Collectors.toList());
-    }
-
-    public static SchemaLocation rootSchemaLocation(String rootDocumentVal) {
+    public static SchemaLocation schemaLocation(String rootDocumentVal) {
         checkNotNull(rootDocumentVal, "rootDocument must not be null");
         URI rootDocument = URI.create(rootDocumentVal);
         return new SchemaLocation(rootDocument, JsonPath.jsonPath(), rootDocument, rootDocument);
     }
 
     public URI getFullJsonPathURI() {
-        return documentUri.resolve(jsonPath.toJsonPointer());
+        return documentURI.resolve(getJsonPointerFragment());
     }
 
-    public URI getRelativeURI() {
+    public URI getJsonPointerFragment() {
         return URI.create("#" + jsonPath.toJsonPointer());
     }
 
+    public List<String> getPath() {
+        return Arrays.stream(jsonPath.toArray()).map(Object::toString).collect(Collectors.toList());
+    }
+
     public SchemaLocation withChildPath(String... jsonPath) {
-        return this.toBuilder()
+        return builderWithResolutionScope()
                 .id(null)
                 .jsonPath(jsonPath)
                 .build();
     }
 
     public SchemaLocation withChildPath(String key1, int key2) {
-        return this.toBuilder()
-                .id(null)
+        return builderWithResolutionScope()
                 .jsonPath(jsonPath.child(key1).child(key2))
                 .build();
     }
@@ -85,19 +104,13 @@ public class SchemaLocation {
     public SchemaLocation withChildPath(URI canonicalId, String... jsonPath) {
         checkNotNull(canonicalId, "canonicalId must not be null.  Use forChild(String... jsonPath)");
         checkNotNull(jsonPath, "jsonPath must not be null");
-        checkArgument(jsonPath.length > 0, "Must have jsonPath");
 
         JsonPath newPath = this.jsonPath;
         for (String pathPart : jsonPath) {
             newPath = newPath.child(pathPart);
         }
 
-        SchemaLocationBuilder newLocation = this.toBuilder();
-        if (this.id != null) {
-            newLocation.priorResolutionScope(this.absoluteLocation);
-        }
-
-        return newLocation
+        return builderWithResolutionScope()
                 .id(canonicalId)
                 .jsonPath(jsonPath)
                 .build();
@@ -105,6 +118,18 @@ public class SchemaLocation {
 
     public SchemaLocation withChildPath(JsonSchemaKeyword keyword) {
         return withChildPath(keyword.key());
+    }
+
+    private SchemaLocationBuilder builderWithResolutionScope() {
+        final URI newResolutionPath;
+        if (this.id != null) {
+            newResolutionPath = this.resolutionScope.resolve(this.id);
+        } else {
+            newResolutionPath = this.resolutionScope;
+        }
+        return this.toBuilder()
+                .id(null)
+                .resolutionScope(newResolutionPath);
     }
 
     public static class SchemaLocationBuilder {
@@ -115,7 +140,6 @@ public class SchemaLocation {
 
         public SchemaLocationBuilder jsonPath(String... pathParts) {
             checkNotNull(pathParts, "pathParts must not be null");
-            checkArgument(pathParts.length > 0, "Must have pathParts");
 
             JsonPath newPath = this.jsonPath;
             for (String pathPart : pathParts) {

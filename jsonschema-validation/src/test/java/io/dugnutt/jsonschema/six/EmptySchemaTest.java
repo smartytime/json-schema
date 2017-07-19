@@ -23,7 +23,8 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.*;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
+import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.EmptySchemaValidator.EMPTY_SCHEMA_VALIDATOR;
 
@@ -33,7 +34,7 @@ public class EmptySchemaTest {
     public void equalsVerifier() {
         EqualsVerifier.forClass(EmptySchema.class)
                 .withRedefinedSuperclass()
-               .withIgnoredFields("location")
+                .withIgnoredFields("location")
                 .suppress(Warning.STRICT_INHERITANCE)
                 .verify();
     }
@@ -46,15 +47,15 @@ public class EmptySchemaTest {
 
     @Test
     public void testBuilder() {
-        Assert.assertEquals(EmptySchema.builder(rootSchemaLocation()).build(),
-                EmptySchema.builder(rootSchemaLocation()).build());
+        Assert.assertEquals(EmptySchema.builder(schemaLocation()).build(),
+                EmptySchema.builder(schemaLocation()).build());
     }
 
     @Test
     public void testOnlyId() {
         JsonObject actual = json(null, null, "my/id");
         Assert.assertEquals(1, actual.keySet().size());
-        Assert.assertEquals("my/id", actual.getString("id"));
+        Assert.assertEquals("my/id", actual.getString($ID.key()));
     }
 
     @Test
@@ -82,7 +83,10 @@ public class EmptySchemaTest {
     }
 
     private JsonObject json(final String title, final String description, final String id) {
-        String jsonFromString = EmptySchema.builder(SchemaLocation.rootSchemaLocation(id)).title(title).description(description)
+        String jsonFromString = EmptySchema.builder(schemaLocation())
+                .optionalID(id)
+                .title(title)
+                .description(description)
                 .build().toString();
         return JsonUtils.readJsonObject(jsonFromString);
     }

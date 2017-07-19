@@ -65,7 +65,7 @@ public abstract class Schema {
             this.location = checkNotNull(builder.location, "builder.location must not be null");
         } else {
             checkNotNull(builder.id, "builder.id must not be null");
-            this.location = SchemaLocation.rootSchemaLocation(builder.id);
+            this.location = SchemaLocation.schemaLocation(builder.id);
         }
     }
 
@@ -116,7 +116,7 @@ public abstract class Schema {
     }
 
     public URI getDocumentLocalURI() {
-        return location.getRelativeURI();
+        return location.getJsonPointerFragment();
     }
 
     public URI getId() {
@@ -162,7 +162,7 @@ public abstract class Schema {
 
     protected JsonSchemaGenerator toJson(final JsonSchemaGenerator writer) {
         writer.object();
-        if (!"#".equals(location.getAbsoluteLocation().toString())) {
+        if (!"#".equals(location.getAbsoluteURI().toString())) {
             writer.optionalWrite(JsonSchemaKeyword.$ID, location.getId());
         }
         writer.optionalWrite(JsonSchemaKeyword.TITLE, title);
@@ -213,7 +213,7 @@ public abstract class Schema {
 
         public Builder(String id) {
             this.id = URI.create(id);
-            this.location = SchemaLocation.rootSchemaLocation(id);
+            this.location = SchemaLocation.schemaLocation(id);
         }
 
         public Builder(SchemaLocation location) {
@@ -270,6 +270,12 @@ public abstract class Schema {
             return this;
         }
 
+        public Builder<S> optionalID(String id) {
+            if (id != null) {
+                this.location = SchemaLocation.schemaLocation(id);
+            }
+            return this;
+        }
         public Builder<S> enumValues(JsonArray enumValues) {
             this.enumValues = enumValues;
             return this;
@@ -282,7 +288,7 @@ public abstract class Schema {
 
         public Builder<S> location(String locationUri) {
             checkNotNull(locationUri, "locationUri must not be null");
-            this.location = SchemaLocation.rootSchemaLocation(locationUri);
+            this.location = SchemaLocation.schemaLocation(locationUri);
             return this;
         }
 
