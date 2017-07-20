@@ -16,7 +16,6 @@
 package io.dugnutt.jsonschema.six;
 
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.EnumSchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
@@ -44,78 +43,5 @@ import static org.junit.Assert.assertEquals;
 
 public class EnumSchemaValidatorTest {
 
-    private JsonArrayBuilder possibleValues;
 
-    @Before
-    public void before() {
-        possibleValues = provider().createArrayBuilder()
-                .add(JsonValue.TRUE)
-                .add("foo");
-    }
-
-    @Test
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(EnumSchema.class)
-                .withRedefinedSuperclass()
-               .withIgnoredFields("location")
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
-    }
-
-    @Test
-    public void failure() {
-        failureOf(subject())
-                .expectedPointer("#")
-                .expectedKeyword("enum")
-                .input(readValue("[1]"))
-                .expect();
-    }
-
-    @Test
-    public void objectInArrayMatches() {
-        JsonArray possibleValues = this.possibleValues
-                .add(jsonObjectBuilder()
-                        .add("a", true)
-                        .build())
-                .build();
-
-        EnumSchema subject = subject().possibleValues(possibleValues).build();
-
-        JsonArray testValues = provider().createArrayBuilder()
-                .add(jsonObjectBuilder()
-                        .add("a", true)
-                        .build())
-                .build();
-        expectSuccess(() -> SchemaValidatorFactory.createValidatorForSchema(subject).validate(testValues));
-    }
-
-    @Test
-    public void success() {
-        possibleValues.add(blankJsonArray());
-        final JsonValue validJsonObject = JsonUtils.readValue("{\"a\" : 0}");
-        possibleValues.add(validJsonObject);
-        EnumSchemaValidator subject = new EnumSchemaValidator(subject().build());
-        expectSuccess(() -> subject.validate(JsonValue.TRUE));
-        expectSuccess(() -> subject.validate(jsonStringValue("foo")));
-        expectSuccess(() -> subject.validate(blankJsonArray()));
-        expectSuccess(() -> subject.validate(validJsonObject));
-    }
-
-    @Test
-    public void toStringTest() {
-
-        String toString = subject().build().toString();
-        JsonObject actual = JsonUtils.readJsonObject(toString);
-        Assert.assertEquals(1, actual.keySet().size());
-        JsonArray pv = jsonArray(true, "foo");
-        assertEquals(asSet(pv), asSet(actual.getJsonArray("enum")));
-    }
-
-    private EnumSchema.Builder subject() {
-        return EnumSchema.builder(SchemaLocation.schemaLocation()).possibleValues(possibleValues.build());
-    }
-
-    private Set<Object> asSet(final JsonArray array) {
-        return new HashSet<>(JsonUtils.extractArray(array));
-    }
 }

@@ -61,58 +61,12 @@ public abstract class Schema {
         this.anyOfSchema = builder.anyOfSchema;
         this.oneOfSchema = builder.oneOfSchema;
         this.notSchema = builder.notSchema;
-        if(builder.location != null) {
+        if (builder.location != null) {
             this.location = checkNotNull(builder.location, "builder.location must not be null");
         } else {
             checkNotNull(builder.id, "builder.id must not be null");
             this.location = SchemaLocation.schemaLocation(builder.id);
         }
-    }
-
-    /**
-     * Determines if this {@code Schema} instance defines any restrictions for the object property
-     * denoted by {@code field}. The {@code field} should be a JSON pointer, denoting the property to
-     * be queried.
-     * <p>
-     * For example the field {@code "#/rectangle/a"} is defined by the following schema:
-     * <p>
-     * <pre>
-     * <code>
-     * objectWithSchemaRectangleDep" : {
-     *   "type" : "object",
-     *   "dependencies" : {
-     *       "d" : {
-     *           "type" : "object",
-     *           "properties" : {
-     *               "rectangle" : {"$ref" : "#/definitions/Rectangle" }
-     *           }
-     *       }
-     *   },
-     *   "definitions" : {
-     *       "size" : {
-     *           "type" : "number",
-     *           "minimum" : 0
-     *       },
-     *       "rectangle" : {
-     *           "type" : "object",
-     *           "properties" : {
-     *               "a" : {"$ref" : "#/definitions/size"},
-     *               "b" : {"$ref" : "#/definitions/size"}
-     *           }
-     *       }
-     *    }
-     * }
-     * </code>
-     * </pre>
-     * <p>
-     * The default implementation of this method always returns false.
-     *
-     * @param field should be a JSON pointer in its string representation.
-     * @return {@code true} if the propertty denoted by {@code field} is defined by this schema
-     * instance
-     */
-    public boolean definesProperty(final String field) {
-        return false;
     }
 
     public URI getDocumentLocalURI() {
@@ -125,7 +79,7 @@ public abstract class Schema {
 
     @Override
     public int hashCode() {
-        return Objects.hash(title, description, location.getId());
+        return Objects.hash(title, description, allOfSchema, anyOfSchema, oneOfSchema, notSchema, enumValues, constValue);
     }
 
     @Override
@@ -138,7 +92,12 @@ public abstract class Schema {
             return schema.canEqual(this) &&
                     Objects.equals(title, schema.title) &&
                     Objects.equals(description, schema.description) &&
-                    Objects.equals(location.getId(), schema.location.getId());
+                    Objects.equals(allOfSchema, schema.allOfSchema) &&
+                    Objects.equals(anyOfSchema, schema.anyOfSchema) &&
+                    Objects.equals(oneOfSchema, schema.oneOfSchema) &&
+                    Objects.equals(notSchema, schema.notSchema) &&
+                    Objects.equals(enumValues, schema.enumValues) &&
+                    Objects.equals(constValue, schema.constValue);
         } else {
             return false;
         }
@@ -211,32 +170,23 @@ public abstract class Schema {
      */
     public abstract static class Builder<S extends Schema> {
 
-        public Builder(String id) {
-            this.id = URI.create(id);
-            this.location = SchemaLocation.schemaLocation(id);
-        }
-
-        public Builder(SchemaLocation location) {
-            checkNotNull(location, "location must not be null");
-            this.location = location;
-        }
-
         private String title;
         private String description;
-
         private SchemaLocation location;
-
         private URI id;
-
         private JsonArray enumValues;
         private JsonValue constValue;
         private CombinedSchema allOfSchema;
         private CombinedSchema anyOfSchema;
         private CombinedSchema oneOfSchema;
         private Schema notSchema;
-
-        public SchemaLocation getLocation() {
-            return location;
+        public Builder(String id) {
+            this.id = URI.create(id);
+            this.location = SchemaLocation.schemaLocation(id);
+        }
+        public Builder(SchemaLocation location) {
+            checkNotNull(location, "location must not be null");
+            this.location = location;
         }
 
         public Builder<S> allOfSchemas(Stream<Schema> schema) {
@@ -270,20 +220,13 @@ public abstract class Schema {
             return this;
         }
 
-        public Builder<S> optionalID(String id) {
-            if (id != null) {
-                this.location = SchemaLocation.schemaLocation(id);
-            }
-            return this;
-        }
         public Builder<S> enumValues(JsonArray enumValues) {
             this.enumValues = enumValues;
             return this;
         }
 
-        public Builder<S> notSchema(Schema schema) {
-            this.notSchema = schema;
-            return this;
+        public SchemaLocation getLocation() {
+            return location;
         }
 
         public Builder<S> location(String locationUri) {
@@ -298,7 +241,10 @@ public abstract class Schema {
             return this;
         }
 
-
+        public Builder<S> notSchema(Schema schema) {
+            this.notSchema = schema;
+            return this;
+        }
 
         public Builder<S> oneOfSchemas(Stream<Schema> schema) {
             List<Schema> schemas = schema.collect(Collectors.toList());
@@ -308,6 +254,12 @@ public abstract class Schema {
             return this;
         }
 
+        public Builder<S> optionalID(String id) {
+            if (id != null) {
+                this.location = SchemaLocation.schemaLocation(id);
+            }
+            return this;
+        }
 
         public Builder<S> title(final String title) {
             this.title = title;

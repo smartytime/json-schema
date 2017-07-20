@@ -16,42 +16,21 @@
 package io.dugnutt.jsonschema.six;
 
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Assert;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static org.junit.Assert.assertEquals;
 
 public class ReferenceSchemaTest {
-
-    @Test
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(ReferenceSchema.class)
-                .withRedefinedSuperclass()
-               .withIgnoredFields("location")
-                //there are specifically some non final fields for loading of recursive schemas
-                .suppress(Warning.NONFINAL_FIELDS)
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void setterShouldWorkOnlyOnce() {
-        Assert.fail("Not there anymore");
-        ReferenceSchema subject = ReferenceSchema.builder(schemaLocation()).build();
-    }
 
     @Test
     public void toStringTest() {
         JsonObject rawSchemaJson = ResourceLoader.DEFAULT.readObj("tostring/ref.json");
         String actual = schemaFactory().load(rawSchemaJson).toString();
         System.out.println(actual);
-        assertEquals(rawSchemaJson.get("/properties"),
+        assertEquals(rawSchemaJson.get("properties"),
                 JsonUtils.readJsonObject(actual).getJsonObject("properties"));
     }
 }

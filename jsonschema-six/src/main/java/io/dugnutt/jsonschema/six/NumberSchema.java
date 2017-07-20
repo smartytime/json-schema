@@ -50,7 +50,7 @@ public class NumberSchema extends Schema {
     @Override
     public int hashCode() {
         return Objects
-                .hash(super.hashCode(), requiresNumber, minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum);
+                .hash(super.hashCode(), requiresNumber, requiresInteger, minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum);
     }
 
     @Override
@@ -62,6 +62,7 @@ public class NumberSchema extends Schema {
             NumberSchema that = (NumberSchema) o;
             return that.canEqual(this) &&
                     requiresNumber == that.requiresNumber &&
+                    requiresInteger == that.requiresInteger &&
                     Objects.equals(exclusiveMinimum, that.exclusiveMinimum) &&
                     Objects.equals(exclusiveMaximum, that.exclusiveMaximum) &&
                     Objects.equals(minimum, that.minimum) &&

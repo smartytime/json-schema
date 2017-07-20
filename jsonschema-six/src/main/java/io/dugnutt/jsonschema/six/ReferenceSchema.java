@@ -4,8 +4,10 @@ import javax.annotation.Nullable;
 import javax.json.JsonObject;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
@@ -34,30 +36,30 @@ public class ReferenceSchema extends Schema {
         this.absoluteReferenceURI = currentLocation.getResolutionScope().resolve(referenceURI);
         final SchemaFactory loader = builder.referenceSchemaLoader;
         if (loader != null) {
-            final Optional<JsonPath> jsonPath = loader.resolveURILocally(currentLocation.getDocumentURI(), absoluteReferenceURI, builder.rootJsonObject);
-            if (jsonPath.isPresent()) {
-                this.referredSchema = checkNotNull(loader.dereferenceLocalSchema(this, jsonPath.get(),
-                        builder.rootJsonObject));
-            } else {
-                this.referredSchema = checkNotNull(loader.dereferenceRemoteSchema(this));
-            }
+            this.referredSchema = loader.dereferenceSchema(currentLocation.getDocumentURI(), this, builder.rootJsonObject);
         } else {
             referredSchema = null;
         }
     }
 
-    public static Builder builder(SchemaLocation location) {
-        return new Builder(location);
+    public Optional<Schema> getFullyDereferencedSchema() {
+        Set<ReferenceSchema> encountered = new HashSet<>();
+        ReferenceSchema schema = this;
+        while (encountered.add(schema)) {
+            Schema dereferencedSchema = schema.getReferredSchema().orElse(null);
+            if (dereferencedSchema == null) {
+                return Optional.empty();
+            } else if (dereferencedSchema instanceof ReferenceSchema) {
+                schema = (ReferenceSchema) dereferencedSchema;
+            } else {
+                return Optional.of(dereferencedSchema);
+            }
+        }
+        throw new SchemaException(absoluteReferenceURI, "Infinite recursion found between schemas.  Probably bug: %s", encountered);
     }
 
-    @Override
-    public boolean definesProperty(String field) {
-        // if (referredSchema == null) {
-        //     throw new IllegalStateException("referredSchema must be injected before validation");
-        // }
-        // return referredSchema.definesProperty(field);
-        //todo:ericm Revisit
-        return false;
+    public static Builder builder(SchemaLocation location) {
+        return new Builder(location);
     }
 
     @Override
@@ -102,19 +104,6 @@ public class ReferenceSchema extends Schema {
     public Optional<Schema> getReferredSchema() {
         return Optional.ofNullable(referredSchema);
     }
-
-    /**
-     * Called by a loader to set the referred root
-     * schema after completing the loading process of the entire schema document.
-     *
-     * @param referredSchema the referred schema
-     */
-    // public void setReferredSchema(final Schema referredSchema) {
-    // if (this.referredSchema != null) {
-    //     throw new IllegalStateException("referredSchema can be injected only once");
-    // }
-    // this.referredSchema = referredSchema;
-    // }
 
     /**
      * Builder class for {@link ReferenceSchema}.

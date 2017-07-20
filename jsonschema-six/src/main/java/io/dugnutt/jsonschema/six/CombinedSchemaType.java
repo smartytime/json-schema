@@ -1,18 +1,18 @@
 package io.dugnutt.jsonschema.six;
 
 import static com.google.common.base.CaseFormat.LOWER_CAMEL;
-import static com.google.common.base.CaseFormat.UPPER_CAMEL;
+import static com.google.common.base.CaseFormat.UPPER_UNDERSCORE;
 
 public enum CombinedSchemaType {
-    AllOf, OneOf, AnyOf;
+    ALL_OF, ONE_OF, ANY_OF;
 
-    public JsonSchemaKeyword getProperty() {
+    public JsonSchemaKeyword getKeyword() {
         switch (this) {
-            case AllOf:
+            case ALL_OF:
                 return JsonSchemaKeyword.ALL_OF;
-            case AnyOf:
+            case ANY_OF:
                 return JsonSchemaKeyword.ANY_OF;
-            case OneOf:
+            case ONE_OF:
                 return JsonSchemaKeyword.ONE_OF;
             default:
                 throw new IllegalStateException("Shouldn't ever see this");
@@ -21,6 +21,6 @@ public enum CombinedSchemaType {
 
     @Override
     public String toString() {
-        return UPPER_CAMEL.to(LOWER_CAMEL, name());
+        return UPPER_UNDERSCORE.to(LOWER_CAMEL, name());
     }
 }

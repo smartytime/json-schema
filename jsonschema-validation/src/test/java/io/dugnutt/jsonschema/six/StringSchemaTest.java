@@ -18,8 +18,6 @@ package io.dugnutt.jsonschema.six;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import lombok.experimental.var;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -51,15 +49,6 @@ public class StringSchemaTest {
             .customFormatValidator("test-format-failure", sub -> Optional.of("violation"))
             .customFormatValidator("test-format-success", sub -> Optional.empty())
             .build();
-
-    @Test
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(StringSchema.class)
-                .withRedefinedSuperclass()
-               .withIgnoredFields("location")
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
-    }
 
     @Test
     public void formatFailure() {

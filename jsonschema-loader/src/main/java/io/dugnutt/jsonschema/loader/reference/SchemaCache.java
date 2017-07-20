@@ -97,7 +97,7 @@ public class SchemaCache {
         return Optional.ofNullable(cacheHit);
     }
 
-    public Optional<JsonPath> resolveURIToDocument(URI documentURI, URI absoluteURI, JsonObject document) {
+    public Optional<JsonPath> resolveURIToDocumentUsingLocalIdentifiers(URI documentURI, URI absoluteURI, JsonObject document) {
         checkNotNull(documentURI, "documentURI must not be null");
         checkNotNull(document, "document must not be null");
         checkNotNull(absoluteURI, "absoluteURI must not be null");
@@ -107,7 +107,8 @@ public class SchemaCache {
             RecursiveJsonIterator.visitDocument(document, (keyOrIndex, val, path) -> {
                 if ($ID.key().equals(keyOrIndex)) {
                     final URI $idAsURI = URI.create(((JsonString) val).getString());
-                    values.put($idAsURI, path);
+                    URI absoluteIdentifier = documentURI.resolve($idAsURI);
+                    values.put(absoluteIdentifier, path);
                 }
             });
 

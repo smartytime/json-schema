@@ -71,7 +71,7 @@ public class ArraySchema extends Schema {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), minItems, maxItems, needsUniqueItems, allItemSchema,
-                itemSchemas, requiresArray, schemaOfAdditionalItems);
+                itemSchemas, requiresArray, schemaOfAdditionalItems, containsSchema);
     }
 
     @Override
@@ -89,6 +89,7 @@ public class ArraySchema extends Schema {
                     Objects.equals(allItemSchema, that.allItemSchema) &&
                     Objects.equals(itemSchemas, that.itemSchemas) &&
                     Objects.equals(schemaOfAdditionalItems, that.schemaOfAdditionalItems) &&
+                    Objects.equals(containsSchema, that.containsSchema) &&
                     super.equals(o);
         } else {
             return false;

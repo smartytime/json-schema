@@ -1,12 +1,12 @@
 package io.dugnutt.jsonschema.loader;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import io.dugnutt.jsonschema.loader.reference.DefaultSchemaClient;
 import io.dugnutt.jsonschema.loader.reference.SchemaCache;
 import io.dugnutt.jsonschema.loader.reference.SchemaClient;
 import io.dugnutt.jsonschema.six.BooleanSchema;
 import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.JsonPointerPath;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.NullSchema;
@@ -15,6 +15,7 @@ import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.six.SchemaFactory;
 import io.dugnutt.jsonschema.six.SchemaLocation;
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.Wither;
@@ -27,12 +28,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
@@ -101,19 +102,15 @@ public class JsonSchemaFactory implements SchemaFactory {
     }
 
     public Schema createSchema(SchemaLoadingContext schemaModel) {
+        // First, get from cache, or
+        return schemaCache.getSchema(schemaModel.getLocation())
+                .orElseGet(() -> {
 
-        // this.creationStack.push(schemaModel.getLocation());
-        Optional<Schema> cachedSchema = schemaCache.getSchema(schemaModel.getLocation());
-        final Schema schema;
-        if (cachedSchema.isPresent()) {
-            schema = cachedSchema.get();
-        } else {
-            schema = createSchemaBuilder(schemaModel).build();
-            schemaCache.cacheSchema(schemaModel.getLocation(), schema);
-        }
-        // this.creationStack.pop();
-
-        return schema;
+                    // If not in cache, then create.
+                    Schema schema = createSchemaBuilder(schemaModel).build();
+                    schemaCache.cacheSchema(schemaModel.getLocation(), schema);
+                    return schema;
+                });
     }
 
     // Schema.Builder builder;
@@ -182,90 +179,99 @@ public class JsonSchemaFactory implements SchemaFactory {
     //     return ;
     // }
 
+    // public Schema dereferenceLocalSchema(ReferenceSchema referenceSchema, JsonPath path, JsonObject rootSchemaJson) {
+    //     final URI referenceURI = referenceSchema.getAbsoluteReferenceURI();
+    //     final SchemaLocation referenceLocation = referenceSchema.getLocation();
+    //
+    //     SchemaLocation newLocation = referenceLocation.toBuilder()
+    //             .resolutionScope(referenceLocation.getDocumentURI())
+    //             .jsonPath(path)
+    //             .id(null)
+    //             .build();
+    //
+    //     //todo:ericm - Do we need to cache so aggressively?
+    //     schemaCache.cacheSchema(referenceLocation, referenceSchema);
+    //
+    //     return schemaCache.getSchema(referenceURI, newLocation.getFullJsonPathURI()).orElseGet(() -> {
+    //
+    //         this.find
+    //         String relativeURL = referenceLocation.getDocumentURI().relativize(referenceURI).toString();
+    //         JsonPointerResolver.QueryResult query = JsonPointerResolver.forDocument(rootSchemaJson, relativeURL, provider).query();
+    //
+    //         SchemaLoadingContext loaderModel = SchemaLoadingContext.builder()
+    //                 .rootSchemaJson(rootSchemaJson)
+    //                 .location(newLocation)
+    //                 .schemaJson(new FluentJsonObject(query.getQueryResult(), new JsonPointerPath(newLocation.getJsonPath())))
+    //                 .build();
+    //         return createSchema(loaderModel);
+    //     });
+    // }
+
+    // @VisibleForTesting
+    // Optional<JsonPath> findSchemaWithinDocument(URI documentURI, URI targetURI, JsonObject document) {
+    //     //Remove any fragments from the document URI
+    //     documentURI = documentURI.resolve("#");
+    //
+    //     // Relativizing strips the path down to only the difference between the documentURI and targetURI.
+    //     // This will tell us whether the targetURI is naturally scoped within the document.
+    //     String urlFragment = documentURI.relativize(targetURI).getFragment();
+    //
+    //     //todo:ericm Check this
+    //     if (Strings.isNullOrEmpty(urlFragment)) {
+    //         // The document is the target
+    //         return Optional.of(JsonPath.rootPath());
+    //     } else if (urlFragment.startsWith("/")) {
+    //         //This is a json fragment
+    //         return Optional.of(JsonPath.parse(urlFragment));
+    //     } else {
+    //         //This must be a reference $id somewhere in the document.
+    //         return schemaCache.resolveURIToDocumentUsingLocalIdentifiers(documentURI, targetURI, document);
+    //     }
+    // }
+
     @Override
-    public Schema dereferenceRemoteSchema(ReferenceSchema referenceSchema) {
-        schemaCache.cacheSchema(referenceSchema.getLocation(), referenceSchema);
-        URI referenceURI = referenceSchema.getAbsoluteReferenceURI();
-        return schemaCache.getSchema(referenceURI).orElseGet(() -> {
-
-            JsonObject remoteDocument;
-            try (InputStream inputStream = httpClient.get(referenceURI.toString())) {
-                remoteDocument = provider.createReader(inputStream).readObject();
-            } catch (IOException e) {
-                throw new SchemaException(referenceURI, "Error while fetching document '" + referenceURI + "'");
-            }
-
-            final String referenceFragment = referenceURI.getFragment();
-            final URI documentURI = referenceURI.resolve("#");
-            final JsonPath pathToDocument;
-            if (Strings.isNullOrEmpty(referenceFragment)) {
-                // The document is the target
-                pathToDocument = JsonPath.rootPath();
-            } else if (referenceFragment.startsWith("/")) {
-                //This is a json fragment
-                pathToDocument = JsonPath.parse(referenceFragment);
-            } else {
-                //This must be a reference $id somewhere in the document.
-                pathToDocument = schemaCache.resolveURIToDocument(documentURI, referenceURI, remoteDocument)
-                        .orElseThrow(() -> new SchemaException(referenceURI, "Unable to find '" + referenceFragment + "' within '" + documentURI + "'"));
-            }
-
-            //This should be treated as a JSON-Pointer
-            final JsonPointer pointer = provider.createPointer(pathToDocument.toJsonPointer());
-            final JsonObject schemaObject;
-            if (!pointer.containsValue(remoteDocument)) {
-                throw new SchemaException(referenceURI, "Unable to resolve '#" + referenceFragment + "' as JSON Pointer within '" + documentURI + "'");
-            } else {
-                schemaObject = pointer.getValue(remoteDocument).asJsonObject();
-            }
-
-            SchemaLocation fetchedDocumentLocation = SchemaLocation.builder()
-                    .documentURI(documentURI)
-                    .resolutionScope(documentURI)
-                    .jsonPath(pathToDocument)
-                    .build();
-
-            SchemaLoadingContext loaderModel = SchemaLoadingContext.builder()
-                    .location(fetchedDocumentLocation)
-                    .rootSchemaJson(remoteDocument)
-                    .schemaJson(schemaObject)
-                    .build();
-
-            return this.createSchema(loaderModel);
-        });
-    }
-
-    public Schema dereferenceLocalSchema(ReferenceSchema referenceSchema, JsonPath path, JsonObject rootSchemaJson) {
-        final URI referenceURI = referenceSchema.getAbsoluteReferenceURI();
-        final SchemaLocation referenceLocation = referenceSchema.getLocation();
-
-        SchemaLocation newLocation = referenceLocation.toBuilder()
-                .resolutionScope(referenceLocation.getDocumentURI())
-                .jsonPath(path)
-                .id(null)
-                .build();
+    public Schema dereferenceSchema(URI currentDocumentURI, ReferenceSchema referenceSchema, JsonObject currentDocument) {
+        checkArgument(referenceSchema.getAbsoluteReferenceURI().isAbsolute(), "reference must not absolute");
 
         //todo:ericm - Do we need to cache so aggressively?
-        schemaCache.cacheSchema(referenceLocation, referenceSchema);
+        URI absoluteReferenceURI = referenceSchema.getAbsoluteReferenceURI();
 
-        return schemaCache.getSchema(referenceURI, newLocation.getFullJsonPathURI())
-                .orElseGet(() -> {
-                    String relativeURL = referenceLocation.getDocumentURI().relativize(referenceURI).toString();
-                    JsonPointerResolver.QueryResult query = JsonPointerResolver.forDocument(rootSchemaJson, relativeURL, provider).query();
+        schemaCache.cacheSchema(referenceSchema.getLocation().getAbsoluteURI(), referenceSchema);
 
-                    SchemaLoadingContext loaderModel = SchemaLoadingContext.builder()
-                            .rootSchemaJson(rootSchemaJson)
-                            .location(newLocation)
-                            .schemaJson(new FluentJsonObject(query.getQueryResult(), new JsonPointerPath(newLocation.getJsonPath())))
-                            .build();
-                    return createSchema(loaderModel);
-                });
-    }
+        return schemaCache.getSchema(absoluteReferenceURI).orElseGet(() -> {
+            // First, look locally
+            return resolveReferenceWithinDocument(currentDocumentURI, absoluteReferenceURI, currentDocument)
+                    .orElseGet(() -> {
 
-    @Override
-    public Optional<JsonPath> resolveURILocally(URI documentURI, URI encounteredURI, JsonObject document) {
-        //todo:ericm Resolve JSON pointer as well.  Also cache documents?
-        return schemaCache.resolveURIToDocument(documentURI, encounteredURI, document);
+                        //First, make sure we're not chasing one of our generated IDs
+                        String schema = absoluteReferenceURI.getScheme().toLowerCase();
+                        if (SchemaLocation.DUGNUTT_UUID_SCHEME.equals(schema)) {
+                            String commonPrefix = Strings.commonPrefix(absoluteReferenceURI.toString(), currentDocumentURI.toString());
+                            final String relativizedURL;
+                            if (commonPrefix.length() > 0) {
+                                relativizedURL = absoluteReferenceURI.toString().substring(commonPrefix.length() - 1);
+                            } else {
+                                relativizedURL = absoluteReferenceURI.toString();
+                            }
+                            throw new SchemaException(URI.create("#"), "Unable to find ref '%s' within document", relativizedURL);
+                        } else if (!schema.toLowerCase().startsWith("http")) {
+                            throw new SchemaException(absoluteReferenceURI, "Couldn't resolve ref within document, but can't load non-http schema");
+                        }
+
+                        //If that doesn't work, look up schema using client
+                        JsonObject remoteDocument;
+                        try (InputStream inputStream = httpClient.get(absoluteReferenceURI.toString())) {
+                            remoteDocument = provider.createReader(inputStream).readObject();
+                        } catch (IOException e) {
+                            throw new SchemaException(absoluteReferenceURI, "Error while fetching document '" + absoluteReferenceURI + "'");
+                        }
+
+                        final URI documentURI = absoluteReferenceURI.resolve("#");
+                        return resolveReferenceWithinDocument(documentURI, absoluteReferenceURI, remoteDocument)
+                                .orElseThrow(() -> new SchemaException(absoluteReferenceURI, "Error loading fragment '%s' from document '%s'",
+                                        absoluteReferenceURI.getFragment(), absoluteReferenceURI));
+                    });
+        });
     }
 
     public Schema load(InputStream inputJson) {
@@ -284,25 +290,55 @@ public class JsonSchemaFactory implements SchemaFactory {
         return createSchema(modelToLoad);
     }
 
-    /**
-     * Returns the absolute URI without its fragment part.
-     *
-     * @param fullUri the abslute URI
-     * @return the URI without the fragment part
-     */
-    static URI withoutFragment(final String fullUri) {
-        int hashmarkIdx = fullUri.indexOf('#');
-        String rval;
-        if (hashmarkIdx == -1) {
-            rval = fullUri;
+    @VisibleForTesting
+    Optional<Schema> resolveReferenceWithinDocument(URI documentURI, URI referenceURI, JsonObject parentDocument) {
+        checkArgument(referenceURI.isAbsolute(), "Reference URI must be absolute");
+        checkArgument(documentURI.isAbsolute(), "Document URI must be absolute");
+
+        //Remove any fragments from the parentDocument URI
+        documentURI = documentURI.resolve("#");
+
+        // Relativizing strips the path down to only the difference between the documentURI and referenceURI.
+        // This will tell us whether the referenceURI is naturally scoped within the parentDocument.
+        String relativeURL = documentURI.relativize(referenceURI).toString();
+
+        final JsonPath pathWithinDocument;
+        if (Strings.isNullOrEmpty(relativeURL) || "#".equals(relativeURL)) {
+            // The parentDocument is the target
+            pathWithinDocument = JsonPath.rootPath();
+        } else if (relativeURL.startsWith("#/")) {
+            //This is a json fragment
+            pathWithinDocument = JsonPath.parse(relativeURL.substring(1));
         } else {
-            rval = fullUri.substring(0, hashmarkIdx);
+            //This must be a reference $id somewhere in the parentDocument.
+            pathWithinDocument = schemaCache.resolveURIToDocumentUsingLocalIdentifiers(documentURI, referenceURI, parentDocument)
+                    .orElse(null);
         }
-        try {
-            return new URI(rval);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        if (pathWithinDocument != null) {
+            final JsonPointer pointer = provider.createPointer(pathWithinDocument.toJsonPointer());
+            final JsonObject schemaObject;
+            if (!pointer.containsValue(parentDocument)) {
+                throw new SchemaException(referenceURI, "Unable to resolve '#" + relativeURL + "' as JSON Pointer within '" + documentURI + "'");
+            } else {
+                schemaObject = pointer.getValue(parentDocument).asJsonObject();
+            }
+
+            SchemaLocation fetchedDocumentLocation = SchemaLocation.builder()
+                    .id(JsonUtils.extract$IdFromObject(schemaObject))
+                    .documentURI(documentURI)
+                    .resolutionScope(documentURI)
+                    .jsonPath(pathWithinDocument)
+                    .build();
+
+            SchemaLoadingContext loadingContext = SchemaLoadingContext.builder()
+                    .location(fetchedDocumentLocation)
+                    .rootSchemaJson(parentDocument)
+                    .schemaJson(schemaObject)
+                    .build();
+
+            return Optional.of(this.createSchema(loadingContext));
         }
+        return Optional.empty();
     }
 
     private Schema.Builder<?> createSchemaBuilder(SchemaLoadingContext schemaModel) {

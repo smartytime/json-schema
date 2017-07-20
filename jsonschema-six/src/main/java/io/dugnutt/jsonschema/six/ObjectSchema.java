@@ -1,8 +1,8 @@
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.validator.PathAwareJsonValue;
 import lombok.Getter;
 
-import javax.json.JsonObject;
 import javax.validation.constraints.Min;
 import java.util.Collections;
 import java.util.HashMap;
@@ -63,26 +63,10 @@ public class ObjectSchema extends Schema {
         return new Builder(location);
     }
 
-    public boolean definesProperty(String field) {
-        field = field.replaceFirst("^#", "").replaceFirst("^/", "");
-        int firstSlashIdx = field.indexOf('/');
-        String nextToken, remaining;
-        if (firstSlashIdx == -1) {
-            nextToken = field;
-            remaining = null;
-        } else {
-            nextToken = field.substring(0, firstSlashIdx);
-            remaining = field.substring(firstSlashIdx + 1);
-        }
-        return !field.isEmpty() && (definesSchemaProperty(nextToken, remaining)
-                || definesPatternProperty(nextToken, remaining)
-                || definesSchemaDependencyProperty(field));
-    }
-
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), propertySchemas, schemaOfAdditionalProperties, requiredProperties,
-                minProperties, maxProperties, propertyDependencies, schemaDependencies, requiresObject, patternProperties);
+                minProperties, maxProperties, schemaDependencies, propertyDependencies, propertyNameSchema, requiresObject, patternProperties);
     }
 
     @Override
@@ -102,6 +86,7 @@ public class ObjectSchema extends Schema {
                     Objects.equals(propertyDependencies, that.propertyDependencies) &&
                     Objects.equals(schemaDependencies, that.schemaDependencies) &&
                     Objects.equals(patternProperties, that.patternProperties) &&
+                    Objects.equals(propertyNameSchema, that.propertyNameSchema) &&
                     super.equals(that);
         } else {
             return false;
@@ -133,8 +118,8 @@ public class ObjectSchema extends Schema {
                 : Optional.empty();
     }
 
-    public Stream<String> getAdditionalProperties(final JsonObject subject) {
-        Set<String> names = subject.keySet();
+    public Stream<String> getAdditionalProperties(final PathAwareJsonValue subject) {
+        Set<String> names = subject.propertyNames();
         return names.stream()
                 .filter(key -> !propertySchemas.containsKey(key))
                 .filter(key -> !matchesAnyPattern(key));
@@ -169,33 +154,6 @@ public class ObjectSchema extends Schema {
             });
             writer.endObject();
         }
-    }
-
-    private boolean definesSchemaProperty(String current, final String remaining) {
-        current = unescape(current);
-        boolean hasSuffix = !(remaining == null);
-        if (propertySchemas.containsKey(current)) {
-            if (hasSuffix) {
-                return propertySchemas.get(current).definesProperty(remaining);
-            } else {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean definesPatternProperty(final String current, final String remaining) {
-        return patternProperties.keySet()
-                .stream()
-                .filter(pattern -> pattern.matcher(current).matches())
-                .map(patternProperties::get)
-                .anyMatch(schema -> remaining == null || schema.definesProperty(remaining));
-    }
-
-    private boolean definesSchemaDependencyProperty(final String field) {
-        return schemaDependencies.containsKey(field)
-                || schemaDependencies.values().stream()
-                .anyMatch(schema -> schema.definesProperty(field));
     }
 
     private String unescape(final String value) {

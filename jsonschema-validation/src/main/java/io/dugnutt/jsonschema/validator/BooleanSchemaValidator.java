@@ -3,7 +3,6 @@ package io.dugnutt.jsonschema.validator;
 import io.dugnutt.jsonschema.six.BooleanSchema;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 
-import javax.json.JsonValue;
 import java.util.Optional;
 
 import static io.dugnutt.jsonschema.six.BooleanSchema.BOOLEAN_SCHEMA;
@@ -24,11 +23,11 @@ public class BooleanSchemaValidator extends SchemaValidator<BooleanSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonValue subject) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject) {
 
         final ValueType valueType = subject.getValueType();
-        if (valueType != FALSE && valueType != TRUE) {
-            return Optional.of(failure(JsonSchemaType.BOOLEAN, JsonSchemaType.fromJsonType(valueType)));
+        if (!subject.is(FALSE, TRUE)) {
+            return buildTypeMismatchError(subject, JsonSchemaType.BOOLEAN).buildOptional();
         }
 
         return Optional.empty();

@@ -18,10 +18,12 @@ public class NullSchemaValidator extends SchemaValidator<NullSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonValue toBeValidated) {
+    public Optional<ValidationError> validate(PathAwareJsonValue toBeValidated) {
         checkNotNull(toBeValidated, "toBeValidated must not be null");
         if (toBeValidated.getValueType() != JsonValue.ValueType.NULL) {
-            return Optional.of(failure("expected: null, found: " + toBeValidated.getValueType(), JsonSchemaKeyword.TYPE));
+            return buildKeywordFailure(toBeValidated, JsonSchemaKeyword.TYPE)
+                    .message("expected: null, found: %s", toBeValidated.getValueType())
+                    .buildOptional();
         }
         return Optional.empty();
     }

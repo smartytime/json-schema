@@ -17,7 +17,6 @@ package io.dugnutt.jsonschema.six;
 
 import lombok.Getter;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,11 +46,11 @@ public class CombinedSchema extends Schema {
     }
 
     public static Builder allOf(SchemaLocation location, final List<Schema> schemas) {
-        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.AllOf);
+        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.ALL_OF);
     }
 
     public static Builder anyOf(SchemaLocation location, final List<Schema> schemas) {
-        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.AnyOf);
+        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.ANY_OF);
     }
 
     public static Builder builder(SchemaLocation location) {
@@ -67,18 +66,7 @@ public class CombinedSchema extends Schema {
     }
 
     public static Builder oneOf(SchemaLocation location, final List<Schema> schemas) {
-        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.OneOf);
-    }
-
-    @Override
-    public boolean definesProperty(final String field) {
-        List<Schema> matching = subSchemas.stream()
-                .filter(schema -> schema.definesProperty(field))
-                .collect(Collectors.toList());
-
-        //todo:ericm Figure this out
-        return false;
-        // return !getCriterion().validate(subSchemas.size(), matching.size()).isPresent();
+        return builder(location, schemas).combinedSchemaType(CombinedSchemaType.ONE_OF);
     }
 
     @Override
@@ -109,7 +97,7 @@ public class CombinedSchema extends Schema {
 
     @Override
     protected void writePropertiesToJson(JsonSchemaGenerator writer) {
-        writer.optionalWrite(combinedSchemaType.getProperty(), subSchemas);
+        writer.optionalWrite(combinedSchemaType.getKeyword(), subSchemas);
     }
 
     /**

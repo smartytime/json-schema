@@ -4,7 +4,6 @@ import io.dugnutt.jsonschema.six.ReferenceSchema;
 import io.dugnutt.jsonschema.six.ReferenceSchemaLoader;
 import io.dugnutt.jsonschema.six.Schema;
 
-import javax.json.JsonValue;
 import java.util.Optional;
 
 public class ReferenceSchemaValidator extends SchemaValidator<ReferenceSchema> {
@@ -27,7 +26,7 @@ public class ReferenceSchemaValidator extends SchemaValidator<ReferenceSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonValue toBeValidated) {
+    public Optional<ValidationError> validate(PathAwareJsonValue toBeValidated) {
         Schema refSchema = this.schema.getReferredSchema()
                 .orElseGet(() -> refLoader.loadReferenceSchema(schema));
 

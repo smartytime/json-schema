@@ -16,8 +16,6 @@
 package io.dugnutt.jsonschema.six;
 
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,15 +27,6 @@ import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.EmptySchemaValidator.EMPTY_SCHEMA_VALIDATOR;
 
 public class EmptySchemaTest {
-
-    @Test
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(EmptySchema.class)
-                .withRedefinedSuperclass()
-                .withIgnoredFields("location")
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
-    }
 
     @Test
     public void testAllGenericProps() {

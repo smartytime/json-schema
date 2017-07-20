@@ -24,4 +24,8 @@ public class BaseLoaderTest {
     protected Schema getSchemaForKey(String propertyKey) {
         return JsonSchemaFactory.schemaFactory().load(getJsonObjectForKey(propertyKey));
     }
+
+    protected JsonObject readResource(String relativeURL) {
+        return JsonUtils.readResourceAsJson("/tests/" + relativeURL, JsonObject.class);
+    }
 }

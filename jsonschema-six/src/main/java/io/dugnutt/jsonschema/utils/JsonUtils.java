@@ -3,6 +3,7 @@ package io.dugnutt.jsonschema.utils;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import lombok.SneakyThrows;
 
+import javax.annotation.Nullable;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -14,6 +15,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
 import static javax.json.spi.JsonProvider.provider;
 
 public class JsonUtils {
@@ -30,6 +33,17 @@ public class JsonUtils {
 
     public static JsonObject blankJsonObject() {
         return provider().createObjectBuilder().build();
+    }
+
+    @Nullable
+    public static URI extract$IdFromObject(JsonObject json) {
+        checkNotNull(json, "json must not be null");
+        JsonValue $idValue = json.get($ID.key());
+        if ($idValue != null && $idValue.getValueType() == JsonValue.ValueType.STRING) {
+            return URI.create(((JsonString) $idValue).getString());
+        } else {
+            return null;
+        }
     }
 
     public static Object extract(JsonValue v) {

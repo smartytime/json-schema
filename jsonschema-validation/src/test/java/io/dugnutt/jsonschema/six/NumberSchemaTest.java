@@ -15,15 +15,12 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonNumberValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
@@ -34,15 +31,6 @@ import static org.junit.Assert.assertEquals;
 public class NumberSchemaTest {
 
     private final ResourceLoader loader = new ResourceLoader("/io/dugnutt/jsonschema/six/tostring/");
-
-    @Test
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(NumberSchema.class)
-                .withRedefinedSuperclass()
-               .withIgnoredFields("location")
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
-    }
 
     @Test
     public void exclusiveMaximum() {

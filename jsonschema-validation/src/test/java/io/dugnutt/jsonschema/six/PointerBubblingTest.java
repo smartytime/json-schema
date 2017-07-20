@@ -39,7 +39,7 @@ public class PointerBubblingTest {
         Assert.assertEquals("#/rectangle", e.getPointerToViolation());
         Assert.assertEquals(2, e.getCauses().size());
         Assert.assertEquals(1, ValidationTestSupport.countCauseByJsonPointer(e, "#/rectangle/a"));
-        Assert.assertEquals(1, ValidationTestSupport.countCauseByJsonPointer(e, "#/rectangle/b"));
+        Assert.assertEquals( 1, ValidationTestSupport.countCauseByJsonPointer(e, "#/rectangle/b"));
     }
 
     @Test

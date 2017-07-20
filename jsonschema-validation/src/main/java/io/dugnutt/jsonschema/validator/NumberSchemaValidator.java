@@ -1,15 +1,18 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.NumberSchema;
 
 import javax.json.JsonNumber;
-import javax.json.JsonValue;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.EXCLUSIVE_MAXIMUM;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.EXCLUSIVE_MINIMUM;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAXIMUM;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MINIMUM;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MULTIPLE_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaType.INTEGER;
 import static io.dugnutt.jsonschema.six.JsonSchemaType.NUMBER;
 import static javax.json.JsonValue.ValueType;
@@ -25,63 +28,72 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(final JsonValue subject) {
-        ValueType schemaType = subject.getValueType();
-        if (schemaType != ValueType.NUMBER && schema.isRequiresNumber()) {
-            return Optional.of(failure(NUMBER, subject));
-        } else if (schemaType == ValueType.NUMBER) {
-            JsonNumber num = (JsonNumber) subject;
+    public Optional<ValidationError> validate(final PathAwareJsonValue subject) {
+        if (!subject.is(ValueType.NUMBER) && schema.isRequiresNumber()) {
+            return buildTypeMismatchError(subject, NUMBER).buildOptional();
+        } else if (subject.is(ValueType.NUMBER)) {
             List<ValidationError> errors = new ArrayList<>();
 
-            if (schema.isRequiresInteger() && !num.isIntegral()) {
-                errors.add(failure(INTEGER, num));
+            JsonNumber jsonNumber = subject.asJsonNumber();
+            if (schema.isRequiresInteger() && !jsonNumber.isIntegral()) {
+                errors.add(buildTypeMismatchError(subject, INTEGER).build());
             }
 
-            double intSubject = num.doubleValue();
-            checkMinimum(intSubject).ifPresent(errors::add);
-            checkMaximum(intSubject).ifPresent(errors::add);
-            checkMultipleOf(intSubject).ifPresent(errors::add);
+            double intSubject = jsonNumber.doubleValue();
+            checkMinimum(subject, intSubject).ifPresent(errors::add);
+            checkMaximum(subject, intSubject).ifPresent(errors::add);
+            checkMultipleOf(subject, intSubject).ifPresent(errors::add);
             return errors.stream().findFirst();
         } else {
             return Optional.empty();
         }
     }
 
-    private Optional<ValidationError> checkMaximum(final double subject) {
+    private Optional<ValidationError> checkMaximum(PathAwareJsonValue obj, final double subject) {
         Number maximum = schema.getMaximum();
         Number exclusiveMaximum = schema.getExclusiveMaximum();
 
         if (maximum != null && maximum.doubleValue() < subject) {
-            return Optional.of(failure(subject + " is not lower or equal to " + maximum, JsonSchemaKeyword.MAXIMUM));
+            return buildKeywordFailure(obj, MAXIMUM)
+                    .message("Value not lower or equal to %s", maximum)
+                    .buildOptional();
         }
 
         if (exclusiveMaximum != null && exclusiveMaximum.doubleValue() <= subject) {
-            return Optional.of(failure(subject + " is not lower than " + maximum, JsonSchemaKeyword.EXCLUSIVE_MAXIMUM));
+            return buildKeywordFailure(obj, EXCLUSIVE_MAXIMUM)
+                    .message("Value is not lower than %s", maximum)
+                    .buildOptional();
         }
         return Optional.empty();
     }
 
-    private Optional<ValidationError> checkMinimum(final double subject) {
+    private Optional<ValidationError> checkMinimum(PathAwareJsonValue obj, final double subject) {
         Number minimum = schema.getMinimum();
         Number exclusiveMinimum = schema.getExclusiveMinimum();
 
         if (minimum != null && minimum.doubleValue() > subject) {
-            return Optional.of(failure(subject + " is not higher or equal to " + minimum, JsonSchemaKeyword.MINIMUM));
+            return buildKeywordFailure(obj, MINIMUM)
+                    .message("Value is not higher or equal to %s", minimum)
+                    .buildOptional();
         }
 
         if (exclusiveMinimum != null && exclusiveMinimum.doubleValue() >= subject) {
-            return Optional.of(failure(subject + " is not higher than " + minimum, JsonSchemaKeyword.EXCLUSIVE_MINIMUM));
+            return buildKeywordFailure(obj, EXCLUSIVE_MINIMUM)
+                    .message("Value is not higher than %s", minimum)
+                    .buildOptional();
         }
         return Optional.empty();
     }
 
-    private Optional<ValidationError> checkMultipleOf(final double subject) {
+    private Optional<ValidationError> checkMultipleOf(PathAwareJsonValue obj, final double subject) {
         Number multipleOf = schema.getMultipleOf();
         if (multipleOf != null) {
             BigDecimal remainder = BigDecimal.valueOf(subject).remainder(
                     BigDecimal.valueOf(multipleOf.doubleValue()));
             if (remainder.compareTo(BigDecimal.ZERO) != 0) {
-                return Optional.of(failure(subject + " is not a multiple of " + multipleOf, JsonSchemaKeyword.MULTIPLE_OF));
+                return buildKeywordFailure(obj, MULTIPLE_OF)
+                        .message("Value is not a multiple of %s", multipleOf)
+                        .buildOptional();
             }
         }
         return Optional.empty();

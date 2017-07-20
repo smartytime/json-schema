@@ -2,5 +2,6 @@
   "pointerToViolation": "#/a/b",
   "message": "exception message",
   "keyword": "type",
-  "causingExceptions": []
+  "model": [],
+  "causes": []
 }

@@ -397,4 +397,8 @@ public enum JsonSchemaKeyword {
         return key;
     }
 
+    public String toString() {
+        return key;
+    }
+
 }

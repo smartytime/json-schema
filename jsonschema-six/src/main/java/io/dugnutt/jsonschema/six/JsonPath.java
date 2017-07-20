@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.six;
 
+import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.Value;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +39,6 @@ public class JsonPath {
         } else {
             this.path = emptyList();
         }
-
     }
 
     public static JsonPath jsonPath(String... path) {
@@ -55,6 +56,19 @@ public class JsonPath {
 
     public static JsonPath parse(String jsonPointer) {
         return new JsonPath(jsonPointer);
+    }
+
+    public List<String> toStringPath() {
+        return path.stream()
+                .map(PathPart::toString)
+                .collect(Collectors.toList());
+    }
+
+    public static JsonPath parseFromURIFragment(String uriFragment) {
+        checkNotNull(uriFragment, "uriFragment must not be null");
+        uriFragment = sanitizeURIAsPointer(uriFragment);
+
+        return parse(uriFragment);
     }
 
     public static JsonPath rootPath() {
@@ -92,6 +106,25 @@ public class JsonPath {
                 .map(Object::toString)
                 .map(JsonPointerPath::escape)
                 .collect(Collectors.joining("/"));
+    }
+
+    public String toString() {
+        return toURIFragment();
+    }
+
+    public String toURIFragment() {
+        return "#" + toJsonPointer();
+    }
+
+    @SneakyThrows
+    static String sanitizeURIAsPointer(String fragment) {
+        fragment = URLDecoder.decode(fragment, "UTF-8");
+        checkArgument("".equals(fragment) || "#".equals(fragment) || fragment.startsWith("#/"), "URI Fragment invalid: " + fragment);
+        if (Strings.isNullOrEmpty(fragment) || "#".equals(fragment)) {
+            return "/";
+        } else {
+            return fragment.substring(1);
+        }
     }
 
     @Value

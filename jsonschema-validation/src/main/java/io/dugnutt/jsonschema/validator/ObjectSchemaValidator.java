@@ -2,17 +2,15 @@ package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.ObjectSchema;
+import io.dugnutt.jsonschema.six.ReferenceSchema;
 import io.dugnutt.jsonschema.six.Schema;
-import lombok.experimental.var;
 
-import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -38,58 +36,57 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonValue subject) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject) {
 
-        //todo:ericm Add propertyNames schema
-        var wrongType = verifyType(subject, JsonSchemaType.OBJECT, schema.isRequiresObject());
+        Optional<ValidationError> wrongType = verifyType(subject, JsonSchemaType.OBJECT, schema.isRequiresObject());
         if (wrongType.isPresent()) {
             return wrongType;
         }
 
-        if (subject.getValueType() == JsonValue.ValueType.OBJECT) {
+        if (subject.is(JsonValue.ValueType.OBJECT)) {
             List<ValidationError> failures = new ArrayList<>();
-            JsonObject objSubject = (JsonObject) subject;
 
             // These are nested by nature
-            failures.addAll(testProperties(objSubject));
+            failures.addAll(testProperties(subject));
 
-            failures.addAll(testRequiredProperties(objSubject));
+            failures.addAll(testRequiredProperties(subject));
 
-            failures.addAll(testPropertyDependencies(objSubject));
-            failures.addAll(testSchemaDependencies(objSubject));
-            failures.addAll(testPatternProperties(objSubject));
+            failures.addAll(testPropertyDependencies(subject));
+            failures.addAll(testSchemaDependencies(subject));
+            failures.addAll(testPatternProperties(subject));
 
-            testAdditionalProperties(objSubject).ifPresent(failures::add);
-            testSize(objSubject).ifPresent(failures::add);
-            return ValidationError.collectErrors(schema, failures);
+            testAdditionalProperties(subject).ifPresent(failures::add);
+            testSize(subject).ifPresent(failures::add);
+            return ValidationError.collectErrors(schema, subject.getPath(), failures);
         }
         return Optional.empty();
     }
 
-    private Optional<ValidationError> testAdditionalProperties(final JsonObject subject) {
+    private Optional<ValidationError> testAdditionalProperties(final PathAwareJsonValue subject) {
         final List<ValidationError> additionalPropertyErrors = new ArrayList<>();
         schema.getSchemaOfAdditionalProperties()
                 .map(factory::createValidator)
                 .ifPresent(extraPropertyValidator ->
                         schema.getAdditionalProperties(subject)
                                 .forEach(propertyName -> {
-                                    JsonValue propertyValue = subject.get(propertyName);
-                                    Optional<ValidationError> error = extraPropertyValidator.validate(propertyValue)
-                                            .map(err->err.prepend(propertyName));
+                                    PathAwareJsonValue propertyValue = subject.get(propertyName);
+                                    Optional<ValidationError> error = extraPropertyValidator.validate(propertyValue);
                                     error.ifPresent(additionalPropertyErrors::add);
                                 })
 
                 );
 
         if (additionalPropertyErrors.size() > 0) {
-            return Optional.of(failure("Additional properties were invalid", ADDITIONAL_PROPERTIES, additionalPropertyErrors));
+            return buildKeywordFailure(subject, ADDITIONAL_PROPERTIES)
+                    .message("Additional properties were invalid")
+                    .causingExceptions(additionalPropertyErrors)
+                    .buildOptional();
         }
         return Optional.empty();
-
     }
 
-    private List<ValidationError> testPatternProperties(final JsonObject subject) {
-        Set<String> subjectProperties = subject.keySet();
+    private List<ValidationError> testPatternProperties(final PathAwareJsonValue subject) {
+        Set<String> subjectProperties = subject.propertyNames();
         if (subjectProperties.isEmpty()) {
             return emptyList();
         }
@@ -98,18 +95,13 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
             subjectProperties.stream()
                     .filter(regexMatches(pattern))
                     .forEach(propertyName -> {
-                        final JsonValue propertyValue = subject.get(propertyName);
+                        final PathAwareJsonValue propertyValue = subject.get(propertyName);
                         final Optional<ValidationError> error = factory.createValidator(patternSchema)
-                                .validate(propertyValue)
-                                .map(err -> err.prepend(propertyName));
+                                .validate(propertyValue);
                         error.ifPresent(allErrors::add);
                     });
         });
         return allErrors;
-    }
-
-    private Consumer<Optional<ValidationError>> addErrorIfExists(List<ValidationError> errors) {
-        return error -> error.ifPresent(errors::add);
     }
 
     private Predicate<String> regexMatches(Pattern regex) {
@@ -117,19 +109,25 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         return string -> regex.matcher(string).find();
     }
 
-    private List<ValidationError> testProperties(final JsonObject subject) {
+    private List<ValidationError> testProperties(final PathAwareJsonValue subject) {
         final List<ValidationError> propertyErrors = new ArrayList<>();
         final List<ValidationError> propertyNameErrors = new ArrayList<>();
 
         final Optional<SchemaValidator<Schema>> propertyNameValidator = schema.getPropertyNameSchema().map(factory::createValidator);
 
-        subject.forEach((propertyName, propertyValue) -> {
+        subject.forEach((propertyName, pathAwareProperty) -> {
             // Validate against property schema if one exists
             schema.findPropertySchema(propertyName)
                     .ifPresent(propertySchema -> {
-                        factory.createValidator(propertySchema)
-                                .validate(propertyValue)
-                                .map(err -> err.prepend(propertyName, propertySchema))
+                        final Schema validateSchema;
+                        if (propertySchema instanceof ReferenceSchema) {
+                            validateSchema = ((ReferenceSchema) propertySchema).getFullyDereferencedSchema()
+                                    .orElse(propertySchema);
+                        } else {
+                            validateSchema = propertySchema;
+                        }
+                        factory.createValidator(validateSchema)
+                                .validate(pathAwareProperty)
                                 .ifPresent(propertyErrors::add);
                     });
 
@@ -138,26 +136,32 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
                 //The validators work against json objects, not raw java objects, so we need to
                 //wrap this in a JsonString here.
                 final JsonString jsonValue = this.factory.getProvider().createValue(propertyName);
-                validator.validate(jsonValue)
-                        .map(err -> err.prepend(propertyName))
+                validator.validate(pathAwareProperty.withValue(jsonValue))
                         .ifPresent(propertyNameErrors::add);
             });
         });
 
         if (propertyNameErrors.size() > 0) {
-            propertyErrors.add(failure("Invalid property names", PROPERTY_NAMES, propertyNameErrors));
+            propertyErrors.add(
+                    this.buildKeywordFailure(subject, PROPERTY_NAMES)
+                            .message("Invalid property names")
+                            .causingExceptions(propertyNameErrors)
+                            .build()
+            );
         }
 
         return propertyErrors;
     }
 
-    private List<ValidationError> testPropertyDependencies(final JsonObject subject) {
+    private List<ValidationError> testPropertyDependencies(final PathAwareJsonValue subject) {
         return schema.getPropertyDependencies().keySet().stream()
                 .filter(subject::containsKey)
                 .flatMap(this::getDependenciesForProperty)
                 .filter(mustBePresent -> !subject.containsKey(mustBePresent))
-                .map(missingKey -> String.format("property [%s] is required", missingKey))
-                .map(excMessage -> failure(excMessage, DEPENDENCIES))
+                .map(missingKey ->
+                        buildKeywordFailure(subject, DEPENDENCIES)
+                                .message("property [%s] is required", missingKey)
+                                .build())
                 .collect(Collectors.toList());
     }
 
@@ -165,15 +169,17 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         return schema.getPropertyDependencies().get(forProperty).stream();
     }
 
-    private List<ValidationError> testRequiredProperties(final JsonObject subject) {
+    private List<ValidationError> testRequiredProperties(final PathAwareJsonValue subject) {
         return schema.getRequiredProperties().stream()
                 .filter(key -> !subject.containsKey(key))
-                .map(missingKey -> String.format("required key [%s] not found", missingKey))
-                .map(excMessage -> failure(excMessage, REQUIRED))
+                .map(missingKey ->
+                        buildKeywordFailure(subject, REQUIRED)
+                                .message("required key [%s] not found", missingKey)
+                                .build())
                 .collect(Collectors.toList());
     }
 
-    private List<ValidationError> testSchemaDependencies(final JsonObject subject) {
+    private List<ValidationError> testSchemaDependencies(final PathAwareJsonValue subject) {
         List<ValidationError> errors = new ArrayList<>();
         schema.getSchemaDependencies().forEach((propName, schema) -> {
             if (subject.containsKey(propName)) {
@@ -185,15 +191,17 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
         return errors;
     }
 
-    private Optional<ValidationError> testSize(final JsonObject subject) {
-        int actualSize = subject.size();
+    private Optional<ValidationError> testSize(final PathAwareJsonValue subject) {
+        int actualSize = subject.numberOfProperties();
         if (schema.getMinProperties() != null && actualSize < schema.getMinProperties()) {
-            return Optional.of(failure(String.format("minimum size: [%d], found: [%d]", schema.getMinProperties(), actualSize),
-                    MIN_PROPERTIES));
+            return buildKeywordFailure(subject, MIN_PROPERTIES)
+                    .message("minimum size: [%d], found: [%d]", schema.getMinProperties(), actualSize)
+                    .buildOptional();
         }
         if (schema.getMaxProperties() != null && actualSize > schema.getMaxProperties()) {
-            return Optional.of(failure(String.format("maximum size: [%d], found: [%d]", schema.getMaxProperties(), actualSize),
-                    MAX_PROPERTIES));
+            return buildKeywordFailure(subject, MAX_PROPERTIES)
+                    .message("maximum size: [%d], found: [%d]", schema.getMaxProperties(), actualSize)
+                    .buildOptional();
         }
 
         return Optional.empty();

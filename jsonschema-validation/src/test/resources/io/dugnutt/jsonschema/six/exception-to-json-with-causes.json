@@ -2,12 +2,15 @@
   "pointerToViolation": "#/a",
   "message": "exception message",
   "keyword": "type",
-  "causingExceptions": [
+  "code": "code",
+  "model": [],
+  "causes": [
     {
       "pointerToViolation": "#/a/0",
       "message": "cause msg",
       "keyword": "type",
-      "causingExceptions": []
+      "model": ["Joe"],
+      "causes": []
     }
   ]
 }

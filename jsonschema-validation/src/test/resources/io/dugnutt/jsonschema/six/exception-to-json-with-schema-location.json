@@ -3,5 +3,7 @@
   "schemaLocation": "#/schema/location",
   "message": "exception message",
   "keyword": "type",
-  "causingExceptions": []
+  "causes": [],
+  "code": "code",
+  "model": []
 }

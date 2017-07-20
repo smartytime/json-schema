@@ -29,58 +29,60 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonValue subject) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject) {
         List<ValidationError> failures = new ArrayList<>();
-        final ValueType valueType = subject.getValueType();
-        if (valueType != ValueType.ARRAY && schema.isRequiresArray()) {
-            return Optional.of(failure(JsonSchemaType.ARRAY, subject));
-        } else if(valueType == ValueType.ARRAY) {
-            JsonArray array = (JsonArray) subject;
-            testItemCount(array).ifPresent(failures::add);
+
+        if (!subject.is(ValueType.ARRAY) && schema.isRequiresArray()) {
+            return buildTypeMismatchError(subject, JsonSchemaType.ARRAY).buildOptional();
+        } else if (subject.is(ValueType.ARRAY)) {
+
+            testItemCount(subject).ifPresent(failures::add);
             if (schema.isNeedsUniqueItems()) {
-                testUniqueness(array).ifPresent(failures::add);
+                testUniqueness(subject).ifPresent(failures::add);
             }
-            failures.addAll(testItems(array));
+            failures.addAll(testItems(subject));
         }
-        return ValidationError.collectErrors(schema, failures);
+        return ValidationError.collectErrors(schema, subject.getPath(), failures);
     }
 
-    private Optional<ValidationError> testItemCount(final JsonArray subject) {
-        int actualLength = subject.size();
+    private Optional<ValidationError> testItemCount(final PathAwareJsonValue subject) {
+        int actualLength = subject.arraySize();
         Integer minItems = schema.getMinItems();
         Integer maxItems = schema.getMaxItems();
 
         if (minItems != null && actualLength < minItems) {
-            return Optional.of(failure("expected minimum item count: " + minItems
-                    + ", found: " + actualLength, JsonSchemaKeyword.MIN_ITEMS));
+            return buildKeywordFailure(subject, JsonSchemaKeyword.MIN_ITEMS)
+                    .message("expected minimum item count: %s, found: %s", minItems, actualLength)
+                    .buildOptional();
         }
 
         if (maxItems != null && maxItems < actualLength) {
-            return Optional.of(failure("expected maximum item count: " + maxItems
-                    + ", found: " + actualLength, JsonSchemaKeyword.MAX_ITEMS));
+            return buildKeywordFailure(subject, JsonSchemaKeyword.MAX_ITEMS)
+                    .message("expected maximum item count: %s, found: %s", maxItems, actualLength)
+                    .buildOptional();
         }
         return Optional.empty();
     }
 
-    private List<ValidationError> testItems(final JsonArray subject) {
+    private List<ValidationError> testItems(final PathAwareJsonValue subject) {
         List<ValidationError> errors = new ArrayList<>();
         Schema allItemSchema = schema.getAllItemSchema();
         List<Schema> itemSchemas = schema.getItemSchemas();
         Schema schemaOfAdditionalItems = schema.getSchemaOfAdditionalItems();
 
         if (allItemSchema != null) {
-            validateItemsAgainstSchema(IntStream.range(0, subject.size()),
+            validateItemsAgainstSchema(IntStream.range(0, subject.arraySize()),
                     subject,
                     allItemSchema,
                     errors::add);
         } else if (itemSchemas != null) {
-            int itemValidationUntil = Math.min(subject.size(), itemSchemas.size());
+            int itemValidationUntil = Math.min(subject.arraySize(), itemSchemas.size());
             validateItemsAgainstSchema(IntStream.range(0, itemValidationUntil),
                     subject,
                     itemSchemas::get,
                     errors::add);
             if (schemaOfAdditionalItems != null) {
-                validateItemsAgainstSchema(IntStream.range(itemValidationUntil, subject.size()),
+                validateItemsAgainstSchema(IntStream.range(itemValidationUntil, subject.arraySize()),
                         subject,
                         schemaOfAdditionalItems,
                         errors::add);
@@ -90,53 +92,57 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         Schema containsSchema = schema.getContainsSchema();
         if (containsSchema != null) {
             SchemaValidator<Schema> containsValidator = factory.createValidator(containsSchema);
-            Optional<JsonValue> containsValid = subject.stream()
+            Optional<PathAwareJsonValue> containsValid = subject.streamArrayItems()
                     .filter(arrayItem -> !containsValidator.validate(arrayItem).isPresent())
                     .findAny();
             if (!containsValid.isPresent()) {
-                errors.add(failure("array does not contain at least 1 matching item", JsonSchemaKeyword.CONTAINS));
+                errors.add(buildKeywordFailure(subject, JsonSchemaKeyword.CONTAINS)
+                        .message("array does not contain at least 1 matching item")
+                        .build());
             }
         }
 
         return errors;
     }
 
-    private void validateItemsAgainstSchema(final IntStream indices, final JsonArray items,
+    private void validateItemsAgainstSchema(final IntStream indices, final PathAwareJsonValue items,
                                             final Schema schema,
                                             final Consumer<ValidationError> failureCollector) {
         validateItemsAgainstSchema(indices, items, i -> schema, failureCollector);
     }
 
-    private void validateItemsAgainstSchema(final IntStream indices, final JsonArray items,
+    private void validateItemsAgainstSchema(final IntStream indices, final PathAwareJsonValue items,
                                             final IntFunction<Schema> schemaForIndex,
                                             final Consumer<ValidationError> failureCollector) {
-        for (int i : indices.toArray()) {
-            String copyOfI = String.valueOf(i); // i is not effectively final so we copy it
-
+        indices.forEach(i-> {
             Schema schema = schemaForIndex.apply(i);
-            SchemaValidatorFactory.createValidatorForSchema(schema)
-                    .validate(items.get(i))
-                    .map(exc -> exc.prepend(copyOfI))
+            factory.createValidator(schema)
+                    .validate(items.getItem(i))
                     .ifPresent(failureCollector);
-        }
+        });
     }
 
-    private Optional<ValidationError> testUniqueness(final JsonArray subject) {
-        if (subject.size() == 0) {
+    private Optional<ValidationError> testUniqueness(final PathAwareJsonValue subject) {
+        if (subject.arraySize() == 0) {
             return Optional.empty();
         }
-        Collection<JsonValue> uniqueItems = new ArrayList<>(subject.size());
+        Collection<JsonValue> uniqueItems = new ArrayList<>(subject.arraySize());
 
-        for (JsonValue item : subject) {
+        JsonArray arrayItems = subject.asJsonArray();
+
+        for (JsonValue item : arrayItems) {
             for (JsonValue contained : uniqueItems) {
                 if (ObjectComparator.lexicalEquivalent(contained, item)) {
-                    return Optional.of(
-                            failure("array items are not unique", JsonSchemaKeyword.UNIQUE_ITEMS));
+                    return buildKeywordFailure(subject, JsonSchemaKeyword.UNIQUE_ITEMS)
+                            .message("array items are not unique")
+                            .model(item)
+                            .model(contained)
+                            .buildOptional();
                 }
+
             }
             uniqueItems.add(item);
         }
         return Optional.empty();
     }
-
 }

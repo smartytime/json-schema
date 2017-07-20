@@ -46,7 +46,7 @@ public class ArraySchemaFactoryTest extends BaseLoaderTest {
         assertNotNull(actual);
         assertEquals(2, actual.getMinItems().intValue());
         assertEquals(3, actual.getMaxItems().intValue());
-        Assert.assertEquals(NullSchema.INSTANCE, actual.getAllItemSchema());
+        Assert.assertEquals(NullSchema.NULL_SCHEMA, actual.getAllItemSchema());
     }
 
     @Test

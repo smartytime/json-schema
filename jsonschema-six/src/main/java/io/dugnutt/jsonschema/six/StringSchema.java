@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.FORMAT;
 
 /**
  * {@code String} schema validator.
@@ -70,7 +71,7 @@ public class StringSchema extends Schema {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), minLength, maxLength, pattern, requiresString, formatType);
+        return Objects.hash(super.hashCode(), minLength, maxLength, pattern, requiresString, format, formatType);
     }
 
     @Override
@@ -85,6 +86,7 @@ public class StringSchema extends Schema {
                     Objects.equals(minLength, that.minLength) &&
                     Objects.equals(maxLength, that.maxLength) &&
                     Objects.equals(patternIfNotNull(pattern), patternIfNotNull(that.pattern)) &&
+                    Objects.equals(format, that.format) &&
                     Objects.equals(formatType, that.formatType) &&
                     super.equals(that);
         } else {
@@ -103,7 +105,7 @@ public class StringSchema extends Schema {
                 .optionalWrite(JsonSchemaKeyword.MIN_LENGTH, minLength)
                 .optionalWrite(JsonSchemaKeyword.MAX_LENGTH, maxLength)
                 .optionalWrite(pattern)
-                .optionalWrite(formatType);
+                .optionalWrite(FORMAT, format);
     }
 
     public boolean requiresString() {

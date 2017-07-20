@@ -19,6 +19,10 @@ public class SchemaException extends RuntimeException {
     public SchemaException(URI schemaLocation, String message) {
         this(schemaLocation.toString(), message);
     }
+
+    public SchemaException(URI schemaLocation, String message, Object... params) {
+        this(schemaLocation.toString(), String.format(message, params));
+    }
     
     public SchemaException(String schemaLocation, String message) {
         super(schemaLocation == null

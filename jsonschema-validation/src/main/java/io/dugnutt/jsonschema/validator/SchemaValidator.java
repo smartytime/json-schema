@@ -1,18 +1,20 @@
 package io.dugnutt.jsonschema.validator;
 
-import com.google.common.base.Preconditions;
+import com.google.common.base.Joiner;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.utils.JsonUtils;
 
 import javax.json.JsonValue;
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class SchemaValidator<S extends Schema> {
+
+    public static final String TYPE_MISMATCH_ERROR_MESSAGE = "expected type: %s, found: %s";
+    public static final String VALIDATION_KEYWORD_PREFIX = "validation.keyword.";
 
     protected final S schema;
     protected final SchemaValidatorFactory factory;
@@ -27,45 +29,71 @@ public abstract class SchemaValidator<S extends Schema> {
         this.factory = checkNotNull(factory);
     }
 
-    public static ValidationError failure(Schema validating, JsonSchemaType expectedType, JsonSchemaType foundType) {
-        String message = String.format("expected type: %s, found: %s", expectedType, foundType);
-        return new ValidationError(validating, message, JsonSchemaKeyword.TYPE, validating.getDocumentLocalURI());
-    }
-
-    public ValidationError failure(String message, JsonSchemaKeyword keyword, List<ValidationError> causes) {
-        Preconditions.checkNotNull(keyword, "keyword must not be null");
-        Preconditions.checkNotNull(message, "message must not be null");
-        return new ValidationError(this.schema(), new StringBuilder("#"), message, causes, keyword,
-                this.schema().getDocumentLocalURI());
-    }
-
     public S schema() {
         return schema;
     }
 
-    public abstract Optional<ValidationError> validate(JsonValue toBeValidated);
+    public abstract Optional<ValidationError> validate(PathAwareJsonValue subject);
 
-    protected ValidationError failure(String message, JsonSchemaKeyword keyword) {
-        return new ValidationError(schema(), message, keyword, schema().getDocumentLocalURI());
+    @Deprecated
+    public Optional<ValidationError> validate(JsonValue value) {
+        return validate(new PathAwareJsonValue(value, schema.getLocation().getJsonPath()));
     }
 
-    protected ValidationError failure(JsonSchemaType expectedType, JsonValue value) {
-        checkNotNull(value, "value must not be null");
-        return failure(expectedType, JsonUtils.schemaTypeFor(value));
+    // @Deprecated
+    // protected ValidationError failure(String message, JsonSchemaKeyword keyword) {
+    //     return new ValidationError(schema(), message, keyword, schema.getLocation().getJsonPointerFragment());
+    // }
+
+    protected ValidationError.ValidationErrorBuilder createBuilder(PathAwareJsonValue subject) {
+        return ValidationError.validationBuilder()
+                .violatedSchema(schema())
+                .pointerToViolation(subject.getPath())
+                .schemaLocation(schema().getDocumentLocalURI());
     }
 
-    protected Optional<ValidationError> verifyType(JsonValue value, JsonSchemaType expectedType, boolean required) {
+    protected ValidationError.ValidationErrorBuilder buildKeywordFailure(PathAwareJsonValue subject, JsonSchemaKeyword keyword) {
+        checkNotNull(keyword, "keyword must not be null");
+        checkNotNull(subject, "subject must not be null");
+
+        return createBuilder(subject)
+                .keyword(keyword)
+                .code(VALIDATION_KEYWORD_PREFIX + keyword);
+    }
+
+    protected ValidationError.ValidationErrorBuilder buildTypeMismatchError(PathAwareJsonValue subject, Collection<JsonSchemaType> expectedTypes) {
+        checkNotNull(expectedTypes, "expectedType must not be null");
+        checkNotNull(subject, "subject must not be null");
+
+        String commaSeparatedTypes = Joiner.on(",").join(expectedTypes);
+        return createBuilder(subject)
+                .keyword(JsonSchemaKeyword.TYPE)
+                .message("expected one of the following types: %s, found: %s", commaSeparatedTypes, subject.getJsonSchemaType())
+                .code("validation.typeMismatch")
+                .model(expectedTypes)
+                .model(subject.getJsonSchemaType());
+    }
+
+    protected ValidationError.ValidationErrorBuilder buildTypeMismatchError(PathAwareJsonValue subject, JsonSchemaType expectedType) {
+        checkNotNull(expectedType, "expectedType must not be null");
+        checkNotNull(subject, "subject must not be null");
+
+        return createBuilder(subject)
+                .keyword(JsonSchemaKeyword.TYPE)
+                .message(TYPE_MISMATCH_ERROR_MESSAGE, expectedType, subject.getJsonSchemaType())
+                .code("validation.typeMismatch")
+                .model(expectedType)
+                .model(subject.getJsonSchemaType());
+    }
+
+    protected Optional<ValidationError> verifyType(PathAwareJsonValue value, JsonSchemaType expectedType, boolean required) {
         checkNotNull(value, "value must not be null");
         checkNotNull(expectedType, "expectedType must not be null");
-        JsonSchemaType jsonSchemaType = JsonUtils.schemaTypeFor(value);
+        JsonSchemaType jsonSchemaType = value.getJsonSchemaType();
         if (!required || jsonSchemaType == expectedType) {
             return Optional.empty();
         } else {
-            return Optional.of(failure(expectedType, jsonSchemaType));
+            return buildTypeMismatchError(value, expectedType).buildOptional();
         }
-    }
-
-    protected ValidationError failure(JsonSchemaType expectedType, JsonSchemaType foundType) {
-        return failure(schema(), expectedType, foundType);
     }
 }

@@ -1,10 +1,10 @@
 package io.dugnutt.jsonschema.six;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -29,6 +29,10 @@ public class MultipleTypeSchema extends Schema {
 
     public Optional<Schema> getSchemaForType(JsonSchemaType type) {
         return Optional.ofNullable(possibleSchemas.get(type));
+    }
+
+    public Set<JsonSchemaType> possibleSchemaTypes() {
+        return possibleSchemas.keySet();
     }
 
     public boolean isRequireOne() {

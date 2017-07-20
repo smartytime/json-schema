@@ -22,7 +22,7 @@ import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
  */
 public class BooleanSchema extends Schema {
 
-    public static BooleanSchema BOOLEAN_SCHEMA = builder(SchemaLocation.schemaLocation()).build();
+    public static BooleanSchema BOOLEAN_SCHEMA = builder(schemaLocation()).build();
 
     BooleanSchema(final Builder builder) {
         super(builder);

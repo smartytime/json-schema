@@ -42,8 +42,6 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         Assert.assertNotNull(actual);
     }
 
-    //todo:ericm Verify format validators + custom
-
     @Test
     public void emptyPatternProperties() {
         ObjectSchema actual = (ObjectSchema) getSchemaForKey("emptyPatternProperties");
@@ -156,6 +154,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     private Supplier<AssertionError> missingReference() {
         return () -> new AssertionError("Missing reference schema");
     }
+
     @Test
     public void pointerResolution() {
         ObjectSchema actual = (ObjectSchema) getSchemaForKey("pointerResolution");
@@ -262,7 +261,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         Assert.assertNull(actual.getAllItemSchema());
         assertEquals(2, actual.getItemSchemas().size());
         assertEquals(BooleanSchema.BOOLEAN_SCHEMA, actual.getItemSchemas().get(0));
-        assertEquals(NullSchema.INSTANCE, actual.getItemSchemas().get(1));
+        assertEquals(NullSchema.NULL_SCHEMA, actual.getItemSchemas().get(1));
     }
 
     //todo:ericm Test nulls everywhere
@@ -278,18 +277,6 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
                 .add("format", "unknown")
                 .build();
         JsonSchemaFactory.schemaFactory().load(schema);
-    }
-
-    @Test
-    public void withoutFragment() {
-        String actual = JsonSchemaFactory.withoutFragment("http://example.com#frag").toString();
-        assertEquals("http://example.com", actual);
-    }
-
-    @Test
-    public void withoutFragmentNoFragment() {
-        String actual = JsonSchemaFactory.withoutFragment("http://example.com").toString();
-        assertEquals("http://example.com", actual);
     }
 
     private InputStream asStream(final String string) {

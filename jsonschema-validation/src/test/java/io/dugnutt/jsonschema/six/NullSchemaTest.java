@@ -16,13 +16,10 @@
 package io.dugnutt.jsonschema.six;
 
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static org.junit.Assert.assertEquals;
 
@@ -39,20 +36,11 @@ public class NullSchemaTest {
     @Test
     public void success() {
         JsonObject obj = JsonUtils.readJsonObject("{\"a\" : null}");
-        createValidatorForSchema(NullSchema.INSTANCE).validate(obj.get("a"));
-    }
-
-    @Test
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(NullSchema.class)
-                .withRedefinedSuperclass()
-               .withIgnoredFields("location")
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
+        createValidatorForSchema(NullSchema.NULL_SCHEMA).validate(obj.get("a"));
     }
 
     @Test
     public void toStringTest() {
-        assertEquals("{\"type\":\"null\"}", NullSchema.INSTANCE.toString());
+        assertEquals("{\"type\":\"null\"}", NullSchema.NULL_SCHEMA.toString());
     }
 }

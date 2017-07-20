@@ -5,10 +5,8 @@ import io.dugnutt.jsonschema.six.ArraySchema;
 import io.dugnutt.jsonschema.six.BooleanSchema;
 import io.dugnutt.jsonschema.six.CombinedSchema;
 import io.dugnutt.jsonschema.six.EmptySchema;
-import io.dugnutt.jsonschema.six.EnumSchema;
 import io.dugnutt.jsonschema.six.FormatType;
 import io.dugnutt.jsonschema.six.MultipleTypeSchema;
-import io.dugnutt.jsonschema.six.NotSchema;
 import io.dugnutt.jsonschema.six.NullSchema;
 import io.dugnutt.jsonschema.six.NumberSchema;
 import io.dugnutt.jsonschema.six.ObjectSchema;
@@ -45,12 +43,13 @@ public class SchemaValidatorFactory {
     }
 
     public <S extends Schema> SchemaValidator<S> createValidator(S schema) {
-        checkNotNull(schema, "schema must not be null");
+        checkNotNull(schema, "schema must not be null when creating validator");
         final Factory<S> validatorFunction = (Factory<S>) schemaValidators.get(schema.getClass());
         if (validatorFunction == null) {
             throw new IllegalArgumentException("Unable to locate validator for schema: " + schema.getClass());
         }
-        return validatorFunction.createValidator(schema, this);
+        SchemaValidator<S> validator = validatorFunction.createValidator(schema, this);
+        return new BaseSchemaValidator<S>(schema, this, validator);
     }
 
     public Optional<FormatValidator> getFormatValidator(String input) {
@@ -86,7 +85,6 @@ public class SchemaValidatorFactory {
         }
 
         public <X extends Schema> Builder schemaValidator(Class<X> schemaClass, Factory<X> factory) {
-            //todo:ericm What the heck???
             Class<Schema> classOfSchema = (Class<Schema>) schemaClass;
             this.schemaValidators.put(classOfSchema, factory);
             return this;
@@ -98,8 +96,6 @@ public class SchemaValidatorFactory {
             schemaValidator(BooleanSchema.class, BooleanSchemaValidator::new);
             schemaValidator(CombinedSchema.class, CombinedSchemaValidator::new);
             schemaValidator(EmptySchema.class, EmptySchemaValidator::new);
-            schemaValidator(EnumSchema.class, EnumSchemaValidator::new);
-            schemaValidator(NotSchema.class, NotSchemaValidator::new);
             schemaValidator(NullSchema.class, NullSchemaValidator::new);
             schemaValidator(NumberSchema.class, NumberSchemaValidator::new);
             schemaValidator(ReferenceSchema.class, ReferenceSchemaValidator::new);

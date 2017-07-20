@@ -17,6 +17,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Builder(toBuilder = true)
 public class SchemaLocation {
 
+    public static final String DUGNUTT_UUID_SCHEME = "dugnutt";
+
     @Nullable
     private final URI id;
 
@@ -56,8 +58,8 @@ public class SchemaLocation {
     }
 
     public static SchemaLocation schemaLocation() {
-        // If there's not ID for a base schema, assign a URN to avoid any false positive cache hits.
-        final URI baseURN = URI.create("urn:" + UUID.randomUUID().toString());
+        // If there's not ID for a base schema, assign something unique to avoid false-positive cache-hites
+        final URI baseURN = URI.create(DUGNUTT_UUID_SCHEME + "://autoassign-" + UUID.randomUUID().toString() + "/schema");
         return SchemaLocation.builder()
                 .documentURI(baseURN)
                 .jsonPath(JsonPath.rootPath())
@@ -72,8 +74,14 @@ public class SchemaLocation {
 
     public static SchemaLocation schemaLocation(String rootDocumentVal) {
         checkNotNull(rootDocumentVal, "rootDocument must not be null");
+        JsonPath path;
+        if (rootDocumentVal.startsWith("#/")) {
+            path = JsonPath.parse(rootDocumentVal.substring(1));
+        } else {
+            path = JsonPath.rootPath();
+        }
         URI rootDocument = URI.create(rootDocumentVal);
-        return new SchemaLocation(rootDocument, JsonPath.jsonPath(), rootDocument, rootDocument);
+        return new SchemaLocation(rootDocument, path, rootDocument, rootDocument);
     }
 
     public URI getFullJsonPathURI() {

@@ -23,7 +23,7 @@ import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
  */
 public class NullSchema extends Schema {
 
-    public static final NullSchema INSTANCE = builder(SchemaLocation.schemaLocation()).build();
+    public static final NullSchema NULL_SCHEMA = builder(schemaLocation()).build();
 
     public NullSchema(final Builder builder) {
         super(builder);

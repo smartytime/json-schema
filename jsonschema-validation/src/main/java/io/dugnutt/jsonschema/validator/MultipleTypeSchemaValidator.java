@@ -1,11 +1,8 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.MultipleTypeSchema;
-import io.dugnutt.jsonschema.utils.JsonUtils;
 
-import javax.json.JsonValue;
 import java.util.Optional;
 
 public class MultipleTypeSchemaValidator extends SchemaValidator<MultipleTypeSchema> {
@@ -19,16 +16,15 @@ public class MultipleTypeSchemaValidator extends SchemaValidator<MultipleTypeSch
     }
 
     @Override
-    public Optional<ValidationError> validate(JsonValue subject) {
-        JsonSchemaType inputType = JsonUtils.schemaTypeFor(subject);
+    public Optional<ValidationError> validate(PathAwareJsonValue subject) {
+        JsonSchemaType inputType = subject.getJsonSchemaType();
         return this.schema.getSchemaForType(inputType)
                 .map(schema -> factory.createValidator(schema).validate(subject))
                 .orElseGet(()->{
                     if (schema.isRequireOne()) {
-                        return Optional.of(failure("invalid.type", JsonSchemaKeyword.TYPE));
+                        return buildTypeMismatchError(subject, schema.possibleSchemaTypes()).buildOptional();
                     }
                     return Optional.empty();
                 });
-
     }
 }

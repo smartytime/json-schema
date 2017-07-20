@@ -4,8 +4,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static io.dugnutt.jsonschema.six.JsonSchemaType.*;
 import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
-import static io.dugnutt.jsonschema.validator.SchemaValidator.failure;
+
+import static io.dugnutt.jsonschema.six.TestErrorHelper.failure;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -22,21 +24,28 @@ public class SchemaExceptionTest {
     @Test
     public void nullActual() {
         NullSchema schema = NullSchema.builder(schemaLocation("#/required/2")).build();
-        String actual = failure(schema, JsonSchemaType.NULL, JsonSchemaType.STRING).getErrorMessage();
-        assertEquals("#/required/2: expected type: String, found: null", actual);
+        String actual = failure(schema, STRING, NULL).getMessage();
+        assertEquals("#/required/2: expected type: string, found: null", actual);
     }
 
     @Test
     public void nullJSONPointer() {
         expExc.expect(NullPointerException.class);
-        expExc.expectMessage("pointer cannot be null");
-        failure(null, JsonSchemaType.NUMBER, JsonSchemaType.STRING);
+        expExc.expectMessage("schema must not be null");
+        failure(null, NUMBER, STRING);
+    }
+
+    @Test
+    public void nullWithMessage() {
+        NullSchema schema = NullSchema.builder(schemaLocation("#/required/2")).build();
+        String actual = failure(schema, STRING, NULL).getMessage();
+        assertEquals("#/required/2: expected type: string, found: null", actual);
     }
 
     @Test
     public void testBuildMessageSingleExcType() {
-        String actual = failure(SCHEMA, JsonSchemaType.NUMBER, JsonSchemaType.STRING)
+        String actual = failure(SCHEMA, NUMBER, STRING)
                 .getErrorMessage();
-        assertEquals("#: expected type: String, found: Integer", actual);
+        assertEquals("expected type: number, found: string", actual);
     }
 }

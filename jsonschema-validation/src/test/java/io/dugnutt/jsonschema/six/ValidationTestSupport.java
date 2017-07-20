@@ -289,7 +289,7 @@ public class ValidationTestSupport {
 
     public static void expectSuccess(Supplier<Optional<ValidationError>> validationFn) {
         Optional<ValidationError> error = validationFn.get();
-        Assert.assertFalse("Should have succeeded", error.isPresent());
+        error.ifPresent(e -> Assert.fail("Should have succeeded: " + e));
     }
 
     public static void expectSuccess(Schema schema, long input) {
