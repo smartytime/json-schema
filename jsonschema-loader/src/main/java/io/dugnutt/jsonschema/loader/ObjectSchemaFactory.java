@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.ObjectSchema;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.Schema;
 
 import javax.json.JsonString;
@@ -38,7 +39,7 @@ class ObjectSchemaFactory {
 
     private ObjectSchema.Builder createObjectSchemaBuilder() {
         ObjectSchema.Builder builder = ObjectSchema.builder(schemaModel.getLocation());
-        FluentJsonObject schemaJson = schemaModel.schemaJson;
+        PathAwareJsonValue schemaJson = schemaModel.schemaJson;
         schemaJson.findInt(MIN_PROPERTIES).ifPresent(builder::minProperties);
         schemaJson.findInt(MAX_PROPERTIES).ifPresent(builder::maxProperties);
 

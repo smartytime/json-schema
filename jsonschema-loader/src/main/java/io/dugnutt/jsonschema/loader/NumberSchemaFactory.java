@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.NumberSchema;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.EXCLUSIVE_MAXIMUM;
@@ -23,7 +24,7 @@ public class NumberSchemaFactory {
 
     public NumberSchema.Builder createNumberSchemaBuilder() {
         NumberSchema.Builder builder = NumberSchema.builder(schemaModel.getLocation());
-        final FluentJsonObject schemaJson = schemaModel.schemaJson;
+        final PathAwareJsonValue schemaJson = schemaModel.schemaJson;
         schemaJson.findNumber(MINIMUM).ifPresent(builder::minimum);
         schemaJson.findNumber(MAXIMUM).ifPresent(builder::maximum);
         schemaJson.findNumber(MULTIPLE_OF).ifPresent(builder::multipleOf);

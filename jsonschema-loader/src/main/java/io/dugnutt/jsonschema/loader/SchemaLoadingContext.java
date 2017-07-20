@@ -2,13 +2,13 @@ package io.dugnutt.jsonschema.loader;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
-import io.dugnutt.jsonschema.six.JsonPointerPath;
+import io.dugnutt.jsonschema.six.JsonPath;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.six.SchemaLocation;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
-import io.dugnutt.jsonschema.utils.JsonUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -70,7 +70,7 @@ public class SchemaLoadingContext {
      */
     @NotNull
     @NonNull
-    protected final FluentJsonObject schemaJson;
+    protected final PathAwareJsonValue schemaJson;
     private final SchemaLocation location;
 
     // SchemaLoader.SchemaLoaderBuilder initChildLoader() {
@@ -114,11 +114,10 @@ public class SchemaLoadingContext {
             rootSchemaLocation = SchemaLocation.schemaLocation();
         }
 
-        JsonPointerPath jsonPointerPath = new JsonPointerPath(rootSchemaLocation.getJsonPath());
-        FluentJsonObject schemaJson = new FluentJsonObject(rootSchema, jsonPointerPath);
+        PathAwareJsonValue schemaJson = new PathAwareJsonValue(rootSchema, rootSchemaLocation.getJsonPath());
         return builder()
                 .location(rootSchemaLocation)
-                .schemaJson(schemaJson)
+                .pathedSchemaJson(schemaJson)
                 .rootSchemaJson(schemaJson)
                 .build();
     }
@@ -226,9 +225,9 @@ public class SchemaLoadingContext {
             return Stream.empty();
         }
 
-        JsonValue jsonValue = schemaJson.get(schemaProperty.key());
+        PathAwareJsonValue jsonValue = schemaJson.getPathAware(schemaProperty.key());
 
-        if (!JsonUtils.isOneOf(jsonValue, validTypes)) {
+        if (validTypes.length > 0 && !jsonValue.is(validTypes)) {
             throw unexpectedValueException(schemaProperty, jsonValue, validTypes);
         }
 
@@ -261,13 +260,29 @@ public class SchemaLoadingContext {
                 .map(childObject -> {
 
                     SchemaLocation childLocation = getChildLocationWithId(childObject, keywordVal);
-                    JsonPointerPath childPath = new JsonPointerPath(childLocation.getJsonPath());
-                    final FluentJsonObject childJsonWrapper = new FluentJsonObject(childObject, childPath);
+                    JsonPath childPath = childLocation.getJsonPath();
+                    final PathAwareJsonValue awareJsonValue = new PathAwareJsonValue(childObject, childPath);
 
                     return this.toBuilder().location(childLocation)
-                            .schemaJson(childJsonWrapper)
+                            .pathedSchemaJson(awareJsonValue)
                             .build();
                 });
+    }
+
+    @VisibleForTesting
+    @Nullable
+    SchemaLoadingContext childModel(String childKey) {
+        return schemaJson.findObject(childKey)
+                .map(childObject -> {
+                    final SchemaLocation childPath = getChildLocationWithId(childObject, childKey);
+
+                    JsonPath childPointer = childPath.getJsonPath();
+                    final PathAwareJsonValue pathAwareValue = new PathAwareJsonValue(childObject, childPointer);
+
+                    return this.toBuilder().location(childPath)
+                            .pathedSchemaJson(pathAwareValue)
+                            .build();
+                }).orElse(null);
     }
 
     private SchemaLocation getChildLocationWithId(JsonObject childObject, String... childKeys) {
@@ -279,22 +294,6 @@ public class SchemaLoadingContext {
             childLocation = this.location.withChildPath(childKeys);
         }
         return childLocation;
-    }
-
-    @VisibleForTesting
-    @Nullable
-    SchemaLoadingContext childModel(String childKey) {
-        return schemaJson.findObject(childKey)
-                .map(childObject -> {
-                    final SchemaLocation childPath = getChildLocationWithId(childObject, childKey);
-
-                    JsonPointerPath childPointer = new JsonPointerPath(childPath.getJsonPath());
-                    final FluentJsonObject childJsonWrapper = new FluentJsonObject(childObject, childPointer);
-
-                    return this.toBuilder().location(childPath)
-                            .schemaJson(childJsonWrapper)
-                            .build();
-                }).orElse(null);
     }
 
     private Stream<SchemaLoadingContext> streamChildSchemaModelsForArray(JsonSchemaKeyword schemaProperty, JsonArray toIterate) {
@@ -326,12 +325,11 @@ public class SchemaLoadingContext {
         //     throw new UnexpectedValueException(errorLocation, valueAtKey, STRING, NUMBER);
         // }
 
-        JsonPointerPath childPointer = new JsonPointerPath(childPath.getJsonPath());
-        final FluentJsonObject childJsonObject = new FluentJsonObject(valueAtKey.asJsonObject(), childPointer);
+        final PathAwareJsonValue childJsonObject = new PathAwareJsonValue(valueAtKey.asJsonObject(), childPath.getJsonPath());
 
         return this.toBuilder()
                 .location(childPath)
-                .schemaJson(childJsonObject)
+                .pathedSchemaJson(childJsonObject)
                 .build();
     }
 
@@ -345,13 +343,13 @@ public class SchemaLoadingContext {
 
         public SchemaLoadingContextBuilder location(SchemaLocation location) {
             if (plainJson != null) {
-                this.schemaJson(new FluentJsonObject(plainJson, new JsonPointerPath(location.getJsonPath())));
+                this.pathedSchemaJson(new PathAwareJsonValue(plainJson, location.getJsonPath()));
             }
             this.location = location;
             return this;
         }
 
-        public SchemaLoadingContextBuilder schemaJson(FluentJsonObject schemaJson) {
+        public SchemaLoadingContextBuilder pathedSchemaJson(PathAwareJsonValue schemaJson) {
             if (this.rootSchemaJson == null) {
                 this.rootSchemaJson = schemaJson;
             }
@@ -360,7 +358,12 @@ public class SchemaLoadingContext {
         }
 
         public SchemaLoadingContextBuilder schemaJson(JsonObject jsonObject) {
-            this.plainJson = storeIfNoLocationPresent(jsonObject);
+            if (!(jsonObject instanceof PathAwareJsonValue)) {
+                this.plainJson = storeIfNoLocationPresent(jsonObject);
+            } else {
+                this.schemaJson = (PathAwareJsonValue) jsonObject;
+            }
+
             return this;
         }
 
@@ -368,7 +371,7 @@ public class SchemaLoadingContext {
             if (this.location == null) {
                 return jsonObject;
             } else {
-                this.schemaJson(new FluentJsonObject(jsonObject, new JsonPointerPath(this.location.getJsonPath())));
+                this.pathedSchemaJson(new PathAwareJsonValue(jsonObject, this.location.getJsonPath()));
                 return null;
             }
         }

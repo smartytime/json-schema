@@ -38,6 +38,12 @@ public class SchemaCache {
     @lombok.Builder.Default
     private final Map<URI, Schema> absoluteSchemaCache = new HashMap<>();
 
+    @NonNull
+    @lombok.Builder.Default
+    private final Map<URI, JsonObject> absoluteDocumentCache = new HashMap<>();
+
+
+
     // @NonNull
     // private final Map<URI, Supplier<Schema>> loadingStack;
 
@@ -55,6 +61,17 @@ public class SchemaCache {
 
     public void cacheSchema(URI schemaURL, Schema schema) {
         absoluteSchemaCache.put(schemaURL, schema);
+    }
+
+    public void cacheDocument(URI documentURI, JsonObject document) {
+        checkNotNull(documentURI, "documentURI must not be null");
+        checkNotNull(document, "document must not be null");
+        absoluteDocumentCache.put(documentURI, document);
+    }
+
+    public Optional<JsonObject> lookupDocument(URI documentURI) {
+        checkNotNull(documentURI, "documentURI must not be null");
+        return Optional.ofNullable(absoluteDocumentCache.get(documentURI));
     }
 
     /**
@@ -106,9 +123,12 @@ public class SchemaCache {
             Map<URI, JsonPath> values = new HashMap<>();
             RecursiveJsonIterator.visitDocument(document, (keyOrIndex, val, path) -> {
                 if ($ID.key().equals(keyOrIndex)) {
-                    final URI $idAsURI = URI.create(((JsonString) val).getString());
-                    URI absoluteIdentifier = documentURI.resolve($idAsURI);
-                    values.put(absoluteIdentifier, path);
+                    if (val.getValueType() == JsonValue.ValueType.STRING) {
+                        final URI $idAsURI = URI.create(((JsonString) val).getString());
+                        URI absoluteIdentifier = documentURI.resolve($idAsURI);
+                        values.put(absoluteIdentifier, path);
+                    }
+
                 }
             });
 

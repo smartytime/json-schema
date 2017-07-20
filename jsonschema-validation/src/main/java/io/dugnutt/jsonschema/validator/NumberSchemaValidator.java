@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.NumberSchema;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 
 import javax.json.JsonNumber;
 import java.math.BigDecimal;

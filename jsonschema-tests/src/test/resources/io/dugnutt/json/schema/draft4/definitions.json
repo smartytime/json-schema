@@ -2,7 +2,7 @@
   {
     "description": "valid definition",
     "schema": {
-      "$ref": "http://json-schema.org/draft-04/schema#"
+      "$ref": "http://json-schema.org/draft-06/schema#"
     },
     "tests": [
       {
@@ -21,7 +21,7 @@
   {
     "description": "invalid definition",
     "schema": {
-      "$ref": "http://json-schema.org/draft-04/schema#"
+      "$ref": "http://json-schema.org/draft-06/schema#"
     },
     "tests": [
       {

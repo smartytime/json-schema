@@ -1,6 +1,6 @@
 {
-  "id": "http://json-schema.org/draft-04/schema#",
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-06/schema#",
   "description": "Core schema meta-schema",
   "definitions": {
     "schemaArray": {
@@ -46,7 +46,7 @@
   },
   "type": "object",
   "properties": {
-    "id": {
+    "$id": {
       "type": "string",
       "format": "uri"
     },

@@ -1,0 +1,210 @@
+{
+  "$schema" : "http://json-schema.org/draft-06/schema#",
+  "$id" : "http://schema.sbsp.io/primitives.json#",
+  "title" : "Infusionsoft json-schema for defining primitive formats ",
+  "definitions" : {
+    "url" : { },
+    "dateTime" : { },
+    "email" : { },
+    "phone" : {
+      "pattern" : "^\\+?[1-9]\\d{1,14}$"
+    },
+    "identifier" : { },
+    "templateString" : { },
+    "date" : {
+      "pattern" : "^(19|20)\\d\\d([- /.])(0[1-9]|1[012])\\2(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "tabularData" : { },
+    "hidden" : { },
+    "time" : {
+      "pattern" : "^([0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))$"
+    },
+    "dayOfWeek" : { },
+    "month" : { },
+    "color" : {
+      "pattern" : "^#?(?:(?:[0-9a-fA-F]{2}){3}|(?:[0-9a-fA-F]){3})$"
+    },
+    "imageUrl" : { },
+    "addressLine" : {
+      "maxLength" : 255
+    },
+    "city" : {
+      "maxLength" : 100
+    },
+    "state" : {
+      "pattern" : "^[A-Z0-9]{2}-[A-Z0-9]{2}$"
+    },
+    "postalCode" : {
+      "exclusiveMaximum" : 50
+    },
+    "countryCode" : {
+      "exclusiveMaximum" : 3,
+      "exlusiveMinimum" : 3
+    },
+    "boolean" : { },
+    "double" : { },
+    "integer" : { },
+    "videoUrl" : {
+      "pattern" : "^((http|https):\\/\\/)([a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*(\\.[a-zA-Z]{2,6})([\\/|?].*)*)$"
+    },
+    "uploadedFileUrl" : { },
+    "textarea" : { },
+    "string" : { },
+    "jsonSchema" : { },
+    "html" : { },
+    "timeZone" : { },
+    "website" : { },
+    "languageTag" : { },
+    "audienceBuilder" : { }
+  },
+  "url" : { },
+  "dateTime" : {
+    "formatMaximum" : {
+      "type" : "string"
+    },
+    "formatMinimum" : {
+      "type" : "string"
+    }
+  },
+  "email" : { },
+  "phone" : { },
+  "identifier" : { },
+  "templateString" : {
+    "maxSize" : {
+      "type" : "integer"
+    },
+    "minSize" : {
+      "type" : "integer"
+    },
+    "textFormatType" : {
+      "type" : "string"
+    }
+  },
+  "date" : {
+    "formatMaximum" : {
+      "type" : "string",
+      "pattern" : "^(19|20)\\d\\d([- /.])(0[1-9]|1[012])\\2(0[1-9]|[12][0-9]|3[01])$"
+    },
+    "formatMinimum" : {
+      "type" : "string",
+      "pattern" : "^(19|20)\\d\\d([- /.])(0[1-9]|1[012])\\2(0[1-9]|[12][0-9]|3[01])$"
+    }
+  },
+  "tabularData" : { },
+  "hidden" : { },
+  "time" : {
+    "formatMinumum" : {
+      "type" : "string",
+      "pattern" : "^([0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))$"
+    },
+    "formatMaximum" : {
+      "type" : "string",
+      "pattern" : "^([0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))$"
+    }
+  },
+  "dayOfWeek" : { },
+  "month" : { },
+  "color" : {
+    "minLuminance" : {
+      "type" : "integer"
+    },
+    "maxLuminance" : {
+      "type" : "integer"
+    }
+  },
+  "imageUrl" : {
+    "width" : {
+      "type" : "integer",
+      "minimum" : 40.0
+    },
+    "height" : {
+      "type" : "integer",
+      "minimum" : 40.0
+    }
+  },
+  "addressLine" : {
+    "maxLength" : {
+      "type" : "integer"
+    }
+  },
+  "city" : { },
+  "state" : {
+    "countryCode" : {
+      "type" : "string",
+      "maxLength" : 3,
+      "minLength" : 3
+    }
+  },
+  "postalCode" : { },
+  "countryCode" : { },
+  "boolean" : {
+    "labelForTrue" : {
+      "type" : "string"
+    },
+    "labelForFalse" : {
+      "type" : "string"
+    }
+  },
+  "double" : {
+    "maximum" : {
+      "type" : "number"
+    },
+    "minimum" : {
+      "type" : "number"
+    }
+  },
+  "integer" : {
+    "maximum" : {
+      "type" : "integer"
+    },
+    "minimum" : {
+      "type" : "integer"
+    }
+  },
+  "videoUrl" : { },
+  "uploadedFileUrl" : {
+    "allowedTypes" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "disallowedTypes" : {
+      "type" : "array",
+      "items" : {
+        "type" : "string"
+      }
+    },
+    "maxFileSize" : {
+      "type" : "integer"
+    }
+  },
+  "textarea" : {
+    "maxSize" : {
+      "type" : "integer"
+    },
+    "minSize" : {
+      "type" : "integer"
+    },
+    "textFormatType" : {
+      "type" : "string"
+    }
+  },
+  "string" : {
+    "maxSize" : {
+      "type" : "integer"
+    },
+    "minSize" : {
+      "type" : "integer"
+    },
+    "pattern" : {
+      "type" : "string"
+    }
+  },
+  "jsonSchema" : { },
+  "html" : { },
+  "timeZone" : { },
+  "website" : { },
+  "languageTag" : { },
+  "audienceBuilder" : { }
+}

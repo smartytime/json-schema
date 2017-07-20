@@ -1,5 +1,5 @@
 {
-  "id":"http://localhost:1234/yaala/_schemas/parent#",
+  "$id":"http://localhost:1234/yaala/_schemas/parent#",
   "type":"object",
   "properties":{ "n":{ "type":"number" } },
   "required":[ "n" ]

@@ -9,7 +9,7 @@
         "b": {
           "$ref": "#/definitions/Size"
         },
-        "id": {
+        "$id": {
           "$ref": "directory/subschemas.json#/definitions/Identifier"
         }
       }

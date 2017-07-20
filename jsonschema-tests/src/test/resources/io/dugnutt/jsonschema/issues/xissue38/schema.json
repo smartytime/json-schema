@@ -1,16 +1,16 @@
 {
   "type": "object",
-  "id": "urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:Person",
+  "$id": "urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:Person",
   "properties": {
     "book": {
       "type": "object",
-      "id": "urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:PhoneBook",
+      "$id": "urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:PhoneBook",
       "properties": {
         "numbers": {
           "type": "array",
           "items": {
             "type": "object",
-            "id": "urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:PhoneNumber",
+            "$id": "urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:PhoneNumber",
             "properties": {
               "number": {
                 "type": "string",

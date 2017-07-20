@@ -17,9 +17,12 @@ public class EndToEndTest {
 
     @Test
     public void testParseAndValidate() throws MalformedURLException {
+        final InputStream primitives = ResourceLoader.DEFAULT.getStream("primitives.json");
         final InputStream jsonSchema = ResourceLoader.DEFAULT.getStream("sbsp-account-profile.json");
         final JsonObject jsonData = ResourceLoader.DEFAULT.readObj("account-data.json");
-        Schema loadedSchema = schemaFactory().load(jsonSchema);
+        Schema loadedSchema = schemaFactory()
+                .withPreloadedSchema(primitives)
+                .load(jsonSchema);
         final SchemaValidator<?> validator = createValidatorForSchema(loadedSchema);
         final Optional<ValidationError> errors = validator.validate(jsonData);
         System.out.println();

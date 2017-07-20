@@ -15,20 +15,9 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 public class ArraySchemaTest {
-
-    @Test
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(ArraySchema.class)
-                .withRedefinedSuperclass()
-                .withIgnoredFields("location")
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
-    }
 
     @Test(expected = SchemaException.class)
     public void tupleAndListFailure() {

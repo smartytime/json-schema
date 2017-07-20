@@ -1,8 +1,8 @@
 {
-  "message": "#: #: only 2 subschema matches out of 3",
+  "message": "#: only 2 subschema matches out of 3",
   "causingExceptions": [
     {
-      "message": "#/b: expected type: string, found: integer"
+      "message": "#/b: expected type: string, found: number"
     }
   ]
 }

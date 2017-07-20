@@ -69,14 +69,14 @@ public class SchemaLocation {
 
     public static SchemaLocation schemaLocation(URI rootDocument) {
         checkNotNull(rootDocument, "rootDocument must not be null");
-        return new SchemaLocation(rootDocument, JsonPath.jsonPath(), rootDocument, rootDocument);
+        return new SchemaLocation(rootDocument, JsonPath.rootPath(), rootDocument, rootDocument);
     }
 
     public static SchemaLocation schemaLocation(String rootDocumentVal) {
         checkNotNull(rootDocumentVal, "rootDocument must not be null");
         JsonPath path;
         if (rootDocumentVal.startsWith("#/")) {
-            path = JsonPath.parse(rootDocumentVal.substring(1));
+            path = JsonPath.parseFromURIFragment(rootDocumentVal);
         } else {
             path = JsonPath.rootPath();
         }
@@ -89,7 +89,7 @@ public class SchemaLocation {
     }
 
     public URI getJsonPointerFragment() {
-        return URI.create("#" + jsonPath.toJsonPointer());
+        return jsonPath.toURIFragment();
     }
 
     public List<String> getPath() {

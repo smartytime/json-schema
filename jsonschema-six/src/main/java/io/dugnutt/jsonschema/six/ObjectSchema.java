@@ -1,6 +1,5 @@
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.validator.PathAwareJsonValue;
 import lombok.Getter;
 
 import javax.validation.constraints.Min;

@@ -3,6 +3,7 @@ package io.dugnutt.jsonschema.validator;
 import com.google.common.base.Joiner;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.Schema;
 
 import javax.json.JsonValue;

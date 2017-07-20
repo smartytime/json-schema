@@ -2,6 +2,7 @@ package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.ObjectSchema;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.ReferenceSchema;
 import io.dugnutt.jsonschema.six.Schema;
 
@@ -69,7 +70,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
                 .ifPresent(extraPropertyValidator ->
                         schema.getAdditionalProperties(subject)
                                 .forEach(propertyName -> {
-                                    PathAwareJsonValue propertyValue = subject.get(propertyName);
+                                    PathAwareJsonValue propertyValue = subject.getPathAware(propertyName);
                                     Optional<ValidationError> error = extraPropertyValidator.validate(propertyValue);
                                     error.ifPresent(additionalPropertyErrors::add);
                                 })
@@ -95,7 +96,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
             subjectProperties.stream()
                     .filter(regexMatches(pattern))
                     .forEach(propertyName -> {
-                        final PathAwareJsonValue propertyValue = subject.get(propertyName);
+                        final PathAwareJsonValue propertyValue = subject.getPathAware(propertyName);
                         final Optional<ValidationError> error = factory.createValidator(patternSchema)
                                 .validate(propertyValue);
                         error.ifPresent(allErrors::add);
@@ -115,7 +116,7 @@ public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {
 
         final Optional<SchemaValidator<Schema>> propertyNameValidator = schema.getPropertyNameSchema().map(factory::createValidator);
 
-        subject.forEach((propertyName, pathAwareProperty) -> {
+        subject.forEachKey((propertyName, pathAwareProperty) -> {
             // Validate against property schema if one exists
             schema.findPropertySchema(propertyName)
                     .ifPresent(propertySchema -> {

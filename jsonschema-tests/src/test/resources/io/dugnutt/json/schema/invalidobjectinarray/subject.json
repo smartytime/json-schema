@@ -5,7 +5,7 @@
     "target": {
       "apps": [
         {
-          "id": "This should be a number type!",
+          "$id": "This should be a number type!",
           "platforms": [
             "ios"
           ]

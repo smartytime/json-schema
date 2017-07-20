@@ -2,6 +2,7 @@ package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.NullSchema;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 
 import javax.json.JsonValue;
 import java.util.Optional;

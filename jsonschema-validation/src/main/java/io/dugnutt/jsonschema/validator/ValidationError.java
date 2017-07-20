@@ -158,7 +158,7 @@ public class ValidationError {
         if (pointerToViolation == null) {
             return null;
         }
-        return pointerToViolation.toURIFragment();
+        return pointerToViolation.toURIFragment().toString();
     }
 
     /**

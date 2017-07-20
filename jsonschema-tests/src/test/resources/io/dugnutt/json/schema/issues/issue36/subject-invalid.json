@@ -1,6 +1,6 @@
 [
   {
-    "id": 2,
+    "$id": 2,
     "name": [
       "An ice sculpture"
     ],
@@ -20,7 +20,7 @@
     }
   },
   {
-    "id": 3,
+    "$id": 3,
     "name": "A blue mouse",
     "dimensions": {
       "length": 3.1,
@@ -33,7 +33,7 @@
     }
   },
   {
-    "id": "4",
+    "$id": "4",
     "name": "A little chick",
     "price": 12.50,
     "dimensions": {

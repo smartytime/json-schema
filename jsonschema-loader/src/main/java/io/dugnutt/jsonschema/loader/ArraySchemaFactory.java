@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.ArraySchema;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_ITEMS;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ITEMS;
@@ -29,7 +30,7 @@ class ArraySchemaFactory {
 
     ArraySchema.Builder createArraySchemaBuilder() {
         ArraySchema.Builder builder = ArraySchema.builder(schemaModel.getLocation());
-        final FluentJsonObject schemaJson = schemaModel.schemaJson;
+        final PathAwareJsonValue schemaJson = schemaModel.schemaJson;
 
         schemaJson.findInteger(MIN_ITEMS).ifPresent(builder::minItems);
         schemaJson.findInt(MAX_ITEMS).ifPresent(builder::maxItems);

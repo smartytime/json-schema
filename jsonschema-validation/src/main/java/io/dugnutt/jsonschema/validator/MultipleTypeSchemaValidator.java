@@ -2,6 +2,7 @@ package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.MultipleTypeSchema;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 
 import java.util.Optional;
 

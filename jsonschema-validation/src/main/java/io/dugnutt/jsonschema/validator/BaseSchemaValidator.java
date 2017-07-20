@@ -2,6 +2,7 @@ package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.CombinedSchema;
 import io.dugnutt.jsonschema.six.ObjectComparator;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.Schema;
 
 import javax.json.JsonValue;
@@ -37,8 +38,8 @@ public class BaseSchemaValidator<X extends Schema> extends SchemaValidator<X> {
         validateConst(toBeValidated).ifPresent(allErrors::add);
         validateNot(toBeValidated).ifPresent(allErrors::add);
         validateCombinedSchema(schema.getAllOfSchema(), toBeValidated).ifPresent(allErrors::add);
-        validateCombinedSchema(schema.getAllOfSchema(), toBeValidated).ifPresent(allErrors::add);
-        validateCombinedSchema(schema.getAllOfSchema(), toBeValidated).ifPresent(allErrors::add);
+        validateCombinedSchema(schema.getAnyOfSchema(), toBeValidated).ifPresent(allErrors::add);
+        validateCombinedSchema(schema.getOneOfSchema(), toBeValidated).ifPresent(allErrors::add);
 
         //Also perform whatever specific type validation we need to
         wrapped.validate(toBeValidated).ifPresent(allErrors::add);

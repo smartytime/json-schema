@@ -1,8 +1,10 @@
 {
-    "properties" : {
-        "weight" : {
-            "type" : "number"
-        }
-    },
-    "additionalProperties" : false
+  "properties": {
+    "weight": {
+      "type": "number"
+    }
+  },
+  "additionalProperties": {
+    "type": null
+  }
 }

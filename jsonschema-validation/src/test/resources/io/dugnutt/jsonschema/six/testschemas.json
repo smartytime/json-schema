@@ -354,7 +354,7 @@
         "dependencies": {
           "2ndLevel": {
             "type": "object",
-            "additionalProperties": false,
+            "additionalProperties": { "type": null },
             "patternProperties": {
               "2ndL.*l$": {
                 "type": "object",
@@ -363,13 +363,13 @@
                     "type": "string"
                   }
                 },
-                "additionalProperties": false
+                "additionalProperties": { "type": null }
               }
             }
           }
         }
       }
     },
-    "additionalProperties": false
+    "additionalProperties": { "type": null }
   }
 }

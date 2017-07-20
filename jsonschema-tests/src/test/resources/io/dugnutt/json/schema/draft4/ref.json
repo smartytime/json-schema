@@ -7,7 +7,7 @@
           "$ref": "#"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": { "type": null }
     },
     "tests": [
       {
@@ -205,7 +205,7 @@
   {
     "description": "remote ref, containing refs itself",
     "schema": {
-      "$ref": "http://json-schema.org/draft-04/schema#"
+      "$ref": "http://json-schema.org/draft-06/schema#"
     },
     "tests": [
       {
