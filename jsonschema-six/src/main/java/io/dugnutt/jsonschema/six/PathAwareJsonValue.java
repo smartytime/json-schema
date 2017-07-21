@@ -1,6 +1,5 @@
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.PartialJsonObject;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,8 +22,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * This class is used for convenience.  It wraps the JSR353 {@link JsonObject} and adds some extra methods
- * that allow more fluent usage.
+ * This class is used for convenience in accessing data within a JsonObject.  It wraps the JSR353 {@link JsonObject}
+ * and adds some extra methods that allow more fluent usage.
  */
 @Getter
 @AllArgsConstructor
@@ -183,6 +182,18 @@ public class PathAwareJsonValue implements PartialJsonObject {
         });
     }
 
+    /**
+     * Returns the number of key-value mappings in this map.  If the
+     * map contains more than <tt>Integer.MAX_VALUE</tt> elements, returns
+     * <tt>Integer.MAX_VALUE</tt>.
+     *
+     * @return the number of key-value mappings in this map
+     */
+    @Override
+    public int size() {
+        return asJsonObject().size();
+    }
+
     public JsonValue get(String childKey) {
         if (!(childKey instanceof String)) {
             throw new IllegalStateException("Only string keys are allowed");
@@ -215,6 +226,11 @@ public class PathAwareJsonValue implements PartialJsonObject {
         return asJsonObject().getJsonString(name);
     }
 
+    public PathAwareJsonValue getPathAwareJsonArray(String key) {
+        JsonArray jsonArray = getJsonArray(key);
+        return this.forChild(jsonArray, key);
+    }
+
     @Override
     public String getString(String name) {
         return asJsonObject().getString(name);
@@ -244,19 +260,6 @@ public class PathAwareJsonValue implements PartialJsonObject {
     public boolean getBoolean(String name, boolean defaultValue) {
         return asJsonObject().getBoolean(name, defaultValue);
     }
-
-    // public <X extends JsonStructure> Optional<X> findStructure(JsonSchemaKeyword keyword, Class<X> expectedClass) {
-    //     checkNotNull(keyword, "keyword must not be null");
-    //     checkNotNull(expectedClass, "expectedClass must not be null");
-    //
-    //     final String keywordVal = keyword.key();
-    //     final JsonPath childPath = path.child(keywordVal);
-    //
-    //     return this.findByKey(keyword)
-    //             .map(LoadingUtils.castTo(JsonStructure.class, childPath.getURIFragment())) //Hard cast - will error if it's not a structure
-    //             .filter(value -> expectedClass.isAssignableFrom(value.getClass()))
-    //             .map(expectedClass::cast);
-    // }
 
     @Override
     public boolean isNull(String name) {
@@ -365,10 +368,19 @@ public class PathAwareJsonValue implements PartialJsonObject {
         return wrapped.asJsonObject().keySet();
     }
 
-    public Stream<PathAwareJsonValue> streamArrayItems() {
+    public Stream<PathAwareJsonValue> getPathAwareArrayItems() {
         AtomicInteger i = new AtomicInteger(0);
         return wrapped.asJsonArray().stream()
                 .map(jsonValue -> forChild(jsonValue, i.incrementAndGet()));
+    }
+
+    public Stream<PathAwareJsonValue> getPathAwareArrayItems(ValueType valueType) {
+        return getPathAwareArrayItems()
+                .peek(item -> {
+                    if (!item.is(valueType)) {
+                        throw new UnexpectedValueException(item.getPath(), item.getWrapped(), valueType);
+                    }
+                });
     }
 
     public PathAwareJsonValue withValue(JsonValue value) {
@@ -378,6 +390,10 @@ public class PathAwareJsonValue implements PartialJsonObject {
 
     private PathAwareJsonValue forChild(JsonValue child, int idx) {
         return new PathAwareJsonValue(child, path.child(idx));
+    }
+
+    private PathAwareJsonValue forChild(JsonValue child, String key) {
+        return new PathAwareJsonValue(child, path.child(key));
     }
 
     /**

@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
@@ -97,7 +96,7 @@ public class BaseSchemaValidatorEnumTest {
         JsonArray testEnum = JsonUtils.readValue("[1, 1.0, 1.00]", JsonArray.class);
         JsonNumber testValNotSame = JsonUtils.readValue("1.000", JsonNumber.class);
 
-        final Schema schema = EmptySchema.builder(schemaLocation()).enumValues(testEnum).build();
+        final Schema schema = EmptySchema.builder().enumValues(testEnum).build();
         final SchemaValidator<?> validator = new BaseSchemaValidator<>(schema, alwaysSuccessfulValidator());
 
         final Optional<ValidationError> validate = validator.validate(testValNotSame);
@@ -111,7 +110,7 @@ public class BaseSchemaValidatorEnumTest {
         JsonArray testEnum = JsonUtils.readValue("[1, 1.0, 1.00]", JsonArray.class);
         JsonNumber testValNotSame = JsonUtils.readValue("1.00", JsonNumber.class);
 
-        final Schema schema = EmptySchema.builder(schemaLocation()).enumValues(testEnum).build();
+        final Schema schema = EmptySchema.builder().enumValues(testEnum).build();
         final SchemaValidator<?> validator = new BaseSchemaValidator<>(schema, alwaysSuccessfulValidator());
 
         final Optional<ValidationError> validate = validator.validate(testValNotSame);
@@ -171,7 +170,7 @@ public class BaseSchemaValidatorEnumTest {
     }
 
     private Schema.Builder subject() {
-        return EmptySchema.builder(schemaLocation())
+        return EmptySchema.builder()
                 .enumValues(possibleValues.build());
     }
 

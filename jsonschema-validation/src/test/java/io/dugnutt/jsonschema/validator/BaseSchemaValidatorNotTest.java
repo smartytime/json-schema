@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import javax.json.JsonValue;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.alwaysSuccessfulValidator;
@@ -16,7 +15,7 @@ import static io.dugnutt.jsonschema.validator.ValidationMocks.alwaysSuccessfulVa
 public class BaseSchemaValidatorNotTest {
     @Test
     public void failure() {
-        Schema subject = ValidationTestSupport.buildWithLocation(EmptySchema.builder(schemaLocation())
+        Schema subject = ValidationTestSupport.buildWithLocation(EmptySchema.builder()
                 .notSchema(BooleanSchema.BOOLEAN_SCHEMA));
         ValidationTestSupport.failureOf(subject)
                 .validator(new BaseSchemaValidator<>(subject, alwaysSuccessfulValidator()))
@@ -27,8 +26,7 @@ public class BaseSchemaValidatorNotTest {
 
     @Test
     public void success() {
-        final Schema notSchema = EmptySchema.builder(schemaLocation()).notSchema(BooleanSchema.BOOLEAN_SCHEMA).build();
+        final Schema notSchema = EmptySchema.builder().notSchema(BooleanSchema.BOOLEAN_SCHEMA).build();
         expectSuccess(() -> new BaseSchemaValidator<>(notSchema, alwaysSuccessfulValidator()).validate(jsonStringValue("foo")));
-        ;
     }
 }

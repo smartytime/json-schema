@@ -42,6 +42,14 @@ public class ReferenceSchema extends Schema {
         }
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public URI getAbsoluteReferenceURI() {
+        return absoluteReferenceURI;
+    }
+
     public Optional<Schema> getFullyDereferencedSchema() {
         Set<ReferenceSchema> encountered = new HashSet<>();
         ReferenceSchema schema = this;
@@ -58,8 +66,12 @@ public class ReferenceSchema extends Schema {
         throw new SchemaException(absoluteReferenceURI, "Infinite recursion found between schemas.  Probably bug: %s", encountered);
     }
 
-    public static Builder builder(SchemaLocation location) {
-        return new Builder(location);
+    public URI getReferenceURI() {
+        return referenceURI;
+    }
+
+    public Optional<Schema> getReferredSchema() {
+        return Optional.ofNullable(referredSchema);
     }
 
     @Override
@@ -93,18 +105,6 @@ public class ReferenceSchema extends Schema {
         writer.write($REF, referenceURI.toString());
     }
 
-    public URI getAbsoluteReferenceURI() {
-        return absoluteReferenceURI;
-    }
-
-    public URI getReferenceURI() {
-        return referenceURI;
-    }
-
-    public Optional<Schema> getReferredSchema() {
-        return Optional.ofNullable(referredSchema);
-    }
-
     /**
      * Builder class for {@link ReferenceSchema}.
      */
@@ -116,14 +116,6 @@ public class ReferenceSchema extends Schema {
         private String refValue = "";
         private SchemaFactory referenceSchemaLoader;
         private JsonObject rootJsonObject;
-
-        public Builder(String id) {
-            super(id);
-        }
-
-        public Builder(SchemaLocation location) {
-            super(location);
-        }
 
         @Override
         public ReferenceSchema build() {

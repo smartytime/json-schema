@@ -15,29 +15,24 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
-
 /**
  * Boolean schema validator.
  */
-public class BooleanSchema extends Schema {
+public class BooleanSchema extends Schema<BooleanSchema, BooleanSchema.Builder> {
 
-    public static BooleanSchema BOOLEAN_SCHEMA = builder(schemaLocation()).build();
+    public static BooleanSchema BOOLEAN_SCHEMA = builder().build();
 
     BooleanSchema(final Builder builder) {
         super(builder);
     }
 
-    public static Builder builder(SchemaLocation location) {        return new Builder(location);    }
-
-    @Override
-    protected boolean canEqual(final Object other) {
-        return other instanceof BooleanSchema;
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
-    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
-        writer.writeType(JsonSchemaType.BOOLEAN, true);
+    public int hashCode() {
+        return super.hashCode();
     }
 
     @Override
@@ -53,26 +48,47 @@ public class BooleanSchema extends Schema {
         }
     }
 
+    /**
+     * Each schema implementation must provide a completely cloned instance of itself with a new location.  This means that any
+     * schema must also update the location for any of its child schemas.
+     *
+     * @param builder
+     * @param schemaLocation
+     * @return
+     */
     @Override
-    public int hashCode() {
-        return super.hashCode();
+    protected Builder internalWithLocation(SchemaLocation schemaLocation) {
+        return new Builder();
+    }
+
+    @Override
+    protected Builder internalToBuilder() {
+        return new Builder();
+    }
+
+    @Override
+    protected boolean canEqual(final Object other) {
+        return other instanceof BooleanSchema;
+    }
+
+    @Override
+    protected void writePropertiesToJson(JsonSchemaGenerator writer) {
+        writer.writeType(JsonSchemaType.BOOLEAN, true);
     }
 
     /**
      * Builder class for {@link BooleanSchema}.
      */
-    public static class Builder extends Schema.Builder<BooleanSchema> {
-        public Builder(String id) {
-            super(id);
-        }
-
-        public Builder(SchemaLocation location) {
-            super(location);
-        }
+    public static class Builder extends Schema.Builder<BooleanSchema, Builder> {
 
         @Override
         public BooleanSchema build() {
             return new BooleanSchema(this);
+        }
+
+        @Override
+        public Builder self() {
+            return this;
         }
     }
 }

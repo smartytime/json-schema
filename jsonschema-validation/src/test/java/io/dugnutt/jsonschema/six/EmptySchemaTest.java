@@ -22,7 +22,6 @@ import org.junit.Test;
 import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.EmptySchemaValidator.EMPTY_SCHEMA_VALIDATOR;
 
@@ -36,8 +35,8 @@ public class EmptySchemaTest {
 
     @Test
     public void testBuilder() {
-        Assert.assertEquals(EmptySchema.builder(schemaLocation()).build(),
-                EmptySchema.builder(schemaLocation()).build());
+        Assert.assertEquals(EmptySchema.builder().build(),
+                EmptySchema.builder().build());
     }
 
     @Test
@@ -72,7 +71,7 @@ public class EmptySchemaTest {
     }
 
     private JsonObject json(final String title, final String description, final String id) {
-        String jsonFromString = EmptySchema.builder(schemaLocation())
+        String jsonFromString = EmptySchema.builder()
                 .optionalID(id)
                 .title(title)
                 .description(description)

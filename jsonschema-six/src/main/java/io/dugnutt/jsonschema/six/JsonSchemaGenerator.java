@@ -4,8 +4,6 @@ import com.google.common.math.DoubleMath;
 
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -31,10 +29,6 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public void close() {
-        wrapped.close();
-    }
-
     public JsonSchemaGenerator endArray() {
         wrapped.writeEnd();
         return this;
@@ -43,10 +37,6 @@ public class JsonSchemaGenerator {
     public JsonSchemaGenerator endObject() {
         wrapped.writeEnd();
         return this;
-    }
-
-    public void flush() {
-        wrapped.flush();
     }
 
     public JsonGenerator getWrapped() {
@@ -87,7 +77,7 @@ public class JsonSchemaGenerator {
     }
 
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, CombinedSchema schema) {
-        if (schema != null && schema.getSubSchemas().size()>0) {
+        if (schema != null && schema.getSubSchemas().size() > 0) {
             schema.writePropertiesToJson(this);
         }
         return this;
@@ -133,8 +123,6 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-
-
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Collection<String> arrayOfValues) {
         if (arrayOfValues != null && !arrayOfValues.isEmpty()) {
             wrapped.writeKey(property.key());
@@ -147,11 +135,6 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public void optionalWrite(FormatType format) {
-        if (format != null) {
-            write(JsonSchemaKeyword.FORMAT, format.toString());
-        }
-    }
 
     public JsonSchemaGenerator optionalWrite(Pattern pattern) {
         if (pattern != null) {
@@ -182,87 +165,14 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator pattern(Pattern pattern) {
-        wrapped.writeKey(pattern.pattern());
-        return this;
-    }
-
-    public JsonSchemaGenerator write(JsonSchemaKeyword name, JsonValue value) {
-        wrapped.write(name.key(), value);
-        return this;
-    }
-
     public JsonSchemaGenerator write(JsonSchemaKeyword name, String value) {
         wrapped.write(name.key(), value);
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaKeyword name, BigInteger value) {
-        wrapped.write(name.key(), value);
-        return this;
-    }
 
-    public JsonSchemaGenerator write(JsonSchemaKeyword name, BigDecimal value) {
-        wrapped.write(name.key(), value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(JsonSchemaKeyword name, int value) {
-        wrapped.write(name.key(), value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(JsonSchemaKeyword name, long value) {
-        wrapped.write(name.key(), value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(JsonSchemaKeyword name, double value) {
-        wrapped.write(name.key(), value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(JsonSchemaKeyword name, boolean value) {
-        wrapped.write(name.key(), value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(JsonValue value) {
-        wrapped.write(value);
-        return this;
-    }
 
     public JsonSchemaGenerator write(String value) {
-        wrapped.write(value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(BigDecimal value) {
-        wrapped.write(value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(BigInteger value) {
-        wrapped.write(value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(int value) {
-        wrapped.write(value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(long value) {
-        wrapped.write(value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(double value) {
-        wrapped.write(value);
-        return this;
-    }
-
-    public JsonSchemaGenerator write(boolean value) {
         wrapped.write(value);
         return this;
     }
@@ -270,18 +180,6 @@ public class JsonSchemaGenerator {
     public JsonSchemaGenerator write(JsonSchemaKeyword property, Schema schema) {
         wrapped.writeKey(property.key());
         schema.toJson(this);
-        return this;
-    }
-
-    public JsonSchemaGenerator writeEnd() {
-        wrapped.writeEnd();
-        return this;
-    }
-
-    public JsonSchemaGenerator writeIfFalse(JsonSchemaKeyword name, Boolean value) {
-        if (value == null || !value) {
-            wrapped.write(name.key(), false);
-        }
         return this;
     }
 
@@ -297,33 +195,9 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator writeNull(JsonSchemaKeyword name) {
-        wrapped.writeNull(name.key());
-        return this;
-    }
-
-    public JsonSchemaGenerator writeNull() {
-        wrapped.writeNull();
-        return this;
-    }
 
     public JsonSchemaGenerator writePropertyName(String property) {
         wrapped.writeKey(property);
-        return this;
-    }
-
-    public JsonSchemaGenerator writeStartArray() {
-        wrapped.writeStartArray();
-        return this;
-    }
-
-    public JsonSchemaGenerator writeStartArray(JsonSchemaKeyword name) {
-        wrapped.writeStartArray(name.key());
-        return this;
-    }
-
-    public JsonSchemaGenerator writeStartObject(JsonSchemaKeyword name) {
-        wrapped.writeStartObject(name.key());
         return this;
     }
 

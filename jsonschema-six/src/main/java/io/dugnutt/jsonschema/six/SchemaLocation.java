@@ -6,10 +6,8 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -57,7 +55,7 @@ public class SchemaLocation {
         }
     }
 
-    public static SchemaLocation schemaLocation() {
+    public static SchemaLocation anonymousRoot() {
         // If there's not ID for a base schema, assign something unique to avoid false-positive cache-hites
         final URI baseURN = URI.create(DUGNUTT_UUID_SCHEME + "://autoassign-" + UUID.randomUUID().toString() + "/schema");
         return SchemaLocation.builder()
@@ -93,7 +91,7 @@ public class SchemaLocation {
     }
 
     public List<String> getPath() {
-        return Arrays.stream(jsonPath.toArray()).map(Object::toString).collect(Collectors.toList());
+        return jsonPath.toStringPath();
     }
 
     public SchemaLocation withChildPath(String... jsonPath) {

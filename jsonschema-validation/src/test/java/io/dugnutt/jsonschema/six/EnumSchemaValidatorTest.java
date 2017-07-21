@@ -15,30 +15,11 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import javax.json.JsonArray;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonValue;
-import java.util.HashSet;
-import java.util.Set;
-
 import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
-import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;
-import static io.dugnutt.jsonschema.utils.JsonUtils.jsonObjectBuilder;
-import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readValue;
-import static javax.json.spi.JsonProvider.provider;
 import static org.junit.Assert.assertEquals;
 
 public class EnumSchemaValidatorTest {

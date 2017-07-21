@@ -22,8 +22,8 @@ public class StringSchema extends Schema {
     private final FormatType formatType;
     private final String format;
 
-    public StringSchema(SchemaLocation schemaLocation) {
-        this(builder(schemaLocation));
+    public StringSchema() {
+        this(builder());
     }
 
     /**
@@ -45,16 +45,16 @@ public class StringSchema extends Schema {
         this.formatType = FormatType.fromFormat(builder.format);
     }
 
-    public static Builder builder(SchemaLocation location) {
-        return new Builder(location);
-    }
-
-    public FormatType getFormatType() {
-        return formatType;
+    public static Builder builder() {
+        return new Builder();
     }
 
     public String getFormat() {
         return format;
+    }
+
+    public FormatType getFormatType() {
+        return formatType;
     }
 
     public Integer getMaxLength() {
@@ -129,12 +129,6 @@ public class StringSchema extends Schema {
         private Integer maxLength;
         private String pattern;
         private boolean requiresString = true;
-        public Builder(String id) {
-            super(id);
-        }
-        public Builder(SchemaLocation location) {
-            super(location);
-        }
 
         // private FormatValidator formatValidator = FormatValidator.NONE;
 

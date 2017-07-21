@@ -26,7 +26,6 @@ import java.util.Optional;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.ResourceLoader.DEFAULT;
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
@@ -53,7 +52,7 @@ public class StringSchemaTest {
     @Test
     public void formatFailure() {
         var schemaValidator = validatorFactory.createValidator(
-                buildWithLocation(StringSchema.builder(schemaLocation()).format("test-format-failure"))
+                buildWithLocation(StringSchema.builder().format("test-format-failure"))
         );
         failureOf(schemaValidator)
                 .expectedKeyword("format")
@@ -63,22 +62,19 @@ public class StringSchemaTest {
 
     @Test
     public void formatSuccess() {
-        SchemaLocation schemaLocation = schemaLocation();
-        var schemaValidator = validatorFactory.createValidator(StringSchema.builder(schemaLocation).format("test-format-success").build());
+        var schemaValidator = validatorFactory.createValidator(StringSchema.builder().format("test-format-success").build());
         expectSuccess(() -> schemaValidator.validate(jsonStringValue("string")));
-        ;
     }
 
     public void issue38Pattern() {
-        final StringSchema schema = StringSchema.builder(schemaLocation()).requiresString(true).pattern("\\+?\\d+").build();
+        final StringSchema schema = StringSchema.builder().requiresString(true).pattern("\\+?\\d+").build();
         final SchemaValidator<StringSchema> validator = validatorFactory.createValidator(schema);
         verifyFailure(() -> validator.validate(jsonStringValue("aaa")));
-        ;
     }
 
     @Test
     public void maxLength() {
-        StringSchema subject = buildWithLocation(StringSchema.builder(schemaLocation()).maxLength(3));
+        StringSchema subject = buildWithLocation(StringSchema.builder().maxLength(3));
         failureOf(subject)
                 .expectedKeyword("maxLength")
                 .input("foobar")
@@ -87,7 +83,7 @@ public class StringSchemaTest {
 
     @Test
     public void minLength() {
-        StringSchema subject = buildWithLocation(StringSchema.builder(schemaLocation()).minLength(2));
+        StringSchema subject = buildWithLocation(StringSchema.builder().minLength(2));
         failureOf(subject)
                 .expectedKeyword("minLength")
                 .input("a")
@@ -96,7 +92,7 @@ public class StringSchemaTest {
 
     @Test
     public void multipleViolations() {
-        final StringSchema schema = StringSchema.builder(schemaLocation()).minLength(3).maxLength(1).pattern("^b.*").build();
+        final StringSchema schema = StringSchema.builder().minLength(3).maxLength(1).pattern("^b.*").build();
         failureOf(schema)
                 .input("ab")
                 .expected(e -> {
@@ -107,27 +103,27 @@ public class StringSchemaTest {
 
     @Test
     public void notRequiresString() {
-        final StringSchema schema = StringSchema.builder(schemaLocation()).requiresString(false).build();
+        final StringSchema schema = StringSchema.builder().requiresString(false).build();
         expectSuccess(schema, 2);
     }
 
     @Test
     public void patternFailure() {
-        StringSchema subject = buildWithLocation(StringSchema.builder(schemaLocation()).pattern("^a*$"));
+        StringSchema subject = buildWithLocation(StringSchema.builder().pattern("^a*$"));
         failureOf(subject).expectedKeyword("pattern").input("abc").expect();
     }
 
     @Test
     public void patternSuccess() {
 
-        final StringSchema schema = StringSchema.builder(schemaLocation()).pattern("^a*$").build();
+        final StringSchema schema = StringSchema.builder().pattern("^a*$").build();
         expectSuccess(schema, "aaaa");
     }
 
     @Test
     public void success() {
 
-        expectSuccess(StringSchema.builder(schemaLocation()).build(), "foo");
+        expectSuccess(StringSchema.builder().build(), "foo");
     }
 
     @Test
@@ -149,7 +145,7 @@ public class StringSchemaTest {
 
     @Test
     public void typeFailure() {
-        failureOf(StringSchema.builder(schemaLocation()))
+        failureOf(StringSchema.builder())
                 .expectedKeyword("type")
                 .nullInput()
                 .expect();

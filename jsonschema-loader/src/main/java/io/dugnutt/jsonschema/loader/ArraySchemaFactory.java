@@ -29,9 +29,10 @@ class ArraySchemaFactory {
     }
 
     ArraySchema.Builder createArraySchemaBuilder() {
-        ArraySchema.Builder builder = ArraySchema.builder(schemaModel.getLocation());
-        final PathAwareJsonValue schemaJson = schemaModel.schemaJson;
+        ArraySchema.Builder builder = ArraySchema.builder();
+        builder.location(schemaModel.getLocation());
 
+        final PathAwareJsonValue schemaJson = schemaModel.schemaJson;
         schemaJson.findInteger(MIN_ITEMS).ifPresent(builder::minItems);
         schemaJson.findInt(MAX_ITEMS).ifPresent(builder::maxItems);
         schemaJson.findBoolean(UNIQUE_ITEMS).ifPresent(builder::uniqueItems);

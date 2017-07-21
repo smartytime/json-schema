@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SchemaExceptionTest {
 
-    private static final NullSchema SCHEMA = NullSchema.builder(SchemaLocation.schemaLocation())
+    private static final NullSchema SCHEMA = NullSchema.builder()
             .build();
 
     @Rule
@@ -23,7 +23,7 @@ public class SchemaExceptionTest {
 
     @Test
     public void nullActual() {
-        NullSchema schema = NullSchema.builder(schemaLocation("#/required/2")).build();
+        NullSchema schema = NullSchema.builder().location(schemaLocation("#/required/2")).build();
         String actual = failure(schema, STRING, NULL).getMessage();
         assertEquals("#/required/2: expected type: string, found: null", actual);
     }
@@ -37,7 +37,7 @@ public class SchemaExceptionTest {
 
     @Test
     public void nullWithMessage() {
-        NullSchema schema = NullSchema.builder(schemaLocation("#/required/2")).build();
+        NullSchema schema = NullSchema.builder().location(schemaLocation("#/required/2")).build();
         String actual = failure(schema, STRING, NULL).getMessage();
         assertEquals("#/required/2: expected type: string, found: null", actual);
     }

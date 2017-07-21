@@ -10,56 +10,54 @@ import org.junit.runners.Parameterized.Parameters;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
-
 @RunWith(Parameterized.class)
 public class EqualsTester {
 
-    public static final NumberSchema NUMBER_SCHEMA_A = NumberSchema.builder(schemaLocation())
+    public static final NumberSchema NUMBER_SCHEMA_A = NumberSchema.builder()
             .multipleOf(2)
             .exclusiveMaximum(33)
             .requiresNumber(true)
             .build();
 
-    public static final NumberSchema NUMBER_SCHEMA_B = NumberSchema.builder(schemaLocation())
+    public static final NumberSchema NUMBER_SCHEMA_B = NumberSchema.builder()
             .minimum(33)
             .requiresInteger(true)
             .build();
 
-    public static final StringSchema STRING_SCHEMA_A = StringSchema.builder(schemaLocation())
+    public static final StringSchema STRING_SCHEMA_A = StringSchema.builder()
             .format("uri")
             .maxLength(32)
             .requiresString(true)
             .build();
 
-    public static final StringSchema STRING_SCHEMA_B = StringSchema.builder(schemaLocation())
+    public static final StringSchema STRING_SCHEMA_B = StringSchema.builder()
             .maxLength(32)
             .minLength(3)
             .pattern("^[a-z]+$")
             .build();
 
-    public static final BooleanSchema BOOLEAN_SCHEMA_A = BooleanSchema.builder(schemaLocation())
+    public static final BooleanSchema BOOLEAN_SCHEMA_A = BooleanSchema.builder()
             .title("Bool A")
             .build();
 
-    public static final BooleanSchema BOOLEAN_SCHEMA_B = BooleanSchema.builder(schemaLocation())
+    public static final BooleanSchema BOOLEAN_SCHEMA_B = BooleanSchema.builder()
             .title("Bool B")
             .build();
 
-    public static final EmptySchema EMPTY_SCHEMA_A = EmptySchema.builder(schemaLocation())
+    public static final EmptySchema EMPTY_SCHEMA_A = EmptySchema.builder()
             .title("Empty A")
             .build();
 
-    public static final EmptySchema EMPTY_SCHEMA_B = EmptySchema.builder(schemaLocation())
+    public static final EmptySchema EMPTY_SCHEMA_B = EmptySchema.builder()
             .title("Empty B")
             .build();
 
-    public static final CombinedSchema COMBINED_SCHEMA_A = CombinedSchema.builder(schemaLocation())
+    public static final CombinedSchema COMBINED_SCHEMA_A = CombinedSchema.builder()
             .subschema(STRING_SCHEMA_A)
             .subschema(NUMBER_SCHEMA_A)
             .combinedSchemaType(CombinedSchemaType.ANY_OF).build();
 
-    public static final CombinedSchema COMBINED_SCHEMA_B = CombinedSchema.builder(schemaLocation())
+    public static final CombinedSchema COMBINED_SCHEMA_B = CombinedSchema.builder()
             .subschema(STRING_SCHEMA_B)
             .subschema(NUMBER_SCHEMA_B)
             .combinedSchemaType(CombinedSchemaType.ANY_OF).build();

@@ -28,7 +28,7 @@ import static java.util.Objects.requireNonNull;
  * Array schema validator.
  */
 @Getter
-public class ArraySchema extends Schema {
+public class ArraySchema extends Schema<ArraySchema.Builder> {
 
     @Min(0)
     private final Integer minItems;
@@ -59,13 +59,13 @@ public class ArraySchema extends Schema {
 
         this.schemaOfAdditionalItems = builder.schemaOfAdditionalItems;
         if (!(allItemSchema == null || itemSchemas == null)) {
-            throw new SchemaException("cannot perform both tuple and list validation");
+            throw new SchemaException(this.location.getAbsoluteURI(), "cannot perform both tuple and list validation");
         }
         this.requiresArray = builder.requiresArray;
     }
 
-    public static Builder builder(SchemaLocation location) {
-        return new Builder(location);
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -124,14 +124,6 @@ public class ArraySchema extends Schema {
         private List<Schema> itemSchemas = null;
         private Schema schemaOfAdditionalItems;
         private Schema containsSchema;
-
-        public Builder(String id) {
-            super(id);
-        }
-
-        public Builder(SchemaLocation location) {
-            super(location);
-        }
 
         /**
          * Adds an item schema for tuple validation. The array items of the subject under validation

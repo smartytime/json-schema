@@ -93,7 +93,7 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         Schema containsSchema = schema.getContainsSchema();
         if (containsSchema != null) {
             SchemaValidator<Schema> containsValidator = factory.createValidator(containsSchema);
-            Optional<PathAwareJsonValue> containsValid = subject.streamArrayItems()
+            Optional<PathAwareJsonValue> containsValid = subject.getPathAwareArrayItems()
                     .filter(arrayItem -> !containsValidator.validate(arrayItem).isPresent())
                     .findAny();
             if (!containsValid.isPresent()) {

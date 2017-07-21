@@ -23,7 +23,8 @@ public class NumberSchemaFactory {
     }
 
     public NumberSchema.Builder createNumberSchemaBuilder() {
-        NumberSchema.Builder builder = NumberSchema.builder(schemaModel.getLocation());
+        NumberSchema.Builder builder = NumberSchema.builder();
+        builder.location(schemaModel.getLocation());
         final PathAwareJsonValue schemaJson = schemaModel.schemaJson;
         schemaJson.findNumber(MINIMUM).ifPresent(builder::minimum);
         schemaJson.findNumber(MAXIMUM).ifPresent(builder::maximum);

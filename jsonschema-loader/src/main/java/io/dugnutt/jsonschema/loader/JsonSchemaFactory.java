@@ -90,9 +90,9 @@ public class JsonSchemaFactory implements SchemaFactory {
             case INTEGER:
                 return NumberSchemaFactory.createNumberSchemaBuilder(schemaModel).requiresInteger(explicitlyDeclaredType);
             case BOOLEAN:
-                return BooleanSchema.builder(schemaModel.getLocation());
+                return BooleanSchema.builder().location(schemaModel.getLocation());
             case NULL:
-                return NullSchema.builder(schemaModel.getLocation());
+                return NullSchema.builder().location(schemaModel.getLocation());
             case ARRAY:
                 return ArraySchemaFactory.createArraySchemaBuilder(schemaModel, this).requiresArray(explicitlyDeclaredType);
             case OBJECT:
@@ -100,6 +100,7 @@ public class JsonSchemaFactory implements SchemaFactory {
             default:
                 throw schemaModel.createSchemaException(String.format("unknown type: [%s]", schemaType));
         }
+
     }
 
     public Schema createSchema(SchemaLoadingContext schemaModel) {
@@ -273,9 +274,11 @@ public class JsonSchemaFactory implements SchemaFactory {
         if (schemaModel.isRefSchema()) {
             //Ignore all other keywords when encountering a ref
             String ref = schemaJson.getString($REF);
-            return ReferenceSchema.builder(schemaModel.getLocation())
+            return ReferenceSchema.builder()
                     .referenceSchemaLoader(this, schemaModel.getRootSchemaJson())
-                    .referencedURL(ref);
+                    .referencedURL(ref)
+                    .location(schemaModel.getLocation())
+                    ;
         } else if (schemaModel.hasExplicitTypeValue()) {
             // If this is for an explicit type, we can effectively ignore all other keywords, and only
             // load the keywords for this type.

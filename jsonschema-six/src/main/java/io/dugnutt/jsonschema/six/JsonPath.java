@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,7 +36,7 @@ public class JsonPath {
     /**
      * This method ingests a path-separated string intended as a json-pointer.  The string may be based on a URL fragment,
      * and as such may contain escape sequences, (such as %25 to escape /).
-     *
+     * <p>
      * This method assumes that any json-pointer segments are escaped.  Any other escaping, eg URL encoding must be specified
      * by providing appropriate unescapers.  Any provided unescapers will be processed before the json-pointer unescapers
      *
@@ -130,10 +129,6 @@ public class JsonPath {
         return new JsonPath(this.path, this.uriFragment, this.jsonPointerString, index);
     }
 
-    public String toJsonPointer() {
-        return jsonPointerString;
-    }
-
     public Optional<String> getLastPath() {
         if (path.size() > 0) {
             return Optional.of(String.valueOf(path.get(path.size() - 1).getNameOrIndex()));
@@ -142,12 +137,8 @@ public class JsonPath {
         }
     }
 
-    public URI toURIFragment() {
-        return uriFragment;
-    }
-
-    public Object[] toArray() {
-        return path.stream().map(PathPart::getNameOrIndex).toArray();
+    public String toJsonPointer() {
+        return jsonPointerString;
     }
 
     public String toString() {
@@ -157,7 +148,11 @@ public class JsonPath {
     public List<String> toStringPath() {
         return path.stream()
                 .map(PathPart::toString)
-                .collect(Collectors.toList());
+                .collect(StreamUtils.toImmutableList());
+    }
+
+    public URI toURIFragment() {
+        return uriFragment;
     }
 
     @Value

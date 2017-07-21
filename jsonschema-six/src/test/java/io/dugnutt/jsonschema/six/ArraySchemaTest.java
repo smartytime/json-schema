@@ -21,7 +21,9 @@ public class ArraySchemaTest {
 
     @Test(expected = SchemaException.class)
     public void tupleAndListFailure() {
-        ArraySchema.builder(SchemaLocation.schemaLocation()).addItemSchema(BooleanSchema.BOOLEAN_SCHEMA).allItemSchema(NullSchema.NULL_SCHEMA)
+        ArraySchema.builder()
+                .addItemSchema(BooleanSchema.BOOLEAN_SCHEMA)
+                .allItemSchema(NullSchema.NULL_SCHEMA)
                 .build();
     }
 }

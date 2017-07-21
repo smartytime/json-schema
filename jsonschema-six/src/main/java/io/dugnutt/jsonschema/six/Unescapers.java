@@ -7,9 +7,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Unescapers {
 
-    public static Builder builder() {
-        return new Builder();
-    }
+    public static Builder builder() { return new Builder(); }
 
     public static class Builder {
         private final List<UnescapeSequence> replacements = new ArrayList<>();

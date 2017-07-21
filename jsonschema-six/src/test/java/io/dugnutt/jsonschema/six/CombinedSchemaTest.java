@@ -19,7 +19,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static java.util.Arrays.asList;
 
 public class CombinedSchemaTest {
@@ -37,8 +36,8 @@ public class CombinedSchemaTest {
 
     @Test
     public void factories() {
-        CombinedSchema.allOf(schemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
-        CombinedSchema.anyOf(schemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
-        CombinedSchema.oneOf(schemaLocation(), asList(BooleanSchema.BOOLEAN_SCHEMA));
+        CombinedSchema.allOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
+        CombinedSchema.anyOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
+        CombinedSchema.oneOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
     }
 }

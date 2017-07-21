@@ -64,7 +64,7 @@ public class SchemaValidatorFactory {
     }
 
     @FunctionalInterface
-    static interface Factory<X extends Schema> {
+    interface Factory<X extends Schema> {
         SchemaValidator<X> createValidator(X schema, SchemaValidatorFactory factory);
     }
 

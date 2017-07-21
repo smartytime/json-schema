@@ -36,15 +36,9 @@ public abstract class SchemaValidator<S extends Schema> {
 
     public abstract Optional<ValidationError> validate(PathAwareJsonValue subject);
 
-    @Deprecated
     public Optional<ValidationError> validate(JsonValue value) {
         return validate(new PathAwareJsonValue(value, schema.getLocation().getJsonPath()));
     }
-
-    // @Deprecated
-    // protected ValidationError failure(String message, JsonSchemaKeyword keyword) {
-    //     return new ValidationError(schema(), message, keyword, schema.getLocation().getJsonPointerFragment());
-    // }
 
     protected ValidationError.ValidationErrorBuilder createBuilder(PathAwareJsonValue subject) {
         return ValidationError.validationBuilder()

@@ -22,7 +22,6 @@ import io.dugnutt.jsonschema.six.NullSchema;
 import io.dugnutt.jsonschema.six.NumberSchema;
 import io.dugnutt.jsonschema.six.ResourceLoader;
 import io.dugnutt.jsonschema.six.SchemaException;
-import io.dugnutt.jsonschema.six.SchemaLocation;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
@@ -38,7 +37,6 @@ import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
 import static io.dugnutt.jsonschema.six.ResourceLoader.DEFAULT;
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
 import static io.dugnutt.jsonschema.six.ValidationErrorTest.loader;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectFailure;
@@ -55,7 +53,7 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void additionalItemsSchema() {
-        final ArraySchema arraySchema = ArraySchema.builder(schemaLocation())
+        final ArraySchema arraySchema = ArraySchema.builder()
                 .addItemSchema(BooleanSchema.BOOLEAN_SCHEMA)
                 .schemaOfAdditionalItems(NullSchema.NULL_SCHEMA)
                 .build();
@@ -64,10 +62,10 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void additionalItemsSchemaFailure() {
-        NullSchema nullSchema = buildWithLocation(NullSchema.builder(schemaLocation()));
+        NullSchema nullSchema = buildWithLocation(NullSchema.builder());
         ArraySchema subject = buildWithLocation(
-                ArraySchema.builder(schemaLocation())
-                        .addItemSchema(buildWithLocation(BooleanSchema.builder(schemaLocation())))
+                ArraySchema.builder()
+                        .addItemSchema(buildWithLocation(BooleanSchema.builder()))
                         .schemaOfAdditionalItems(nullSchema)
         );
         failureOf(subject)
@@ -85,13 +83,13 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void booleanItems() {
-        ArraySchema subject = ArraySchema.builder(schemaLocation()).allItemSchema(BooleanSchema.BOOLEAN_SCHEMA).build();
+        ArraySchema subject = ArraySchema.builder().allItemSchema(BooleanSchema.BOOLEAN_SCHEMA).build();
         expectFailure(subject, BooleanSchema.BOOLEAN_SCHEMA, "#/2", arrayTestCases.get("boolArrFailure"));
     }
 
     @Test
     public void doesNotRequireExplicitArray() {
-        final ArraySchema arraySchema = ArraySchema.builder(schemaLocation())
+        final ArraySchema arraySchema = ArraySchema.builder()
                 .requiresArray(false)
                 .uniqueItems(true)
                 .build();
@@ -100,7 +98,7 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void maxItems() {
-        ArraySchema subject = buildWithLocation(ArraySchema.builder(schemaLocation()).maxItems(0));
+        ArraySchema subject = buildWithLocation(ArraySchema.builder().maxItems(0));
         failureOf(subject)
                 .schema(subject)
                 .expectedPointer("#")
@@ -112,7 +110,7 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void minItems() {
-        ArraySchema subject = buildWithLocation(ArraySchema.builder(schemaLocation()).minItems(2));
+        ArraySchema subject = buildWithLocation(ArraySchema.builder().minItems(2));
         failureOf(subject)
                 .expectedPointer("#")
                 .expectedKeyword("minItems")
@@ -122,13 +120,13 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void noItemSchema() {
-        final ArraySchema schema = ArraySchema.builder(schemaLocation()).build();
+        final ArraySchema schema = ArraySchema.builder().build();
         expectSuccess(schema, arrayTestCases.get("noItemSchema"));
     }
 
     @Test
     public void nonUniqueArrayOfArrays() {
-        ArraySchema subject = buildWithLocation(ArraySchema.builder(schemaLocation()).uniqueItems(true));
+        ArraySchema subject = buildWithLocation(ArraySchema.builder().uniqueItems(true));
         failureOf(subject)
                 .expectedPointer("#")
                 .expectedKeyword("uniqueItems")
@@ -171,14 +169,14 @@ public class ArraySchemaValidatorTest {
 
     @Test(expected = SchemaException.class)
     public void tupleAndListFailure() {
-        ArraySchema.builder(schemaLocation()).addItemSchema(BooleanSchema.BOOLEAN_SCHEMA).allItemSchema(NullSchema.NULL_SCHEMA)
+        ArraySchema.builder().addItemSchema(BooleanSchema.BOOLEAN_SCHEMA).allItemSchema(NullSchema.NULL_SCHEMA)
                 .build();
     }
 
     @Test
     public void tupleWithOneItem() {
-        BooleanSchema boolSchema = buildWithLocation(BooleanSchema.builder(schemaLocation()));
-        ArraySchema subject = buildWithLocation(ArraySchema.builder(schemaLocation()).addItemSchema(boolSchema));
+        BooleanSchema boolSchema = buildWithLocation(BooleanSchema.builder());
+        ArraySchema subject = buildWithLocation(ArraySchema.builder().addItemSchema(boolSchema));
         failureOf(subject)
                 .expectedViolatedSchema(boolSchema)
                 .expectedPointer("#/0")
@@ -188,7 +186,7 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void typeFailure() {
-        failureOf(ArraySchema.builder(schemaLocation()))
+        failureOf(ArraySchema.builder())
                 .expectedKeyword("type")
                 .input(true)
                 .expect();
@@ -196,31 +194,31 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void uniqueItemsObjectViolation() {
-        ArraySchema subject = ArraySchema.builder(schemaLocation()).uniqueItems(true).build();
+        ArraySchema subject = ArraySchema.builder().uniqueItems(true).build();
         expectFailure(subject, "#", arrayTestCases.get("nonUniqueObjects"));
     }
 
     @Test
     public void uniqueItemsViolation() {
-        ArraySchema subject = ArraySchema.builder(schemaLocation()).uniqueItems(true).build();
+        ArraySchema subject = ArraySchema.builder().uniqueItems(true).build();
         expectFailure(subject, "#", arrayTestCases.get("nonUniqueItems"));
     }
 
     @Test
     public void uniqueItemsWithSameToString() {
-        final ArraySchema schema = ArraySchema.builder(schemaLocation()).uniqueItems(true).build();
+        final ArraySchema schema = ArraySchema.builder().uniqueItems(true).build();
         expectSuccess(schema, arrayTestCases.get("uniqueItemsWithSameToString"));
     }
 
     @Test
     public void uniqueObjectValues() {
-        final ArraySchema schema = ArraySchema.builder(schemaLocation()).uniqueItems(true).build();
+        final ArraySchema schema = ArraySchema.builder().uniqueItems(true).build();
         expectSuccess(schema, arrayTestCases.get("uniqueObjectValues"));
     }
 
     @Test
     public void validate_WhenEqualNumbersWithDifferentLexicalRepresentations_ThenUnique() {
-        final ArraySchema arraySchema = ArraySchema.builder(SchemaLocation.schemaLocation())
+        final ArraySchema arraySchema = ArraySchema.builder()
                 .uniqueItems(true)
                 .requiresArray(true)
                 .build();
@@ -231,7 +229,7 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void validate_WhenEqualNumbersWithSameLexicalRepresentations_ThenNotUnique() {
-        final ArraySchema arraySchema = ArraySchema.builder(SchemaLocation.schemaLocation()).uniqueItems(true).requiresArray(true).build();
+        final ArraySchema arraySchema = ArraySchema.builder().uniqueItems(true).requiresArray(true).build();
         final ArraySchemaValidator validator = new ArraySchemaValidator(arraySchema);
         final Optional<ValidationError> errors = validator.validate(JsonUtils.readValue("[1.0, 1.0, 1.00]", JsonArray.class));
         Assert.assertTrue("Should have no errors", errors.isPresent());
@@ -240,12 +238,12 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void validate_WhenItemsSchemaHasEnum_AndArrayValueIsInEnumButWrongType_ThenFailWithTypeKeyword() {
-        NumberSchema enumSchema = NumberSchema.builder(schemaLocation())
+        NumberSchema enumSchema = NumberSchema.builder()
                 .requiresInteger(true)
                 .enumValues(jsonArray(12, 24.3, 65))
                 .build();
 
-        final ArraySchema arraySchema = ArraySchema.builder(schemaLocation())
+        final ArraySchema arraySchema = ArraySchema.builder()
                 .allItemSchema(enumSchema)
                 .build();
 
@@ -262,11 +260,11 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void validate_WhenItemsSchemaHasEnum_ThenDontEnforceLexicalMatching() {
-        NumberSchema enumSchema = NumberSchema.builder(schemaLocation())
+        NumberSchema enumSchema = NumberSchema.builder()
                 .enumValues(jsonArray(12, 24.3, 65))
                 .build();
 
-        final ArraySchema arraySchema = ArraySchema.builder(schemaLocation())
+        final ArraySchema arraySchema = ArraySchema.builder()
                 .allItemSchema(enumSchema)
                 .build();
 
@@ -276,16 +274,15 @@ public class ArraySchemaValidatorTest {
         assertThat(error.isPresent())
                 .describedAs("Error found: " + error.map(Object::toString).orElse(null))
                 .isFalse();
-        ;
     }
 
     @Test
     public void validate_WhenItemsSchemaHasEnum_ThenEnforceEachItem() {
-        NumberSchema enumSchema = NumberSchema.builder(schemaLocation())
+        NumberSchema enumSchema = NumberSchema.builder()
                 .enumValues(jsonArray(12, 24.3, 65))
                 .build();
 
-        final ArraySchema arraySchema = ArraySchema.builder(schemaLocation())
+        final ArraySchema arraySchema = ArraySchema.builder()
                 .allItemSchema(enumSchema)
                 .build();
 

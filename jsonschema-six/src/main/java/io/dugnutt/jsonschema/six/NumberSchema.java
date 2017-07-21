@@ -7,7 +7,7 @@ import javax.validation.constraints.Min;
 import java.util.Objects;
 
 /**
- * Number schema validator.
+ * Number schema
  */
 @Getter
 @Builder(toBuilder = true, builderClassName = "Builder", builderMethodName = "numberSchemaBuilder")
@@ -23,8 +23,8 @@ public class NumberSchema extends Schema {
     private final Number exclusiveMinimum;
     private final Number exclusiveMaximum;
 
-    public NumberSchema(SchemaLocation schemaLocation) {
-        this(builder(schemaLocation));
+    public NumberSchema() {
+        this(builder());
     }
 
     /**
@@ -43,8 +43,8 @@ public class NumberSchema extends Schema {
         this.requiresInteger = builder.requiresInteger;
     }
 
-    public static Builder builder(SchemaLocation location) {
-        return new Builder(location);
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -94,18 +94,6 @@ public class NumberSchema extends Schema {
      */
     public static class Builder extends Schema.Builder<NumberSchema> {
         private boolean requiresNumber = true;
-
-        public Builder() {
-            super(SchemaLocation.schemaLocation());
-        }
-
-        public Builder(String id) {
-            super(id);
-        }
-
-        public Builder(SchemaLocation location) {
-            super(location);
-        }
 
         @Override
         public NumberSchema build() {

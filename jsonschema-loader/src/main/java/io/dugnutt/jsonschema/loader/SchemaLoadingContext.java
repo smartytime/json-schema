@@ -20,7 +20,6 @@ import lombok.experimental.Wither;
 import javax.annotation.Nullable;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
@@ -32,7 +31,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.loader.LoadingUtils.castTo;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
@@ -111,7 +109,7 @@ public class SchemaLoadingContext {
             String $id = rootSchema.getString($ID.key());
             rootSchemaLocation = SchemaLocation.schemaLocation($id);
         } else {
-            rootSchemaLocation = SchemaLocation.schemaLocation();
+            rootSchemaLocation = SchemaLocation.anonymousRoot();
         }
 
         PathAwareJsonValue schemaJson = new PathAwareJsonValue(rootSchema, rootSchemaLocation.getJsonPath());
@@ -157,10 +155,9 @@ public class SchemaLoadingContext {
     }
 
     public Set<JsonSchemaType> getTypeArray() {
-        return schemaJson.getJsonArray(TYPE.key())
-                .getValuesAs(castTo(JsonString.class, location.withChildPath(TYPE.key()).getJsonPointerFragment())) // This ensures that any classCast exceptions get bubbled correctly
-                .stream()
-                .map(JsonString::getString)
+        return schemaJson.getPathAwareJsonArray(TYPE.key())
+                .getPathAwareArrayItems(STRING)
+                .map(PathAwareJsonValue::asString)
                 .map(JsonSchemaType::fromString)
                 .collect(Collectors.toSet());
     }
@@ -201,10 +198,7 @@ public class SchemaLoadingContext {
 
     public boolean isPropertyType(JsonSchemaKeyword property, JsonValue.ValueType valueType) {
         final JsonValue jsonValue = schemaJson.get(property.key());
-        if (jsonValue != null && jsonValue.getValueType() == valueType) {
-            return true;
-        }
-        return false;
+        return jsonValue != null && jsonValue.getValueType() == valueType;
     }
 
     public boolean isRefSchema() {

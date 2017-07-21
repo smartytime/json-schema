@@ -38,7 +38,9 @@ class ObjectSchemaFactory {
     }
 
     private ObjectSchema.Builder createObjectSchemaBuilder() {
-        ObjectSchema.Builder builder = ObjectSchema.builder(schemaModel.getLocation());
+        ObjectSchema.Builder builder = ObjectSchema.builder();
+        builder.location(schemaModel.getLocation());
+
         PathAwareJsonValue schemaJson = schemaModel.schemaJson;
         schemaJson.findInt(MIN_PROPERTIES).ifPresent(builder::minProperties);
         schemaJson.findInt(MAX_PROPERTIES).ifPresent(builder::maxProperties);

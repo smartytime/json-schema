@@ -21,7 +21,8 @@ public class StringSchemaFactory {
     }
 
     public StringSchema.Builder createStringSchemaBuilder() {
-        StringSchema.Builder builder = StringSchema.builder(schemaModel.getLocation());
+        StringSchema.Builder builder = StringSchema.builder();
+        builder.location(schemaModel.getLocation());
         schemaModel.schemaJson.findInt(JsonSchemaKeyword.MIN_LENGTH).ifPresent(builder::minLength);
         schemaModel.schemaJson.findInt(JsonSchemaKeyword.MAX_LENGTH).ifPresent(builder::maxLength);
         schemaModel.schemaJson.findString(JsonSchemaKeyword.PATTERN).ifPresent(builder::pattern);

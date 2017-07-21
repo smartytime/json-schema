@@ -20,14 +20,14 @@ import nl.jqno.equalsverifier.Warning;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.*;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
 
 public class BooleanSchemaTest {
 
     @Test
     public void failure() {
-        failureOf(BooleanSchema.builder(SchemaLocation.schemaLocation()))
+        failureOf(BooleanSchema.builder())
                 .expectedKeyword("type")
                 .input("false")
                 .expect();

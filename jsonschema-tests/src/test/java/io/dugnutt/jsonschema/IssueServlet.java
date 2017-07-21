@@ -45,7 +45,7 @@ public class IssueServlet extends HttpServlet {
         resp.setContentType("application/json");
         try (
                 BufferedReader bis = new BufferedReader(
-                        new InputStreamReader(new FileInputStream(content)));) {
+                        new InputStreamReader(new FileInputStream(content)))) {
             String line;
             while ((line = bis.readLine()) != null) {
                 resp.getWriter().write(line);

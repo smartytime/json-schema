@@ -27,6 +27,10 @@ public class MultipleTypeSchema extends Schema {
         this.requireOne = builder.requireOne;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public Optional<Schema> getSchemaForType(JsonSchemaType type) {
         return Optional.ofNullable(possibleSchemas.get(type));
     }
@@ -41,19 +45,17 @@ public class MultipleTypeSchema extends Schema {
 
     @Override
     protected void writePropertiesToJson(JsonSchemaGenerator writer) {
-        //todo:ericm Do this
+        for (Schema schema : possibleSchemas.values()) {
+            schema.writePropertiesToJson(writer);
+        }
     }
 
     public static class Builder extends Schema.Builder<MultipleTypeSchema> {
         private final Map<JsonSchemaType, Schema> possibleSchemas = new HashMap<>();
         private boolean requireOne;
 
-        public Builder(String id) {
-            super(id);
-        }
-        public Builder(SchemaLocation location) {
-            super(location);
-        }
+
+
 
         public Builder addPossibleSchema(JsonSchemaType forType, Schema schema) {
             checkNotNull(forType, "forType must not be null");

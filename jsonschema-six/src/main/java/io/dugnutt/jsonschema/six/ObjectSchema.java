@@ -58,8 +58,29 @@ public class ObjectSchema extends Schema {
         this.propertyNameSchema = builder.propertyNameSchema;
     }
 
-    public static Builder builder(SchemaLocation location) {
-        return new Builder(location);
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public Optional<Schema> findPropertySchema(String propertyName) {
+        return propertySchemas != null
+                ? Optional.ofNullable(propertySchemas.get(propertyName))
+                : Optional.empty();
+    }
+
+    public Stream<String> getAdditionalProperties(final PathAwareJsonValue subject) {
+        Set<String> names = subject.propertyNames();
+        return names.stream()
+                .filter(key -> !propertySchemas.containsKey(key))
+                .filter(key -> !matchesAnyPattern(key));
+    }
+
+    public Optional<Schema> getPropertyNameSchema() {
+        return Optional.ofNullable(propertyNameSchema);
+    }
+
+    public Optional<Schema> getSchemaOfAdditionalProperties() {
+        return Optional.ofNullable(schemaOfAdditionalProperties);
     }
 
     @Override
@@ -111,27 +132,6 @@ public class ObjectSchema extends Schema {
         describePropertyDependenciesTo(writer);
     }
 
-    public Optional<Schema> findPropertySchema(String propertyName) {
-        return propertySchemas != null
-                ? Optional.ofNullable(propertySchemas.get(propertyName))
-                : Optional.empty();
-    }
-
-    public Stream<String> getAdditionalProperties(final PathAwareJsonValue subject) {
-        Set<String> names = subject.propertyNames();
-        return names.stream()
-                .filter(key -> !propertySchemas.containsKey(key))
-                .filter(key -> !matchesAnyPattern(key));
-    }
-
-    public Optional<Schema> getPropertyNameSchema() {
-        return Optional.ofNullable(propertyNameSchema);
-    }
-
-    public Optional<Schema> getSchemaOfAdditionalProperties() {
-        return Optional.ofNullable(schemaOfAdditionalProperties);
-    }
-
     private static <K, V> Map<K, V> copyMap(final Map<K, V> original) {
         return Collections.unmodifiableMap(new HashMap<>(original));
     }
@@ -173,13 +173,6 @@ public class ObjectSchema extends Schema {
         private Integer minProperties;
         private Integer maxProperties;
         private StringSchema propertyNameSchema;
-
-        public Builder(String id) {
-            super(id);
-        }
-        public Builder(SchemaLocation location) {
-            super(location);
-        }
 
         /**
          * Adds a property schema.

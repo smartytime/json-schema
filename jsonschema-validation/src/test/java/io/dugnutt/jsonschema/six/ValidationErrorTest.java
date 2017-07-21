@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 public class ValidationErrorTest {
 
     public static final ResourceLoader loader = ResourceLoader.DEFAULT;
-    private final Schema rootSchema = ObjectSchema.builder(SchemaLocation.schemaLocation()).build();
+    private final Schema rootSchema = ObjectSchema.builder().build();
 
     // @Test
     // public void fragmentEscapingBoth() {
@@ -170,7 +170,6 @@ public class ValidationErrorTest {
     @Test
     public void throwForNoFailure() {
         expectSuccess(() -> ValidationError.collectErrors(rootSchema, JsonPath.rootPath(), emptyList()));
-        ;
     }
 
     @Test
@@ -196,7 +195,7 @@ public class ValidationErrorTest {
                         emptyList(),
                         TYPE,
                         "code",
-                        (URI) null,
+                        null,
                         emptyList());
         JsonObject actual = subject.toJson();
         Assert.assertEquals(JsonObject.NULL, actual.get("pointerToViolation"));
@@ -211,7 +210,7 @@ public class ValidationErrorTest {
                         emptyList(),
                         TYPE,
                         null,
-                        (URI) null, singletonList("Joe"));
+                        null, singletonList("Joe"));
         ValidationError subject =
                 new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
                         JsonPath.parseFromURIFragment("#/a"),
@@ -219,7 +218,7 @@ public class ValidationErrorTest {
                         Arrays.asList(cause),
                         TYPE,
                         "code",
-                        (URI) null,
+                        null,
                         emptyList());
         JsonObject expected = ResourceLoader.DEFAULT.readObj("exception-to-json-with-causes.json");
         JsonObject actual = subject.toJson();

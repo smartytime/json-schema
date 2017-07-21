@@ -1,8 +1,8 @@
 package io.dugnutt.jsonschema.six;
 
-import javax.json.JsonObject;
-
+/**
+ * An interface to support de-referencing $ref schemas.
+ */
 public interface ReferenceSchemaLoader {
     Schema loadReferenceSchema(ReferenceSchema referenceSchema);
-    Schema loadLocalReferenceSchema(ReferenceSchema referenceSchema, JsonObject rootSchemaJson);
 }

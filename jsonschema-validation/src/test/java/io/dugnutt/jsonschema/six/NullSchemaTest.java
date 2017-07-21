@@ -27,7 +27,7 @@ public class NullSchemaTest {
 
     @Test
     public void failure() {
-        ValidationTestSupport.failureOf(NullSchema.builder(SchemaLocation.schemaLocation()))
+        ValidationTestSupport.failureOf(NullSchema.builder())
                 .expectedKeyword("type")
                 .input("null")
                 .expect();
