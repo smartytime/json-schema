@@ -8,6 +8,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -24,6 +25,10 @@ public class JsonSchemaGenerator {
         this.wrapped = checkNotNull(wrapped);
     }
 
+    public JsonGenerator getWrapped() {
+        return wrapped;
+    }
+
     public JsonSchemaGenerator array() {
         wrapped.writeStartArray();
         return this;
@@ -37,10 +42,6 @@ public class JsonSchemaGenerator {
     public JsonSchemaGenerator endObject() {
         wrapped.writeEnd();
         return this;
-    }
-
-    public JsonGenerator getWrapped() {
-        return wrapped;
     }
 
     public JsonSchemaGenerator object() {
@@ -69,43 +70,32 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Schema schema) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, JsonSchema schema) {
         if (schema != null) {
             write(property, schema);
         }
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, CombinedSchema schema) {
-        if (schema != null && schema.getSubSchemas().size() > 0) {
-            schema.writePropertiesToJson(this);
-        }
-        return this;
-    }
-
-    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, List<Schema> schemas) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, List<JsonSchema> schemas) {
         if (schemas != null) {
             wrapped.writeKey(property.key());
             array();
-            for (Schema schema : schemas) {
-                object();
-                schema.writePropertiesToJson(this);
-                endObject();
+            for (JsonSchema schema : schemas) {
+                schema.toJson(this);
             }
             endArray();
         }
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Map<String, Schema> schemas) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Map<String, JsonSchema> schemas) {
         if (schemas != null && !schemas.isEmpty()) {
             writeKey(property);
             object();
             schemas.forEach((k, schema) -> {
                 wrapped.writeKey(k);
-                object();
-                schema.writePropertiesToJson(this);
-                endObject();
+                schema.toJson(this);
             });
             endObject();
         }
@@ -135,7 +125,6 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-
     public JsonSchemaGenerator optionalWrite(Pattern pattern) {
         if (pattern != null) {
             write(JsonSchemaKeyword.PATTERN, pattern.pattern());
@@ -150,18 +139,32 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWritePatternProperties(Map<Pattern, Schema> patterns) {
+    public JsonSchemaGenerator optionalWrite(SchemaKeywords<?> typeSpecificSchemaKeywords) {
+        if (typeSpecificSchemaKeywords != null) {
+            typeSpecificSchemaKeywords.toJson(this);
+        }
+        return this;
+    }
+
+    public JsonSchemaGenerator optionalWritePatternProperties(Map<Pattern, JsonSchema> patterns) {
         if (patterns != null && !patterns.isEmpty()) {
             writeKey(JsonSchemaKeyword.PATTERN_PROPERTIES);
             object();
             patterns.forEach((pattern, schema) -> {
                 wrapped.writeKey(String.valueOf(pattern));
-                object();
-                schema.writePropertiesToJson(this);
-                endObject();
+                schema.toJson(this);
             });
             endObject();
         }
+        return this;
+    }
+
+    public Consumer<JsonValue> jsonValueWriter(JsonSchemaKeyword keyword) {
+        return value -> this.optionalWrite(keyword, value);
+    }
+
+    public JsonSchemaGenerator write(SchemaKeywords<?> keywords) {
+        keywords.toJson(this);
         return this;
     }
 
@@ -170,16 +173,22 @@ public class JsonSchemaGenerator {
         return this;
     }
 
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, URI value) {
+        checkNotNull(name, "name must not be null");
+        checkNotNull(value, "value must not be null");
 
-
-    public JsonSchemaGenerator write(String value) {
-        wrapped.write(value);
+        wrapped.write(name.key(), value.toString());
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaKeyword property, Schema schema) {
-        wrapped.writeKey(property.key());
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, JsonSchema schema) {
+        wrapped.writeKey(name.key());
         schema.toJson(this);
+        return this;
+    }
+
+    public JsonSchemaGenerator write(String value) {
+        wrapped.write(value);
         return this;
     }
 
@@ -195,9 +204,24 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-
     public JsonSchemaGenerator writePropertyName(String property) {
         wrapped.writeKey(property);
+        return this;
+    }
+
+    public Consumer<? super JsonSchema> schemaWriter(JsonSchemaKeyword keyword) {
+        return schema -> write(keyword, schema);
+    }
+
+    public JsonSchemaGenerator writeSchemas(JsonSchemaKeyword property, List<JsonSchema> schemas) {
+        if (schemas != null && !schemas.isEmpty()) {
+            wrapped.writeKey(property.key());
+            array();
+            for (JsonSchema schema : schemas) {
+                schema.toJson(this);
+            }
+            endArray();
+        }
         return this;
     }
 

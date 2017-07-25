@@ -6,6 +6,7 @@ import io.dugnutt.jsonschema.six.BooleanSchema;
 import io.dugnutt.jsonschema.six.CombinedSchema;
 import io.dugnutt.jsonschema.six.EmptySchema;
 import io.dugnutt.jsonschema.six.FormatType;
+import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.MultipleTypeSchema;
 import io.dugnutt.jsonschema.six.NullSchema;
 import io.dugnutt.jsonschema.six.NumberSchema;
@@ -38,11 +39,11 @@ public class SchemaValidatorFactory {
 
     private final JsonProvider provider;
 
-    public static SchemaValidator<?> createValidatorForSchema(Schema schema) {
+    public static SchemaValidator createValidatorForSchema(Schema schema) {
         return DEFAULT_VALIDATOR.createValidator(schema);
     }
 
-    public <S extends Schema> SchemaValidator<S> createValidator(S schema) {
+    public <S extends Schema> SchemaValidator createValidator(JsonSchema schema) {
         checkNotNull(schema, "schema must not be null when creating validator");
         final Factory<S> validatorFunction = (Factory<S>) schemaValidators.get(schema.getClass());
         if (validatorFunction == null) {
@@ -92,12 +93,12 @@ public class SchemaValidatorFactory {
 
         private void initCoreSchemaValidators() {
             schemaValidator(ObjectSchema.class, ObjectSchemaValidator::new);
-            schemaValidator(ArraySchema.class, ArraySchemaValidator::new);
+            schemaValidator(ArraySchema.class, ArrayKeywordValidator::new);
             schemaValidator(BooleanSchema.class, BooleanSchemaValidator::new);
             schemaValidator(CombinedSchema.class, CombinedSchemaValidator::new);
             schemaValidator(EmptySchema.class, EmptySchemaValidator::new);
             schemaValidator(NullSchema.class, NullSchemaValidator::new);
-            schemaValidator(NumberSchema.class, NumberSchemaValidator::new);
+            schemaValidator(NumberSchema.class, NumberKeywordsValidator::new);
             schemaValidator(ReferenceSchema.class, ReferenceSchemaValidator::new);
             schemaValidator(StringSchema.class, StringSchemaValidator::new);
             schemaValidator(MultipleTypeSchema.class, MultipleTypeSchemaValidator::new);

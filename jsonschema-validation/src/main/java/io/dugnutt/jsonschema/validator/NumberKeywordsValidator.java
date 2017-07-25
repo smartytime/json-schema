@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.NumberSchema;
+import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.NumberKeywords;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 
 import javax.json.JsonNumber;
@@ -14,45 +15,35 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.EXCLUSIVE_MINIMUM;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAXIMUM;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MINIMUM;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MULTIPLE_OF;
-import static io.dugnutt.jsonschema.six.JsonSchemaType.INTEGER;
-import static io.dugnutt.jsonschema.six.JsonSchemaType.NUMBER;
 import static javax.json.JsonValue.ValueType;
 
-public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
+public class NumberKeywordsValidator extends KeywordValidator<NumberKeywords> {
 
-    public NumberSchemaValidator(NumberSchema schema) {
-        super(schema);
+    public NumberKeywordsValidator(JsonSchema schema, NumberKeywords keywords) {
+        super(schema, keywords);
     }
 
-    public NumberSchemaValidator(NumberSchema schema, SchemaValidatorFactory factory) {
-        super(schema, factory);
+    public NumberKeywordsValidator(JsonSchema schema, NumberKeywords keywords, SchemaValidatorFactory factory) {
+        super(schema, keywords, factory);
     }
 
     @Override
     public Optional<ValidationError> validate(final PathAwareJsonValue subject) {
-        if (!subject.is(ValueType.NUMBER) && schema.isRequiresNumber()) {
-            return buildTypeMismatchError(subject, NUMBER).buildOptional();
-        } else if (subject.is(ValueType.NUMBER)) {
-            List<ValidationError> errors = new ArrayList<>();
-
-            JsonNumber jsonNumber = subject.asJsonNumber();
-            if (schema.isRequiresInteger() && !jsonNumber.isIntegral()) {
-                errors.add(buildTypeMismatchError(subject, INTEGER).build());
-            }
-
-            double intSubject = jsonNumber.doubleValue();
-            checkMinimum(subject, intSubject).ifPresent(errors::add);
-            checkMaximum(subject, intSubject).ifPresent(errors::add);
-            checkMultipleOf(subject, intSubject).ifPresent(errors::add);
-            return errors.stream().findFirst();
-        } else {
-            return Optional.empty();
+        if (!subject.is(ValueType.NUMBER)) {
+            throw new IllegalArgumentException("Bad input.  Must be a JsonNumber instance");
         }
+        List<ValidationError> errors = new ArrayList<>();
+        JsonNumber jsonNumber = subject.asJsonNumber();
+        double intSubject = jsonNumber.doubleValue();
+        checkMinimum(subject, intSubject).ifPresent(errors::add);
+        checkMaximum(subject, intSubject).ifPresent(errors::add);
+        checkMultipleOf(subject, intSubject).ifPresent(errors::add);
+        return errors.stream().findFirst();
     }
 
     private Optional<ValidationError> checkMaximum(PathAwareJsonValue obj, final double subject) {
-        Number maximum = schema.getMaximum();
-        Number exclusiveMaximum = schema.getExclusiveMaximum();
+        Number maximum = keywords.getMaximum();
+        Number exclusiveMaximum = keywords.getExclusiveMaximum();
 
         if (maximum != null && maximum.doubleValue() < subject) {
             return buildKeywordFailure(obj, MAXIMUM)
@@ -69,8 +60,8 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
     }
 
     private Optional<ValidationError> checkMinimum(PathAwareJsonValue obj, final double subject) {
-        Number minimum = schema.getMinimum();
-        Number exclusiveMinimum = schema.getExclusiveMinimum();
+        Number minimum = keywords.getMinimum();
+        Number exclusiveMinimum = keywords.getExclusiveMinimum();
 
         if (minimum != null && minimum.doubleValue() > subject) {
             return buildKeywordFailure(obj, MINIMUM)
@@ -87,7 +78,7 @@ public class NumberSchemaValidator extends SchemaValidator<NumberSchema> {
     }
 
     private Optional<ValidationError> checkMultipleOf(PathAwareJsonValue obj, final double subject) {
-        Number multipleOf = schema.getMultipleOf();
+        Number multipleOf = keywords.getMultipleOf();
         if (multipleOf != null) {
             BigDecimal remainder = BigDecimal.valueOf(subject).remainder(
                     BigDecimal.valueOf(multipleOf.doubleValue()));

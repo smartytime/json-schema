@@ -2,7 +2,6 @@ package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.ReferenceSchema;
-import io.dugnutt.jsonschema.six.ReferenceSchemaLoader;
 import io.dugnutt.jsonschema.six.Schema;
 
 import java.util.Optional;

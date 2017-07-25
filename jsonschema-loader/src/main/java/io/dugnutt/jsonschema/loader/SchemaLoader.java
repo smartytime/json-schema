@@ -14,42 +14,42 @@ interface SchemaLoader<S extends Schema> {
     // /**
     //  * Constructor.
     //  *
-    //  * @param builder the builder containing the properties. Only {@link SchemaLoaderBuilder#id} is
+    //  * @param stringKeywordsBuilder the stringKeywordsBuilder containing the properties. Only {@link SchemaLoaderBuilder#id} is
     //  *                nullable.
-    //  * @throws NullPointerException if any of the builder properties except {@link SchemaLoaderBuilder#id id} is
+    //  * @throws NullPointerException if any of the stringKeywordsBuilder properties except {@link SchemaLoaderBuilder#id id} is
     //  *                              {@code null}.
     //  */
-    // SchemaLoader(final SchemaLoaderBuilder builder) {
-    //     URI id = builder.id;
-    //     this.provider = checkNotNull(builder.provider);
-    //     if (id == null && builder.schemaJson.containsKey(JsonSchemaProperty.ID.key())) {
+    // SchemaLoader(final SchemaLoaderBuilder stringKeywordsBuilder) {
+    //     URI id = stringKeywordsBuilder.id;
+    //     this.provider = checkNotNull(stringKeywordsBuilder.provider);
+    //     if (id == null && stringKeywordsBuilder.schemaJson.containsKey(JsonSchemaProperty.ID.key())) {
     //         try {
-    //             id = new URI(builder.schemaJson.getString(JsonSchemaProperty.ID.key()));
+    //             id = new URI(stringKeywordsBuilder.schemaJson.getString(JsonSchemaProperty.ID.key()));
     //         } catch (JsonException | URISyntaxException e) {
     //             throw new RuntimeException(e);
     //         }
     //     }
-    //     this.loadingState = new LoadingState(builder.httpClient,
-    //             builder.pointerSchemas,
-    //             builder.rootSchemaJson == null ? builder.schemaJson : builder.rootSchemaJson,
-    //             builder.schemaJson,
+    //     this.loadingState = new LoadingState(stringKeywordsBuilder.httpClient,
+    //             stringKeywordsBuilder.pointerSchemas,
+    //             stringKeywordsBuilder.rootSchemaJson == null ? stringKeywordsBuilder.schemaJson : stringKeywordsBuilder.rootSchemaJson,
+    //             stringKeywordsBuilder.schemaJson,
     //             id,
-    //             builder.pointerToCurrentObj, provider);
+    //             stringKeywordsBuilder.pointerToCurrentObj, provider);
     // }
     //
     // /**
     //  * Populates a {@code Schema.Builder} instance from the {@code schemaJson} schema definition.
     //  *
-    //  * @return the builder which already contains the validation criteria of the schema, therefore
+    //  * @return the stringKeywordsBuilder which already contains the validation criteria of the schema, therefore
     //  * {@link Schema.Builder#build()} can be immediately used to acquire the {@link Schema}
     //  * instance to be used for validation
     //  */
     // public Schema.Builder<?> load() {
-    //     Schema.Builder builder;
+    //     Schema.Builder stringKeywordsBuilder;
     //     if (loadingState.schemaJson.has(JsonSchemaProperty.ENUM)) {
-    //         builder = buildEnumSchema();
+    //         stringKeywordsBuilder = buildEnumSchema();
     //     } else {
-    //         builder = new CombinedSchemaLoader(loadingState, this).load()
+    //         stringKeywordsBuilder = new CombinedSchemaLoader(loadingState, this).load()
     //                 .orElseGet(() -> {
     //                     if (!loadingState.schemaJson.has(JsonSchemaProperty.TYPE) || loadingState.schemaJson.has(JsonSchemaProperty.$REF)) {
     //                         return buildSchemaWithoutExplicitType();
@@ -59,14 +59,14 @@ interface SchemaLoader<S extends Schema> {
     //                 });
     //     }
     //
-    //     loadingState.schemaJson.findString(JsonSchemaProperty.ID).map(JsonString::getString).ifPresent(builder::id);
-    //     loadingState.schemaJson.findString(JsonSchemaProperty.TITLE).map(JsonString::getString).ifPresent(builder::title);
-    //     loadingState.schemaJson.findString(JsonSchemaProperty.DESCRIPTION).map(JsonString::getString).ifPresent(builder::description);
-    //     builder.schemaLocation(loadingState.currentJsonPath.toURIFragment());
-    //     return builder;
+    //     loadingState.schemaJson.findString(JsonSchemaProperty.ID).map(JsonString::getString).ifPresent(stringKeywordsBuilder::id);
+    //     loadingState.schemaJson.findString(JsonSchemaProperty.TITLE).map(JsonString::getString).ifPresent(stringKeywordsBuilder::title);
+    //     loadingState.schemaJson.findString(JsonSchemaProperty.DESCRIPTION).map(JsonString::getString).ifPresent(stringKeywordsBuilder::description);
+    //     stringKeywordsBuilder.schemaLocation(loadingState.currentJsonPath.toURIFragment());
+    //     return stringKeywordsBuilder;
     // }
     //
-    // static SchemaLoaderBuilder builder() {
+    // static SchemaLoaderBuilder stringKeywordsBuilder() {
     //     return new SchemaLoaderBuilder();
     // }
     //
@@ -106,7 +106,7 @@ interface SchemaLoader<S extends Schema> {
     //     } else if (schemaIsOfType(JsonSchemaType.NUMBER)) {
     //         return buildNumberSchema().requiresNumber(false);
     //     } else if (schemaIsOfType(JsonSchemaType.STRING)) {
-    //         return new StringSchemaFactory(loadingState).load().requiresString(false);
+    //         return new StringKeywordsFactoryHelper(loadingState).load().requiresString(false);
     //     }
     //     return null;
     // }
@@ -124,19 +124,19 @@ interface SchemaLoader<S extends Schema> {
     // }
     //
     // private EnumSchema.Builder buildEnumSchema() {
-    //     return EnumSchema.builder().possibleValues(loadingState.schemaJson.expectArray(JsonSchemaProperty.ENUM));
+    //     return EnumSchema.stringKeywordsBuilder().possibleValues(loadingState.schemaJson.expectArray(JsonSchemaProperty.ENUM));
     // }
     //
     // private NotSchema.Builder buildNotSchema() {
     //     JsonObject notSchema = loadingState.schemaJson.expectObject(JsonSchemaProperty.NOT);
     //     SchemaJsonWrapper childSchema = new SchemaJsonWrapper(notSchema);
     //     Schema mustNotMatch = loadChild(childSchema).build();
-    //     return NotSchema.builder().mustNotMatch(mustNotMatch);
+    //     return NotSchema.stringKeywordsBuilder().mustNotMatch(mustNotMatch);
     // }
     //
     // private Schema.Builder<?> buildSchemaWithoutExplicitType() {
     //     if (loadingState.schemaJson.isEmpty()) {
-    //         return EmptySchema.builder();
+    //         return EmptySchema.stringKeywordsBuilder();
     //     }
     //     if (loadingState.schemaJson.has(JsonSchemaProperty.$REF)) {
     //         String ref = loadingState.schemaJson.expectString(JsonSchemaProperty.$REF).getString();
@@ -149,29 +149,29 @@ interface SchemaLoader<S extends Schema> {
     //     if (loadingState.schemaJson.has(JsonSchemaProperty.NOT)) {
     //         return buildNotSchema();
     //     }
-    //     return EmptySchema.builder();
+    //     return EmptySchema.stringKeywordsBuilder();
     // }
     //
     // private NumberSchema.Builder buildNumberSchema() {
-    //     NumberSchema.Builder builder = NumberSchema.builder();
-    //     loadingState.schemaJson.findNumber(JsonSchemaProperty.MINIMUM).map(JsonNumber::doubleValue).ifPresent(builder::minimum);
-    //     loadingState.schemaJson.findNumber(JsonSchemaProperty.MAXIMUM).map(JsonNumber::doubleValue).ifPresent(builder::maximum);
-    //     loadingState.schemaJson.findNumber(JsonSchemaProperty.MULTIPLE_OF).map(JsonNumber::doubleValue).ifPresent(builder::multipleOf);
-    //     loadingState.schemaJson.findBoolean(JsonSchemaProperty.EXCLUSIVE_MINIMUM).ifPresent(builder::exclusiveMinimum);
-    //     loadingState.schemaJson.findBoolean(JsonSchemaProperty.EXCLUSIVE_MAXIMUM).ifPresent(builder::exclusiveMaximum);
-    //     return builder;
+    //     NumberSchema.Builder stringKeywordsBuilder = NumberSchema.stringKeywordsBuilder();
+    //     loadingState.schemaJson.findNumber(JsonSchemaProperty.MINIMUM).map(JsonNumber::doubleValue).ifPresent(stringKeywordsBuilder::minimum);
+    //     loadingState.schemaJson.findNumber(JsonSchemaProperty.MAXIMUM).map(JsonNumber::doubleValue).ifPresent(stringKeywordsBuilder::maximum);
+    //     loadingState.schemaJson.findNumber(JsonSchemaProperty.MULTIPLE_OF).map(JsonNumber::doubleValue).ifPresent(stringKeywordsBuilder::multipleOf);
+    //     loadingState.schemaJson.findBoolean(JsonSchemaProperty.EXCLUSIVE_MINIMUM).ifPresent(stringKeywordsBuilder::exclusiveMinimum);
+    //     loadingState.schemaJson.findBoolean(JsonSchemaProperty.EXCLUSIVE_MAXIMUM).ifPresent(stringKeywordsBuilder::exclusiveMaximum);
+    //     return stringKeywordsBuilder;
     // }
     //
     // private Schema.Builder<?> loadForExplicitType(final JsonSchemaType schemaType) {
     //     switch (schemaType) {
     //         case STRING:
-    //             return new StringSchemaFactory(loadingState).load().requiresString(true);
+    //             return new StringKeywordsFactoryHelper(loadingState).load().requiresString(true);
     //         case NUMBER:
     //             return buildNumberSchema().requiresNumber(true);
     //         case BOOLEAN:
-    //             return BooleanSchema.builder();
+    //             return BooleanSchema.stringKeywordsBuilder();
     //         case NULL:
-    //             return NullSchema.builder();
+    //             return NullSchema.stringKeywordsBuilder();
     //         case ARRAY:
     //             return buildArraySchema().requiresArray(true);
     //         case OBJECT:

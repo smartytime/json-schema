@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.TYPE;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
 import static java.util.Collections.emptyList;

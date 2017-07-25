@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.EmptySchema;
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;

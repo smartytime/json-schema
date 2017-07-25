@@ -64,7 +64,7 @@ public class JsonUtils {
             case OBJECT:
                 return extractObject(v.asJsonObject());
             default:
-                throw new IllegalArgumentException("Can only extract from simple types");
+                throw new IllegalArgumentException("Can only extract from simple keywords");
         }
     }
 

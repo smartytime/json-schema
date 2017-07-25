@@ -1,14 +1,13 @@
 package io.dugnutt.jsonschema.loader.reference;
 
 import io.dugnutt.jsonschema.six.JsonPath;
+import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.RecursiveJsonIterator;
-import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaLocation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
@@ -26,7 +25,7 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
 /**
  * @author erosb
  */
-@Builder(builderClassName = "Builder")
+@Builder(builderClassName = "Builder", builderMethodName = "schemaCacheBuilder")
 @AllArgsConstructor
 public class SchemaCache {
 
@@ -36,7 +35,7 @@ public class SchemaCache {
 
     @NonNull
     @lombok.Builder.Default
-    private final Map<URI, Schema> absoluteSchemaCache = new HashMap<>();
+    private final Map<URI, JsonSchema> absoluteSchemaCache = new HashMap<>();
 
     @NonNull
     @lombok.Builder.Default
@@ -47,7 +46,7 @@ public class SchemaCache {
     // @NonNull
     // private final Map<URI, Supplier<Schema>> loadingStack;
 
-    public void cacheDocumentLocalSchema(URI documentURI, URI schemaURI, Schema schema) {
+    public void cacheDocumentLocalSchema(URI documentURI, URI schemaURI, JsonSchema schema) {
         checkNotNull(schema, "schema must not be null");
         checkNotNull(documentURI, "documentURI must not be null");
         checkNotNull(schemaURI, "schemaURI must not be null");
@@ -55,11 +54,11 @@ public class SchemaCache {
         getDocumentLocalCache(documentURI).put(schemaURI, schema);
     }
 
-    public void cacheSchema(String schemaURL, Schema schema) {
+    public void cacheSchema(String schemaURL, JsonSchema schema) {
         this.cacheSchema(URI.create(schemaURL), schema);
     }
 
-    public void cacheSchema(URI schemaURL, Schema schema) {
+    public void cacheSchema(URI schemaURL, JsonSchema schema) {
         absoluteSchemaCache.put(schemaURL, schema);
     }
 
@@ -89,19 +88,19 @@ public class SchemaCache {
     //         throw forModel.createSchemaException(e.getMessage());
     //     }
     // }
-    public void cacheSchema(SchemaLocation location, Schema schema) {
+    public void cacheSchema(SchemaLocation location, JsonSchema schema) {
         URI absoluteLocation = location.getAbsoluteURI();
-        URI jsonPointerLocation = location.getFullJsonPathURI();
+        URI jsonPointerLocation = location.getAbsoluteJsonPointerURI();
         this.cacheSchema(absoluteLocation, schema);
         this.cacheSchema(jsonPointerLocation, schema);
     }
 
-    public Optional<Schema> getSchema(SchemaLocation schemaLocation) {
-        //A schema can be cached a bunch of places.
-        return getSchema(schemaLocation.getAbsoluteURI(), schemaLocation.getFullJsonPathURI());
+    public Optional<JsonSchema> getSchema(SchemaLocation schemaLocation) {
+        //A schema can be cached in two places
+        return getSchema(schemaLocation.getAbsoluteURI(), schemaLocation.getAbsoluteJsonPointerURI());
     }
 
-    public Optional<Schema> getSchema(URI... possibilities) {
+    public Optional<JsonSchema> getSchema(URI... possibilities) {
         //A schema can be cached a bunch of places.
         return Stream.of(possibilities)
                 .filter(absoluteSchemaCache::containsKey)
@@ -109,8 +108,8 @@ public class SchemaCache {
                 .findAny();
     }
 
-    public Optional<Schema> getSchema(URI schemaURI) {
-        final Schema cacheHit = absoluteSchemaCache.get(schemaURI);
+    public Optional<JsonSchema> getSchema(URI schemaURI) {
+        final JsonSchema cacheHit = absoluteSchemaCache.get(schemaURI);
         return Optional.ofNullable(cacheHit);
     }
 
@@ -146,27 +145,9 @@ public class SchemaCache {
     //     return b.build();
     // }
 
-    private Map<URI, Schema> getDocumentLocalCache(URI documentURI) {
+    private Map<URI, JsonSchema> getDocumentLocalCache(URI documentURI) {
         // return documentIdRefs.computeIfAbsent(documentURI, u -> new HashMap<>());
         return null;
-    }
-
-    @Nullable
-    private Schema getDocumentLocalSchema(URI schemaURI, URI documentURI) {
-        return getDocumentLocalCache(documentURI).get(schemaURI);
-    }
-
-    private void extractDocumentIDs(JsonValue structure, final URI currentURIPath, final JsonPath currentJsonPath, Map<URI, JsonPath> appendTo) {
-        if (structure.getValueType() == JsonValue.ValueType.ARRAY) {
-
-        } else if (structure.getValueType() == JsonValue.ValueType.OBJECT) {
-            JsonObject jsonObject = structure.asJsonObject();
-            final URI newURIPath;
-            if (jsonObject.containsKey($ID.key())) {
-                String idValue = jsonObject.getString($ID.key());
-                newURIPath = ReferenceScopeResolver.resolveScope(currentURIPath, idValue);
-            }
-        }
     }
 
     // private ReferenceSchema.Builder internalCreateReferenceSchemaBuilder(SchemaLoaderModel forModel) {
@@ -181,7 +162,7 @@ public class SchemaCache {
     //     JsonPointerResolver pointer = isExternal
     //             ? JsonPointerResolver.forURL(schemaLoaderModel.httpClient, absPointerString, provider)
     //             : JsonPointerResolver.forDocument(schemaLoaderModel.rootSchemaJson, absPointerString, provider);
-    //     ReferenceSchema.Builder refBuilder = ReferenceSchema.builder()
+    //     ReferenceSchema.Builder refBuilder = ReferenceSchema.stringKeywordsBuilder()
     //             .refValue(jsonPointerVal);
     //     schemaLoaderModel.pointerSchemas.put(absPointerString, refBuilder);
     //
@@ -199,7 +180,7 @@ public class SchemaCache {
     //     // Hmmmmm...
     //     try (InputStream schemaStream = schemaClient.get()) {
     //         JsonObject referenceSchema = schemaFactory.getProvider().createReader(schemaStream).readObject();
-    //         ReferenceSchema.builder().refValue(model).
+    //         ReferenceSchema.stringKeywordsBuilder().refValue(model).
     //     }
     //
     //     return refBuilder;
@@ -221,7 +202,7 @@ public class SchemaCache {
 
     public static class Builder {
 
-        public Builder cacheSchema(URI key, Schema toCache) {
+        public Builder cacheSchema(URI key, JsonSchema toCache) {
             checkNotNull(key, "key must not be null");
             checkNotNull(toCache, "toCache must not be null");
             this.cacheSchema(key, toCache);

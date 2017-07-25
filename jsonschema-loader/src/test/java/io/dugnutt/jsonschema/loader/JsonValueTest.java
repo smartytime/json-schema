@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitParamsRunner.class)
 public class JsonValueTest {
 
-    // static final LoadingState emptyLs = new LoadingState(SchemaLoader.builder()
+    // static final LoadingState emptyLs = new LoadingState(SchemaLoader.stringKeywordsBuilder()
     //         .rootSchemaJson(JsonUtils.blankObject())
     //         .schemaJson(JsonUtils.blankObject()));
     //

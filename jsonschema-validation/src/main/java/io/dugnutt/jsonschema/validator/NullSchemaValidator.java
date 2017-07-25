@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.NullSchema;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 

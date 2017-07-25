@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.ArraySchema;
+import io.dugnutt.jsonschema.six.ArrayKeywords;
+import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.ObjectComparator;
@@ -19,37 +20,31 @@ import java.util.stream.IntStream;
 
 import static javax.json.JsonValue.ValueType;
 
-public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
-
-    public ArraySchemaValidator(ArraySchema schema, SchemaValidatorFactory factory) {
-        super(schema, factory);
-    }
-
-    public ArraySchemaValidator(ArraySchema schema) {
-        super(schema);
-    }
+public class ArrayKeywordValidator implements KeywordValidator<ArrayKeywords> {
 
     @Override
-    public Optional<ValidationError> validate(PathAwareJsonValue subject) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema schema, ArrayKeywords keywords,
+                                              SchemaValidatorFactory factory) {
+
+        if (!subject.is(ValueType.ARRAY)) {
+            throw new IllegalStateException("Bad input.  Must be array");
+        }
+
         List<ValidationError> failures = new ArrayList<>();
 
-        if (!subject.is(ValueType.ARRAY) && schema.isRequiresArray()) {
-            return buildTypeMismatchError(subject, JsonSchemaType.ARRAY).buildOptional();
-        } else if (subject.is(ValueType.ARRAY)) {
-
-            testItemCount(subject).ifPresent(failures::add);
-            if (schema.isNeedsUniqueItems()) {
-                testUniqueness(subject).ifPresent(failures::add);
-            }
-            failures.addAll(testItems(subject));
+        testItemCount(keywords, subject).ifPresent(failures::add);
+        if (keywords.isNeedsUniqueItems()) {
+            testUniqueness(subject).ifPresent(failures::add);
         }
+        testItems(subject).forEach(failures::add);
+
         return ValidationError.collectErrors(schema, subject.getPath(), failures);
     }
 
-    private Optional<ValidationError> testItemCount(final PathAwareJsonValue subject) {
+    private Optional<ValidationError> testItemCount(final PathAwareJsonValue subject, ArrayKeywords keywords) {
         int actualLength = subject.arraySize();
-        Integer minItems = schema.getMinItems();
-        Integer maxItems = schema.getMaxItems();
+        Integer minItems = keywords.getMinItems();
+        Integer maxItems = keywords.getMaxItems();
 
         if (minItems != null && actualLength < minItems) {
             return buildKeywordFailure(subject, JsonSchemaKeyword.MIN_ITEMS)
@@ -65,11 +60,11 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
         return Optional.empty();
     }
 
-    private List<ValidationError> testItems(final PathAwareJsonValue subject) {
+    private List<ValidationError> testItems(final PathAwareJsonValue subject, ArrayKeywords keywords, SchemaValidatorFactory factory) {
         List<ValidationError> errors = new ArrayList<>();
-        Schema allItemSchema = schema.getAllItemSchema();
-        List<Schema> itemSchemas = schema.getItemSchemas();
-        Schema schemaOfAdditionalItems = schema.getSchemaOfAdditionalItems();
+        JsonSchema allItemSchema = keywords.getAllItemSchema();
+        List<JsonSchema> itemSchemas = keywords.getItemSchemas();
+        JsonSchema schemaOfAdditionalItems = keywords.getSchemaOfAdditionalItems();
 
         if (allItemSchema != null) {
             validateItemsAgainstSchema(IntStream.range(0, subject.arraySize()),
@@ -90,9 +85,9 @@ public class ArraySchemaValidator extends SchemaValidator<ArraySchema> {
             }
         }
 
-        Schema containsSchema = schema.getContainsSchema();
+        Schema containsSchema = keywords.getContainsSchema();
         if (containsSchema != null) {
-            SchemaValidator<Schema> containsValidator = factory.createValidator(containsSchema);
+            SchemaValidator<JsonSchema> containsValidator = factory.createValidator(containsSchema);
             Optional<PathAwareJsonValue> containsValid = subject.getPathAwareArrayItems()
                     .filter(arrayItem -> !containsValidator.validate(arrayItem).isPresent())
                     .findAny();

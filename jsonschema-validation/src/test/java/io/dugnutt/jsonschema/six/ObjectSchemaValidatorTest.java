@@ -15,6 +15,7 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import io.dugnutt.jsonschema.validator.ObjectSchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
@@ -29,8 +30,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.TYPE;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildValidatorWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
 import static io.dugnutt.jsonschema.six.ValidationTestSupport.countCauseByJsonPointer;
@@ -176,11 +177,13 @@ public class ObjectSchemaValidatorTest {
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Test
     public void multipleViolationsNested() throws Exception {
-        Callable<ObjectSchema.Builder> newBuilder = () -> ObjectSchema.builder()
-                .addPropertySchema("numberProp", NumberSchema.builder().build())
-                .patternProperty("^string.*", StringSchema.builder().build())
-                .addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA)
-                .addRequiredProperty("boolProp");
+        Callable<ObjectSchema.Builder> newBuilder = () -> {
+            return ObjectSchema.builder()
+                    .addPropertySchema("numberProp", NumberSchema.builder().build())
+                    .patternProperty("^string.*", StringSchema.builder().build())
+                    .addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA)
+                    .addRequiredProperty("boolProp");
+        };
 
         Schema nested2 = newBuilder.call().build();
         Schema nested1 = newBuilder.call().addPropertySchema("nested", nested2).build();
@@ -282,10 +285,11 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void propertyDepViolation() {
+        ObjectSchema.builder()
+                    .addPropertySchema("ifPresent", NullSchema.NULL_SCHEMA).addPropertySchema("mustBePresent", BooleanSchema.BOOLEAN_SCHEMA);
         ObjectSchema subject = buildWithLocation(
                 ObjectSchema.builder()
                         .addPropertySchema("ifPresent", NullSchema.NULL_SCHEMA)
-                        .addPropertySchema("mustBePresent", BooleanSchema.BOOLEAN_SCHEMA)
                         .propertyDependency("ifPresent", "mustBePresent")
         );
         failureOf(subject)
@@ -314,8 +318,8 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void propertySchemaViolation() {
-        ObjectSchema subject = ObjectSchema.builder()
-                .addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA).build();
+        ObjectSchema.builder().addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA);
+        ObjectSchema subject = ObjectSchema.builder().build();
         expectFailure(subject, BooleanSchema.BOOLEAN_SCHEMA, "#/boolProp",
                 OBJECTS.get("propertySchemaViolation"));
     }
@@ -327,10 +331,10 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void requiredProperties() {
+        ObjectSchema.builder().addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA);
+        ObjectSchema.builder().addPropertySchema("nullProp", NullSchema.NULL_SCHEMA);
         ObjectSchema subject = buildWithLocation(
                 ObjectSchema.builder()
-                        .addPropertySchema("boolProp", BooleanSchema.BOOLEAN_SCHEMA)
-                        .addPropertySchema("nullProp", NullSchema.NULL_SCHEMA)
                         .addRequiredProperty("boolProp")
         );
         failureOf(subject)
@@ -343,11 +347,11 @@ public class ObjectSchemaValidatorTest {
     @Test
     public void schemaDepViolation() {
         Schema billingAddressSchema = new StringSchema();
+        ObjectSchema.builder().addPropertySchema("billing_address", billingAddressSchema);
+        ObjectSchema.builder().addPropertySchema("name", new StringSchema());
+        ObjectSchema.builder().addPropertySchema("credit_card", NumberSchema.builder().build());
         ObjectSchema subject = ObjectSchema.builder()
-                .addPropertySchema("name", new StringSchema())
-                .addPropertySchema("credit_card", NumberSchema.builder().build())
                 .schemaDependency("credit_card", ObjectSchema.builder()
-                        .addPropertySchema("billing_address", billingAddressSchema)
                         .addRequiredProperty("billing_address")
                         .build())
                 .build();

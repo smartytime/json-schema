@@ -17,13 +17,19 @@ package io.dugnutt.jsonschema.six;
 
 import org.junit.Test;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 public class ArraySchemaTest {
 
     @Test(expected = SchemaException.class)
     public void tupleAndListFailure() {
-        ArraySchema.builder()
-                .addItemSchema(BooleanSchema.BOOLEAN_SCHEMA)
-                .allItemSchema(NullSchema.NULL_SCHEMA)
+        // if (itemSchemas == null) {
+        //     itemSchemas = new ArrayList<>();
+        // }
+        // itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
+        // return this;
+        JsonSchema.jsonSchemaBuilder().allItemSchema(JsonSchema.jsonSchemaBuilder().constValueString("Foo"))
+                .itemSchemas(newArrayList(JsonSchema.jsonSchemaBuilder().constValueDouble(23.2)))
                 .build();
     }
 }

@@ -34,6 +34,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <!--<module>jsonschema-stuff</module>-->
         <module>jsonschema-six</module>
         <module>jsonschema-loader</module>
         <module>jsonschema-validation</module>

@@ -15,10 +15,9 @@
  */
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.ArraySchema;
 import io.dugnutt.jsonschema.six.JsonPath;
+import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.ObjectSchema;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import lombok.AllArgsConstructor;
@@ -63,9 +62,9 @@ public class ValidationError {
     private final List models;
 
     /**
-     * Sort of static factory method. It is used by {@link ObjectSchema} and {@link ArraySchema} to
-     * create {@code ValidationException}s, handling the case of multiple violations occuring during
-     * validation.
+     * Sort of static factory method. It is used by {@link io.dugnutt.jsonschema.six.ObjectKeywords} and
+     * {@link ArrayKeywordValidator} to create {@code ValidationException}s, handling the case of multiple violations
+     * occuring during validation.
      * <p>
      * <ul>
      * <li>If {@code failures} is empty, then it doesn't do anything</li>
@@ -78,7 +77,7 @@ public class ValidationError {
      * @param rootFailingSchema the schema which detected the {@code failures}
      * @param failures          list containing validation failures to be thrown by this method
      */
-    public static Optional<ValidationError> collectErrors(Schema rootFailingSchema,
+    public static Optional<ValidationError> collectErrors(JsonSchema rootFailingSchema,
                                                           JsonPath currentLocation,
                                                           List<ValidationError> failures) {
         int failureCount = failures.size();
@@ -96,7 +95,7 @@ public class ValidationError {
                             .model(getViolationCount(failures))
                             .causingExceptions(unmodifiableList(failures))
                             .keyword(null)
-                            .schemaLocation(rootFailingSchema.getDocumentLocalURI())
+                            .schemaLocation(rootFailingSchema.getLocation().getJsonPointerFragment())
                             .build()
             );
         }

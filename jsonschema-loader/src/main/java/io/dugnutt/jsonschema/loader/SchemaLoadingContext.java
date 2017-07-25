@@ -53,7 +53,7 @@ import static javax.json.JsonValue.ValueType.TRUE;
 @Wither
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder(toBuilder = true)
+@Builder(toBuilder = true, builderMethodName = "schemaContextBuilder")
 public class SchemaLoadingContext {
 
     public static final Set<JsonSchemaKeyword> COMBINED_SCHEMA_KEYWORDS = Sets.newHashSet(ALL_OF, ANY_OF, ONE_OF);
@@ -72,7 +72,7 @@ public class SchemaLoadingContext {
     private final SchemaLocation location;
 
     // SchemaLoader.SchemaLoaderBuilder initChildLoader() {
-    //     return SchemaLoader.builder()
+    //     return SchemaLoader.stringKeywordsBuilder()
     //             .resolutionScope(id)
     //             .schemaJson(schemaJson)
     //             .rootSchemaJson(rootSchemaJson)
@@ -113,7 +113,7 @@ public class SchemaLoadingContext {
         }
 
         PathAwareJsonValue schemaJson = new PathAwareJsonValue(rootSchema, rootSchemaLocation.getJsonPath());
-        return builder()
+        return schemaContextBuilder()
                 .location(rootSchemaLocation)
                 .pathedSchemaJson(schemaJson)
                 .rootSchemaJson(schemaJson)
@@ -165,14 +165,6 @@ public class SchemaLoadingContext {
     public boolean has(JsonSchemaKeyword property) {
         checkNotNull(property, "property must not be null");
         return schemaJson.has(property);
-    }
-
-    public boolean hasExplicitTypeArray() {
-        return schemaJson.has(TYPE) && schemaJson.get(TYPE.key()).getValueType() == ARRAY;
-    }
-
-    public boolean hasExplicitTypeValue() {
-        return schemaJson.has(TYPE) && schemaJson.get(TYPE.key()).getValueType() != ARRAY;
     }
 
     public boolean isCombinedSchema() {

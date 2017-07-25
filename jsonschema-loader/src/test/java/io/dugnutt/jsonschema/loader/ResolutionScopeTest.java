@@ -35,9 +35,9 @@ public class ResolutionScopeTest extends BaseLoaderTest {
                 .withHttpClient(new SchemaClient() {
 
                     @Override
-                    public InputStream get(final String url) {
+                    public InputStream fetchSchema(final String url) {
                         System.out.println("GET " + url);
-                        return new DefaultSchemaClient().get(url);
+                        return new DefaultSchemaClient().fetchSchema(url);
                     }
                 }).load(schemaJson);
     }

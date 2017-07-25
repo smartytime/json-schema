@@ -15,6 +15,7 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.junit.Assert;

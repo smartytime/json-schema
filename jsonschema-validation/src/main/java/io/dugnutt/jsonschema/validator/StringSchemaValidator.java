@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.FORMAT;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAX_LENGTH;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_LENGTH;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PATTERN;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.FORMAT;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.MAX_LENGTH;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.MIN_LENGTH;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.PATTERN;
 
 public class StringSchemaValidator extends SchemaValidator<StringSchema> {
     public StringSchemaValidator(StringSchema schema, SchemaValidatorFactory factory) {

@@ -22,7 +22,7 @@ public class UnexpectedValueException extends SchemaException {
 
     public UnexpectedValueException(URI uriFragment, JsonValue element, JsonValue.ValueType... wanted) {
         super(uriFragment, String.format("Found %s, but was expecting %s", element.getValueType().toString().toLowerCase(),
-                //Convert types to lowercase
+                //Convert keywords to lowercase
                 Arrays.stream(wanted)
                         .map(type -> type.name().toLowerCase())
                         .collect(Collectors.joining(","))));

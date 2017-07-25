@@ -4,5 +4,5 @@ import javax.json.JsonObject;
 import java.net.URI;
 
 public interface SchemaFactory {
-    Schema dereferenceSchema(URI currentDocumentURI, ReferenceSchema referenceSchema, JsonObject currentDocument);
+    JsonSchema dereferenceSchema(URI currentDocumentURI, URI refURI, JsonSchema referenceSchema, JsonObject currentDocument);
 }

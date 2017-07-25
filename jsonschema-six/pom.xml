@@ -69,6 +69,8 @@
                         </Import-Package>
                         <Export-Package>
                             io.dugnutt.jsonschema.six;version=${project.version},
+                            io.dugnutt.jsonschema.six.types;version=${project.version},
+                            io.dugnutt.jsonschema.six.validation;version=${project.version},
                             io.dugnutt.jsonschema.utils;version=${project.version},
                         </Export-Package>
                     </instructions>
@@ -102,6 +104,24 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>4.3.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>target/generated-sources/annotations/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -148,17 +168,26 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-mapper</artifactId>
+            <version>1.1.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.inferred</groupId>
+            <artifactId>freebuilder</artifactId>
+            <version>1.14.1</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.16</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.johnzon</groupId>
-            <artifactId>johnzon-mapper</artifactId>
-            <version>1.1.1</version>
-            <scope>test</scope>
-        </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -180,6 +209,12 @@
             <artifactId>mockito-core</artifactId>
             <version>1.10.19</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.immutables</groupId>
+            <artifactId>value</artifactId>
+            <version>2.5.5</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>nl.jqno.equalsverifier</groupId>

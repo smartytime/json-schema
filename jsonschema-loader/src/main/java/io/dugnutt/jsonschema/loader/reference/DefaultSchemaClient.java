@@ -26,7 +26,7 @@ import java.net.URL;
 public class DefaultSchemaClient implements SchemaClient {
 
     @Override
-    public InputStream get(final String url) {
+    public InputStream fetchSchema(String url) {
         try {
             return (InputStream) new URL(url).getContent();
         } catch (IOException e) {

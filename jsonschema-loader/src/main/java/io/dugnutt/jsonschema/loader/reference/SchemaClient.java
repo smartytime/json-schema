@@ -17,22 +17,16 @@ package io.dugnutt.jsonschema.loader.reference;
 
 
 import java.io.InputStream;
-import java.util.function.Function;
 
 /**
- * This interface is used by {@link io.dugnutt.jsonschema.loader.SchemaFactory} to fetch the contents denoted by remote JSON
+ * This interface is used by {@link io.dugnutt.jsonschema.loader.JsonSchemaFactory} to fetch the contents denoted by remote JSON
  * pointer.
 
  * Implementations are expected to support the HTTP/1.1 protocol, the support of other protocols is
  * optional.
  */
 @FunctionalInterface
-public interface SchemaClient extends Function<String, InputStream> {
-
-    @Override
-    default InputStream apply(final String url) {
-        return get(url);
-    }
+public interface SchemaClient {
 
     /**
      * Returns a stream to be used for reading the remote content (response body) of the URL. In the
@@ -43,6 +37,6 @@ public interface SchemaClient extends Function<String, InputStream> {
      * @return the input stream of the response
      * @throws java.io.UncheckedIOException if an IO error occurs.
      */
-    InputStream get(String url);
+    InputStream fetchSchema(String url);
 
 }

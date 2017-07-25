@@ -18,12 +18,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DEPENDENCIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAX_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PROPERTY_NAMES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.REQUIRED;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.DEPENDENCIES;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.MAX_PROPERTIES;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.MIN_PROPERTIES;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.PROPERTY_NAMES;
+import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.REQUIRED;
 import static java.util.Collections.emptyList;
 
 public class ObjectSchemaValidator extends SchemaValidator<ObjectSchema> {

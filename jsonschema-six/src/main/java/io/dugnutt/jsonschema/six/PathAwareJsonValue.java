@@ -300,6 +300,16 @@ public class PathAwareJsonValue implements PartialJsonObject {
         return new PathAwareJsonValue(wrapped.asJsonObject().get(childKey), path.child(childKey));
     }
 
+    public Optional<PathAwareJsonValue> findPathAware(JsonSchemaKeyword keyword) {
+        checkNotNull(keyword, "keyword must not be null");
+        return findPathAware(keyword.key());
+    }
+
+    public Optional<PathAwareJsonValue> findPathAware(String childKey) {
+        checkNotNull(childKey, "childKey must not be null");
+        return findObject(childKey).map(json -> new PathAwareJsonValue(json, path.child(childKey)));
+    }
+
     public String getString(JsonSchemaKeyword property) {
         try {
             if (asJsonObject().isNull(property.key())) {
@@ -316,8 +326,20 @@ public class PathAwareJsonValue implements PartialJsonObject {
         return asJsonObject().getValue(jsonPointer);
     }
 
-    public boolean has(JsonSchemaKeyword property) {
-        return asJsonObject().containsKey(property.key());
+    public boolean has(JsonSchemaKeyword property, ValueType... ofType) {
+        final JsonValue jsonValue = asJsonObject().get(property.key());
+        if (jsonValue == null) {
+            return false;
+        }
+        if (ofType != null && ofType.length > 0) {
+            for (ValueType valueType : ofType) {
+                if (jsonValue.getValueType() == valueType) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return true;
     }
 
     public boolean hasAny(JsonSchemaKeyword... property) {
@@ -350,8 +372,8 @@ public class PathAwareJsonValue implements PartialJsonObject {
     }
 
     public boolean is(ValueType... types) {
-        checkNotNull(types, "types must not be null");
-        checkArgument(types.length > 0, "types must be >0");
+        checkNotNull(types, "keywords must not be null");
+        checkArgument(types.length > 0, "keywords must be >0");
         for (ValueType type : types) {
             if (wrapped.getValueType() == type) {
                 return true;
@@ -372,6 +394,17 @@ public class PathAwareJsonValue implements PartialJsonObject {
         AtomicInteger i = new AtomicInteger(0);
         return wrapped.asJsonArray().stream()
                 .map(jsonValue -> forChild(jsonValue, i.incrementAndGet()));
+    }
+
+    public Stream<PathAwareJsonValue> streamPathAwareArrayItems(JsonSchemaKeyword keyword) {
+        AtomicInteger i = new AtomicInteger(0);
+        if (!has(keyword, ValueType.ARRAY)) {
+            return Stream.empty();
+        } else {
+            return expectArray(keyword)
+                    .stream()
+                    .map(jsonValue -> forChild(jsonValue, i.incrementAndGet()));
+        }
     }
 
     public Stream<PathAwareJsonValue> getPathAwareArrayItems(ValueType valueType) {

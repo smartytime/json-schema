@@ -1,96 +1,94 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.CombinedSchema;
+import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.ObjectComparator;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
-import io.dugnutt.jsonschema.six.Schema;
 
-import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ANY_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.CONST;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
+import static io.dugnutt.jsonschema.validator.CombinedSchemaValidator.combinedSchemaValidator;
 
-public class BaseSchemaValidator<X extends Schema> extends SchemaValidator<X> {
+public class BaseSchemaValidator {
 
-    private final SchemaValidator<X> wrapped;
+    private static final BaseSchemaValidator INSTANCE = new BaseSchemaValidator();
 
-    public BaseSchemaValidator(X schema, SchemaValidator<X> wrapped) {
-        super(schema);
-        this.wrapped = wrapped;
+    private BaseSchemaValidator() {
     }
 
-    public BaseSchemaValidator(X schema, SchemaValidatorFactory factory, SchemaValidator<X> wrapped) {
-        super(schema, factory);
-        this.wrapped = wrapped;
-    }
-
-    @Override
-    public Optional<ValidationError> validate(PathAwareJsonValue toBeValidated) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema schema, SchemaValidatorFactory factory) {
 
         // Do all the core validations
         List<ValidationError> allErrors = new ArrayList<>();
 
-        validateEnum(toBeValidated).ifPresent(allErrors::add);
-        validateConst(toBeValidated).ifPresent(allErrors::add);
-        validateNot(toBeValidated).ifPresent(allErrors::add);
-        validateCombinedSchema(schema.getAllOfSchema(), toBeValidated).ifPresent(allErrors::add);
-        validateCombinedSchema(schema.getAnyOfSchema(), toBeValidated).ifPresent(allErrors::add);
-        validateCombinedSchema(schema.getOneOfSchema(), toBeValidated).ifPresent(allErrors::add);
+        validateEnum(subject, schema).ifPresent(allErrors::add);
+        validateConst(subject, schema).ifPresent(allErrors::add);
+        validateNot(subject, schema, factory).ifPresent(allErrors::add);
+        validateCombinedSchema(schema, schema.getAllOfSchemas(), factory, subject, ALL_OF).ifPresent(allErrors::add);
+        validateCombinedSchema(schema, schema.getAnyOfSchemas(), factory, subject, ANY_OF).ifPresent(allErrors::add);
+        validateCombinedSchema(schema, schema.getOneOfSchemas(), factory, subject, ONE_OF).ifPresent(allErrors::add);
 
-        //Also perform whatever specific type validation we need to
-        wrapped.validate(toBeValidated).ifPresent(allErrors::add);
-
-        return ValidationError.collectErrors(schema, toBeValidated.getPath(), allErrors);
+        return ValidationError.collectErrors(schema, subject.getPath(), allErrors);
     }
 
-    public Optional<ValidationError> validateConst(PathAwareJsonValue toBeValidated) {
-        JsonValue constValue = schema.getConstValue();
-        if (constValue != null && !constValue.equals(toBeValidated)) {
-            return buildKeywordFailure(toBeValidated, CONST)
-                            .message("%s does not match the const value", toBeValidated)
-                            .buildOptional();
+    public Optional<ValidationError> validateConst(PathAwareJsonValue toBeValidated, JsonSchema schema) {
+        return schema.getConstValue()
+                .map(constValue -> {
+                    if (!constValue.equals(toBeValidated)) {
+                        return SchemaValidator.buildKeywordFailure(toBeValidated, schema, CONST)
+                                .message("%s does not match the const value", toBeValidated)
+                                .build();
+                    } else {
+                        return null;
+                    }
+                });
+    }
 
+    public Optional<ValidationError> validateEnum(PathAwareJsonValue toBeValidated, JsonSchema schema) {
+        return schema.getEnumValues()
+                .map(enumValues -> {
+                    boolean foundMatch = enumValues.stream()
+                            .anyMatch(val -> ObjectComparator.lexicalEquivalent(val, toBeValidated.getWrapped()));
+                    if (!foundMatch) {
+                        return SchemaValidator.buildKeywordFailure(toBeValidated, schema, ENUM)
+                                .message("%s does not match the enum values", toBeValidated)
+                                .build();
+                    }
+                    return null;
+                });
+    }
+
+    public Optional<ValidationError> validateNot(PathAwareJsonValue toBeValidated, JsonSchema schema, SchemaValidatorFactory factory) {
+        return schema.getNotSchema()
+                .map(notSchema -> {
+                    Optional<ValidationError> validated = factory.createValidator(notSchema)
+                            .validate(toBeValidated);
+                    if (!validated.isPresent()) {
+                        return SchemaValidator.buildKeywordFailure(toBeValidated, schema, NOT)
+                                .message("subject must not be valid against schema", notSchema)
+                                .build();
+                    }
+                    return null;
+                });
+    }
+
+    private Optional<ValidationError> validateCombinedSchema(JsonSchema parent, List<JsonSchema> subschemas, SchemaValidatorFactory factory,
+                                                             PathAwareJsonValue subject, JsonSchemaKeyword combinedType) {
+        if (subschemas != null && subschemas.size() > 0) {
+            return combinedSchemaValidator().validate(subject, parent, factory, subschemas, combinedType);
         }
         return Optional.empty();
     }
 
-    public Optional<ValidationError> validateEnum(PathAwareJsonValue toBeValidated) {
-        if (schema.getEnumValues() != null) {
-            boolean foundMatch = schema.getEnumValues()
-                    .stream()
-                    .anyMatch(val -> ObjectComparator.lexicalEquivalent(val, toBeValidated.getWrapped()));
-            if (!foundMatch) {
-                return buildKeywordFailure(toBeValidated, ENUM)
-                        .message("%s does not match the enum values", toBeValidated)
-                        .buildOptional();
-            }
-        }
-        return Optional.empty();
-    }
-
-    public Optional<ValidationError> validateNot(PathAwareJsonValue toBeValidated) {
-        Schema mustNotMatch = schema.getNotSchema();
-        if (mustNotMatch != null) {
-            Optional<ValidationError> validated = factory.createValidator(mustNotMatch)
-                    .validate(toBeValidated);
-            if (!validated.isPresent()) {
-                return buildKeywordFailure(toBeValidated, NOT)
-                        .message("subject must not be valid against schema", mustNotMatch)
-                        .buildOptional();
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    private Optional<ValidationError> validateCombinedSchema(CombinedSchema schema, PathAwareJsonValue toBeValidated) {
-        if (schema != null) {
-            return factory.createValidator(schema).validate(toBeValidated);
-        }
-        return Optional.empty();
+    public static BaseSchemaValidator baseSchemaValidator() {
+        return INSTANCE;
     }
 }

@@ -61,7 +61,7 @@ public abstract class BaseJsonStructure<T, K> {
      * avoid for the sake of consistency.
      *
      * @param key        The key or index to look up inside this element.
-     * @param validTypes Optional.  If passed, will validate that the referenced instance is one of these types
+     * @param validTypes Optional.  If passed, will validate that the referenced instance is one of these keywords
      * @return The referenced Any.  Will be empty if it's not found, null, or the wrong type.
      */
     protected Optional<T> any(K key, JsonValue.ValueType... validTypes) {

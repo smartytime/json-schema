@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Interface that allows a provider to specify how to wrap certain types of data,
+ * Interface that allows a provider to specify how to wrap certain keywords of data,
  */
 public interface JsonWrapper {
 

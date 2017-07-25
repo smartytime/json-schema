@@ -25,7 +25,7 @@ public class SchemaLoadingContextTest {
                         .build()
         );
         SchemaLoadingContext actual = ls.childModel(PROPERTIES, 0);
-        assertThat(actual.getLocation().getPath())
+        assertThat(actual.getLocation().getJsonPathTokens())
                 .containsExactly("properties", "0");
     }
 
@@ -33,7 +33,7 @@ public class SchemaLoadingContextTest {
     public void childForSecond() {
         SchemaLoadingContext ls = emptySubject();
         SchemaLoadingContext actual = ls.childModel("hello").childModel("world");
-        assertThat(actual.getLocation().getPath())
+        assertThat(actual.getLocation().getJsonPathTokens())
                 .containsExactly("hello", "world");
     }
 
@@ -41,7 +41,7 @@ public class SchemaLoadingContextTest {
     public void childForString() {
         SchemaLoadingContext ls = emptySubject();
         SchemaLoadingContext actual = ls.childModel("hello");
-        assertThat(actual.getLocation().getPath())
+        assertThat(actual.getLocation().getJsonPathTokens())
                 .containsExactly("hello");
     }
 
@@ -54,7 +54,7 @@ public class SchemaLoadingContextTest {
 
     @Test
     public void testCreateSchemaExceptionWithPath() {
-        SchemaLoadingContext subject = SchemaLoadingContext.builder()
+        SchemaLoadingContext subject = SchemaLoadingContext.schemaContextBuilder()
                 .schemaJson(jsonObjectBuilder().build())
                 .location(
                         SchemaLocation.schemaLocation("http://mysite.com#/foo/bob")
