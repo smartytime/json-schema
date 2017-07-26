@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.ObjectKeywords;
+import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ObjectKeywordsFactoryHelperTest extends BaseLoaderTest {
 
-    public static final JsonSchema BOOLEAN_SCHEMA = JsonSchema.jsonSchemaBuilder().build();
+    public static final Schema BOOLEAN_SCHEMA = Schema.jsonSchemaBuilder().build();
 
     public ObjectKeywordsFactoryHelperTest() {
         super("objecttestschemas.json");
@@ -30,13 +30,13 @@ public class ObjectKeywordsFactoryHelperTest extends BaseLoaderTest {
 
     @Test
     public void objectSchema() {
-        JsonSchema actual =  getSchemaForKey("objectSchema");
+        Schema actual =  getSchemaForKey("objectSchema");
         assertThat(actual.getObjectKeywords()).isPresent();
         final ObjectKeywords keywords = actual.getObjectKeywords().get();
-        final Map<String, JsonSchema> propertySchemas = keywords.getPropertySchemas();
+        final Map<String, Schema> propertySchemas = keywords.getPropertySchemas();
         assertThat(propertySchemas).isNotNull();
         assertThat(propertySchemas).hasSize(2);
-        final JsonSchema boolProp = propertySchemas.get("boolProp");
+        final Schema boolProp = propertySchemas.get("boolProp");
         assertThat(boolProp).isNotNull();
 
         //todo:ericm Boolean?
@@ -54,20 +54,20 @@ public class ObjectKeywordsFactoryHelperTest extends BaseLoaderTest {
 
     @Test
     public void objectWithAdditionalPropSchema() {
-        JsonSchema actual = getSchemaForKey("objectWithAdditionalPropSchema");
+        Schema actual = getSchemaForKey("objectWithAdditionalPropSchema");
         assertThat(actual.getObjectKeywords()).isPresent();
         assertThat(actual.getObjectKeywords().get().getSchemaOfAdditionalProperties())
                 .isEqualTo(BOOLEAN_SCHEMA);
     }
 
-    private ObjectKeywords assertObjectKeywords(JsonSchema actual) {
+    private ObjectKeywords assertObjectKeywords(Schema actual) {
         assertThat(actual.getObjectKeywords()).isPresent();
         return actual.getObjectKeywords().get();
     }
 
     @Test
     public void objectWithPropDep() {
-        JsonSchema actual =  getSchemaForKey("objectWithPropDep");
+        Schema actual =  getSchemaForKey("objectWithPropDep");
         assertEquals(1, assertObjectKeywords(actual).getPropertyDependencies().get("isIndividual").size());
     }
 

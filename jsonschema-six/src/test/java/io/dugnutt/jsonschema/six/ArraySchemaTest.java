@@ -28,8 +28,8 @@ public class ArraySchemaTest {
         // }
         // itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
         // return this;
-        JsonSchema.jsonSchemaBuilder().allItemSchema(JsonSchema.jsonSchemaBuilder().constValueString("Foo"))
-                .itemSchemas(newArrayList(JsonSchema.jsonSchemaBuilder().constValueDouble(23.2)))
+        Schema.jsonSchemaBuilder().allItemSchema(Schema.jsonSchemaBuilder().constValueString("Foo"))
+                .itemSchemas(newArrayList(Schema.jsonSchemaBuilder().constValueDouble(23.2)))
                 .build();
     }
 }

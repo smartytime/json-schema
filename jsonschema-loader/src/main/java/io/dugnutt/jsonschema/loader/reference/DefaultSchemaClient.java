@@ -18,6 +18,7 @@ package io.dugnutt.jsonschema.loader.reference;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.net.URI;
 import java.net.URL;
 
 /**
@@ -26,9 +27,9 @@ import java.net.URL;
 public class DefaultSchemaClient implements SchemaClient {
 
     @Override
-    public InputStream fetchSchema(String url) {
+    public InputStream fetchSchema(URI url) {
         try {
-            return (InputStream) new URL(url).getContent();
+            return (InputStream) url.toURL().getContent();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

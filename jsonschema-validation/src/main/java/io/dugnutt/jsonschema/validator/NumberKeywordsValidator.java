@@ -1,9 +1,9 @@
 package io.dugnutt.jsonschema.validator;
 
 import com.google.common.base.Preconditions;
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.NumberKeywords;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.Schema;
 
 import javax.json.JsonNumber;
 import java.math.BigDecimal;
@@ -27,7 +27,7 @@ public class NumberKeywordsValidator implements PartialSchemaValidator {
     }
 
     @Override
-    public boolean appliesToSchema(JsonSchema schema) {
+    public boolean appliesToSchema(Schema schema) {
         return schema.getNumberKeywords().isPresent();
     }
 
@@ -37,7 +37,12 @@ public class NumberKeywordsValidator implements PartialSchemaValidator {
     }
 
     @Override
-    public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema schema, SchemaValidatorFactory factory) {
+    public PartialSchemaValidator forSchema(Schema schema, SchemaValidatorFactory factory) {
+        return this;
+    }
+
+    @Override
+    public Optional<ValidationError> validate(PathAwareJsonValue subject, Schema schema, SchemaValidatorFactory factory) {
         Preconditions.checkArgument(subject.is(ValueType.NUMBER), "Requires JsonArray as input");
         NumberKeywords keywords = schema.getNumberKeywords()
                 .orElseThrow(() -> new IllegalArgumentException("Schema must have number keywords"));
@@ -54,10 +59,10 @@ public class NumberKeywordsValidator implements PartialSchemaValidator {
     }
 
     private static class Helper {
-        private final JsonSchema schema;
+        private final Schema schema;
         private final NumberKeywords keywords;
 
-        public Helper(JsonSchema schema, NumberKeywords keywords) {
+        public Helper(Schema schema, NumberKeywords keywords) {
             this.schema = checkNotNull(schema);
             this.keywords = checkNotNull(keywords);
         }

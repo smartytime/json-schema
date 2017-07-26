@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.validator.ValidationTestSupport;
+import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,8 +24,8 @@ import org.junit.Test;
 import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
 
 public class PointerBubblingTest {
 
@@ -46,6 +47,6 @@ public class PointerBubblingTest {
     @Test
     public void rectangleSingleFailure() {
         JsonObject input = testInputs.getJsonObject("rectangleSingleFailure");
-        ValidationTestSupport.expectFailure(rectangleSchema, NumberSchema.class, "#/rectangle/a", input);
+        ValidationTestSupport.expectFailure(rectangleSchema, JsonSchema.class, "#/rectangle/a", input);
     }
 }

@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockBooleanSchema;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
 
@@ -27,7 +26,7 @@ public class BooleanSchemaTest {
 
     @Test
     public void failure() {
-        failureOf(BooleanSchema.builder())
+        failureOf(mockBooleanSchema())
                 .expectedKeyword("type")
                 .input("false")
                 .expect();
@@ -35,19 +34,11 @@ public class BooleanSchemaTest {
 
     @Test
     public void success() {
-        expectSuccess(BooleanSchema.BOOLEAN_SCHEMA, true);
+        expectSuccess(mockBooleanSchema().build(), true);
     }
 
     @Test
     public void toStringTest() {
-        Assert.assertEquals("{\"type\":\"boolean\"}", BooleanSchema.BOOLEAN_SCHEMA.toString());
+        Assert.assertEquals("{\"type\":\"boolean\"}", mockBooleanSchema().build().toString());
     }
-
-    public void equalsVerifier() {
-        EqualsVerifier.forClass(BooleanSchema.class)
-                .withRedefinedSuperclass()
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
-    }
-
 }

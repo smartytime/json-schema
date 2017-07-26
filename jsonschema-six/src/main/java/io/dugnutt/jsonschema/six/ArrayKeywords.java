@@ -18,9 +18,11 @@ package io.dugnutt.jsonschema.six;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -43,32 +45,33 @@ public class ArrayKeywords implements SchemaKeywords {
     private final boolean needsUniqueItems;
 
     @Valid
-    private final List<JsonSchema> itemSchemas;
+    @NonNull
+    private final List<Schema> itemSchemas;
 
     @Valid
-    private final JsonSchema allItemSchema;
+    private final Schema allItemSchema;
 
     @Valid
-    private final JsonSchema containsSchema;
+    private final Schema containsSchema;
 
     private final boolean requiresArray;
 
     @Valid
-    private final JsonSchema schemaOfAdditionalItems;
+    private final Schema schemaOfAdditionalItems;
 
-    public Optional<JsonSchema> findAllItemSchema() {
+    public Optional<Schema> findAllItemSchema() {
         return Optional.ofNullable(allItemSchema);
     }
 
-    public Optional<JsonSchema> findContainsSchema() {
+    public Optional<Schema> findContainsSchema() {
         return Optional.ofNullable(containsSchema);
     }
 
-    public Optional<JsonSchema> findSchemaOfAdditionalItems() {
+    public Optional<Schema> findSchemaOfAdditionalItems() {
         return Optional.ofNullable(schemaOfAdditionalItems);
     }
 
-    public JsonSchema getAllItemSchema() {
+    public Schema getAllItemSchema() {
         if (allItemSchema == null) {
             throw new NullPointerException("allItemSchema is null");
         }
@@ -90,14 +93,14 @@ public class ArrayKeywords implements SchemaKeywords {
                 .optionalWrite(JsonSchemaKeyword.ADDITIONAL_ITEMS, schemaOfAdditionalItems);
     }
 
-    public JsonSchema getContainsSchema() {
+    public Schema getContainsSchema() {
         if (containsSchema == null) {
             throw new NullPointerException("containsSchema is null");
         }
         return containsSchema;
     }
 
-    public JsonSchema getSchemaOfAdditionalItems() {
+    public Schema getSchemaOfAdditionalItems() {
         if (schemaOfAdditionalItems == null) {
             throw new NullPointerException("schemaOfAdditionalItems is null");
         }
@@ -105,6 +108,6 @@ public class ArrayKeywords implements SchemaKeywords {
     }
 
     static class ArrayKeywordsBuilder {
-
+        private List<Schema> itemSchemas = new ArrayList<>();
     }
 }

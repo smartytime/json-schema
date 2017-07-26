@@ -157,7 +157,8 @@ public class SchemaLocation {
         }
 
         public SchemaLocationBuilder absoluteURI(URI uri) {
-            throw new UnsupportedOperationException("This field is calculated.");
+            //Noop
+            return this;
         }
 
         private SchemaLocationBuilder appendJsonPath(String... pathParts) {

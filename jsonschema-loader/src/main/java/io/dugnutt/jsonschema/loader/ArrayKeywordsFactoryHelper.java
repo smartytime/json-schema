@@ -1,7 +1,9 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.Schema;
+
+import javax.json.JsonValue.ValueType;
 
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_ITEMS;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ITEMS;
@@ -14,7 +16,7 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.UNIQUE_ITEMS;
  */
 class ArrayKeywordsFactoryHelper {
 
-    public static void appendArrayKeywords(PathAwareJsonValue schemaJson, JsonSchema.JsonSchemaBuilder schemaBuilder,
+    public static void appendArrayKeywords(PathAwareJsonValue schemaJson, Schema.JsonSchemaBuilder schemaBuilder,
                                            JsonSchemaFactory schemaFactory) {
 
         schemaJson.findInteger(MIN_ITEMS).ifPresent(schemaBuilder::minItems);
@@ -24,6 +26,7 @@ class ArrayKeywordsFactoryHelper {
                 .map(schemaFactory::createSchemaBuilder)
                 .ifPresent(schemaBuilder::schemaOfAdditionalItems);
         schemaJson.findPathAware(ITEMS)
+                .filter(jsonValue->jsonValue.is(ValueType.OBJECT))
                 .map(schemaFactory::createSchemaBuilder)
                 .ifPresent(schemaBuilder::allItemSchema);
         schemaJson.streamPathAwareArrayItems(ITEMS)

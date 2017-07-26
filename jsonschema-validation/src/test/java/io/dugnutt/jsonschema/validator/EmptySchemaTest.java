@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
@@ -21,9 +21,10 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.$ID;
+import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
-import static io.dugnutt.jsonschema.validator.EmptySchemaValidator.EMPTY_SCHEMA_VALIDATOR;
 
 public class EmptySchemaTest {
 
@@ -35,8 +36,7 @@ public class EmptySchemaTest {
 
     @Test
     public void testBuilder() {
-        Assert.assertEquals(EmptySchema.builder().build(),
-                EmptySchema.builder().build());
+        Assert.assertEquals(jsonSchemaBuilder().build(), jsonSchemaBuilder().build());
     }
 
     @Test
@@ -62,17 +62,17 @@ public class EmptySchemaTest {
 
     @Test
     public void testToString() {
-        Assert.assertEquals("{}", EmptySchema.EMPTY_SCHEMA.toString());
+        Assert.assertEquals("{}", jsonSchemaBuilder().build().toString());
     }
 
     @Test
     public void testValidate() {
-        expectSuccess(() -> EMPTY_SCHEMA_VALIDATOR.validate(JsonUtils.jsonStringValue("something")));
+        expectSuccess(() -> createTestValidator(jsonSchemaBuilder().build()).validate(JsonUtils.jsonStringValue("something")));
     }
 
     private JsonObject json(final String title, final String description, final String id) {
-        String jsonFromString = EmptySchema.builder()
-                .optionalID(id)
+        String jsonFromString = jsonSchemaBuilder()
+                .id(id)
                 .title(title)
                 .description(description)
                 .build().toString();

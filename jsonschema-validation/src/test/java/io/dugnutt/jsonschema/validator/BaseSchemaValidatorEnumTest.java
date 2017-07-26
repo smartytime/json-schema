@@ -1,6 +1,5 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
@@ -8,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -19,8 +17,8 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.dugnutt.jsonschema.six.JsonSchema.JsonSchemaBuilder;
-import static io.dugnutt.jsonschema.six.JsonSchema.jsonSchemaBuilder;
+import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
+import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonObjectBuilder;
@@ -29,7 +27,7 @@ import static io.dugnutt.jsonschema.utils.JsonUtils.readValue;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
-import static io.dugnutt.jsonschema.validator.ValidationMocks.mockAlwaysSuccessfulValidator;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.pathAware;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
@@ -65,7 +63,7 @@ public class BaseSchemaValidatorEnumTest {
                         .build())
                 .build();
 
-        JsonSchema subject = subject().enumValues(possibleValues).build();
+        Schema subject = subject().enumValues(possibleValues).build();
 
         JsonObject testValues = jsonObjectBuilder()
                 .add("a", true)
@@ -82,7 +80,7 @@ public class BaseSchemaValidatorEnumTest {
         final JsonValue validJsonObject = JsonUtils.readValue("{\"a\" : 0}");
         possibleValues.add(validJsonObject);
         BaseSchemaValidator subject = BaseSchemaValidator.baseSchemaValidator();
-        JsonSchema schema = subject().build();
+        Schema schema = subject().build();
 
         expectSuccess(() -> subject.validate(pathAware(JsonValue.TRUE), schema, DEFAULT_VALIDATOR));
         expectSuccess(() -> subject.validate(pathAware(jsonStringValue("foo")), schema, DEFAULT_VALIDATOR));
@@ -105,9 +103,8 @@ public class BaseSchemaValidatorEnumTest {
         JsonNumber testValNotSame = JsonUtils.readValue("1.000", JsonNumber.class);
 
         final Schema schema = jsonSchemaBuilder().enumValues(testEnum).build();
-        final PartialSchemaValidator<?> validator = new BaseSchemaValidator<>(schema, mockAlwaysSuccessfulValidator());
 
-        final Optional<ValidationError> validate = validator.validate(testValNotSame);
+        final Optional<ValidationError> validate = createTestValidator(schema).validate(testValNotSame);
 
         assertTrue("Should have an error", validate.isPresent());
         Assert.assertEquals("Should be for enum keyword", JsonSchemaKeyword.ENUM, validate.get().getKeyword());
@@ -118,10 +115,8 @@ public class BaseSchemaValidatorEnumTest {
         JsonArray testEnum = JsonUtils.readValue("[1, 1.0, 1.00]", JsonArray.class);
         JsonNumber testValNotSame = JsonUtils.readValue("1.00", JsonNumber.class);
 
-        final Schema schema = EmptySchema.builder().enumValues(testEnum).build();
-        final PartialSchemaValidator<?> validator = new BaseSchemaValidator<>(schema, mockAlwaysSuccessfulValidator());
-
-        final Optional<ValidationError> validate = validator.validate(testValNotSame);
+        final Schema schema = mockSchema().enumValues(testEnum).build();
+        final Optional<ValidationError> validate = createTestValidator(schema).validate(testValNotSame);
 
         assertFalse("Should not an error", validate.isPresent());
     }

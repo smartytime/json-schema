@@ -1,5 +1,6 @@
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.SchemaLocation;
 import org.junit.Test;
 
 import java.net.URI;

@@ -1,9 +1,6 @@
 package io.dugnutt.jsonschema.six;
 
-import javax.annotation.Nullable;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SchemaUtils {
 

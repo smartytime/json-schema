@@ -3,7 +3,6 @@ package io.dugnutt.jsonschema.six;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Singular;
 
 import javax.annotation.Nullable;
@@ -19,7 +18,7 @@ import java.util.Set;
 @Getter
 public class JsonSchemaDetails {
 
-    public static final JsonSchemaDetails BLANK_DETAILS = builder().build();
+    // public static final JsonSchemaDetails BLANK_DETAILS = JsonSchemaDetails.builder().build();
 
     @Nullable
     private final String id;
@@ -42,21 +41,24 @@ public class JsonSchemaDetails {
      */
 
     @NotNull
-    private final List<JsonSchema> allOfSchemas;
+    @Singular
+    private final List<Schema> allOfSchemas;
 
     /**
      * {@see ANY_OF}
      */
 
     @NotNull
-    private final List<JsonSchema> anyOfSchemas;
+    @Singular
+    private final List<Schema> anyOfSchemas;
 
     /**
      * {@see ONE_OF}
      */
 
     @NotNull
-    private final List<JsonSchema> oneOfSchemas;
+    @Singular
+    private final List<Schema> oneOfSchemas;
 
     /**
      * {@see io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.TYPE}
@@ -68,42 +70,76 @@ public class JsonSchemaDetails {
     /**
      * {@see NOT}
      */
-    @NonNull
-    private final Optional<JsonSchema> notSchema;
+    private final Schema notSchema;
 
     /**
      * {@see ENUM}
      */
-    @NonNull
-    private final Optional<JsonArray> enumValues;
+    private final JsonArray enumValues;
 
     /**
      * {@see CONST}
      */
-    @NonNull
-    private final Optional<JsonValue> constValue;
+    private final JsonValue constValue;
+    private final StringKeywords stringKeywords;
+    private final NumberKeywords numberKeywords;
+    private final ObjectKeywords objectKeywords;
+    private final ArrayKeywords arrayKeywords;
 
-    @NonNull
-    private final Optional<StringKeywords> stringKeywords;
-
-    @NonNull
-    private final Optional<NumberKeywords> numberKeywords;
-
-    @NonNull
-    private final Optional<ObjectKeywords> objectKeywords;
-
-    @NonNull
-    private final Optional<ArrayKeywords> arrayKeywords;
-
-    public static class JsonSchemaDetailsBuilder {
-        public JsonSchemaDetailsBuilder constValue(JsonValue d) {
-            this.constValue = Optional.ofNullable(d);
-            return this;
-        }
-
-        public JsonSchemaDetailsBuilder enumValues(JsonArray array) {
-            this.enumValues = Optional.ofNullable(array);
-            return this;
-        }
+    public boolean hasObjectKeywords() {
+        return objectKeywords != null;
     }
+
+    public boolean hasArrayKeywords() {
+        return arrayKeywords != null;
+    }
+
+    public boolean hasNumberKeywords() {
+        return numberKeywords != null;
+    }
+
+    public boolean hasStringKeywords() {
+        return stringKeywords != null;
+    }
+
+    public Optional<Schema> getNotSchema() {
+        return Optional.ofNullable(notSchema);
+    }
+
+    public Optional<JsonArray> getEnumValues() {
+        return Optional.ofNullable(enumValues);
+    }
+
+    public Optional<JsonValue> getConstValue() {
+        return Optional.ofNullable(constValue);
+    }
+
+    public Optional<StringKeywords> getStringKeywords() {
+
+        return Optional.ofNullable(stringKeywords);
+    }
+
+    public Optional<NumberKeywords> getNumberKeywords() {
+        return Optional.ofNullable(numberKeywords);
+    }
+
+    public Optional<ObjectKeywords> getObjectKeywords() {
+        return Optional.ofNullable(objectKeywords);
+    }
+
+    public Optional<ArrayKeywords> getArrayKeywords() {
+        return Optional.ofNullable(arrayKeywords);
+    }
+
+    // public static class JsonSchemaDetailsBuilder {
+    //     public JsonSchemaDetailsBuilder constValue(JsonValue d) {
+    //         this.constValue = Optional.ofNullable(d);
+    //         return this;
+    //     }
+    //
+    //     public JsonSchemaDetailsBuilder enumValues(JsonArray array) {
+    //         this.enumValues = Optional.ofNullable(array);
+    //         return this;
+    //     }
+    // }
 }

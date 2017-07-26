@@ -15,12 +15,10 @@
  */
 package io.dugnutt.jsonschema;
 
-import io.dugnutt.jsonschema.validator.ValidationError;
-import lombok.SneakyThrows;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.PartialSchemaValidator;
-import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
+import io.dugnutt.jsonschema.validator.ValidationError;
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -41,8 +39,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.Objects.requireNonNull;
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static java.util.Objects.requireNonNull;
 
 @RunWith(Parameterized.class)
 public class IssueTest {
@@ -97,7 +95,6 @@ public class IssueTest {
         Optional<File> schemaFile = fileByName("schema.json");
         if (schemaFile.isPresent()) {
             try (FileInputStream schemaStream = new FileInputStream(schemaFile.get())) {
-
                 return schemaFactory().load(schemaStream);
             }
         }
@@ -112,9 +109,7 @@ public class IssueTest {
 
     private void validate(final File file, final Schema schema, final boolean shouldBeValid) {
         JsonValue subject = loadJsonFile(file);
-
-        PartialSchemaValidator validator = SchemaValidatorFactory.createValidatorForSchema(schema);
-        Optional<ValidationError> errors = validator.validate(subject);
+        Optional<ValidationError> errors = ValidationMocks.createTestValidator(schema).validate(subject);
 
         if (shouldBeValid && errors.isPresent()) {
             StringBuilder failureBuilder = new StringBuilder("validation failed with: " + errors.get());

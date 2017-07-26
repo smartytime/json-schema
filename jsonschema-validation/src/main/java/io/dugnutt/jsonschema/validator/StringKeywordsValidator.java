@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import com.google.common.base.Preconditions;
-import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.StringKeywords;
 
@@ -25,9 +25,14 @@ public class StringKeywordsValidator implements PartialSchemaValidator {
     }
 
     @Override
-    public boolean appliesToSchema(JsonSchema schema) {
+    public boolean appliesToSchema(Schema schema) {
         checkNotNull(schema, "schema must not be null");
         return schema.getStringKeywords().isPresent();
+    }
+
+    @Override
+    public PartialSchemaValidator forSchema(Schema schema, SchemaValidatorFactory factory) {
+        return this;
     }
 
     @Override
@@ -36,7 +41,7 @@ public class StringKeywordsValidator implements PartialSchemaValidator {
     }
 
     @Override
-    public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema schema, SchemaValidatorFactory factory) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject, Schema schema, SchemaValidatorFactory factory) {
         Preconditions.checkArgument(subject.is(ValueType.STRING), "Requires JsonArray as input");
         StringKeywords keywords = schema.getStringKeywords()
                 .orElseThrow(() -> new IllegalArgumentException("Schema must have string keywords"));
@@ -67,7 +72,7 @@ public class StringKeywordsValidator implements PartialSchemaValidator {
         return ValidationError.collectErrors(schema, subject.getPath(), allErrors);
     }
 
-    private List<ValidationError> testLength(PathAwareJsonValue subject, JsonSchema schema, StringKeywords keywords, final String string) {
+    private List<ValidationError> testLength(PathAwareJsonValue subject, Schema schema, StringKeywords keywords, final String string) {
         Integer minLength = keywords.getMinLength();
         Integer maxLength = keywords.getMaxLength();
         int actualLength = string.codePointCount(0, string.length());

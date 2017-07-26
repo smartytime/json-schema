@@ -4,23 +4,23 @@ import java.util.regex.Pattern;
 
 public class JsonSchemaRunner {
     public static void main(String[] args) {
-        final JsonSchema jsonSchema = JsonSchema.jsonSchemaBuilder()
+        final Schema jsonSchema = Schema.jsonSchemaBuilder()
                 .id("#/some/id")
                 .type(JsonSchemaType.STRING)
                 .pattern(Pattern.compile("^[a-z]+$]"))
                 .anyOfSchema(
-                        JsonSchema.jsonSchemaBuilder().notSchema(
-                                JsonSchema.jsonSchemaBuilder().constValueString("bob_is_cool")))
-                .anyOfSchema(JsonSchema.jsonSchemaBuilder().constValueString("bob_is_rad"))
-                .anyOfSchema(JsonSchema.jsonSchemaBuilder()
+                        Schema.jsonSchemaBuilder().notSchema(
+                                Schema.jsonSchemaBuilder().constValueString("bob_is_cool")))
+                .anyOfSchema(Schema.jsonSchemaBuilder().constValueString("bob_is_rad"))
+                .anyOfSchema(Schema.jsonSchemaBuilder()
                         .type(JsonSchemaType.OBJECT)
                         .propertySchema("firstName",
-                                JsonSchema.jsonSchemaBuilder()
+                                Schema.jsonSchemaBuilder()
                                         .type(JsonSchemaType.STRING)
                                         .maxLength(44)))
-                .allOfSchema(JsonSchema.jsonSchemaBuilder().minLength(3))
-                .allOfSchema(JsonSchema.jsonSchemaBuilder().maxLength(10))
-                .allOfSchema(JsonSchema.jsonSchemaBuilder().ref("#/definitions/id_name"))
+                .allOfSchema(Schema.jsonSchemaBuilder().minLength(3))
+                .allOfSchema(Schema.jsonSchemaBuilder().maxLength(10))
+                .allOfSchema(Schema.jsonSchemaBuilder().ref("#/definitions/id_name"))
                 .build();
 
         System.out.println(jsonSchema.toString());

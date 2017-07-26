@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.validator.PartialSchemaValidator;
-import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
+import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,13 +25,16 @@ import javax.json.JsonObject;
 import java.util.Optional;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.ResourceLoader.DEFAULT;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
+import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
+import static io.dugnutt.jsonschema.validator.ResourceLoader.DEFAULT;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockSchema;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockStringSchema;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.buildWithLocation;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
-import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
-import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 import static javax.json.spi.JsonProvider.provider;
 import static org.junit.Assert.assertEquals;
 
@@ -39,7 +42,7 @@ public class StringSchemaTest {
 
     // @Test
     // public void stringSchemaWithFormat() {
-    //     StringSchema subject = (StringSchema) getSchemaForKey("stringSchemaWithFormat");
+    //     Schema subject = (StringSchema) getSchemaForKey("stringSchemaWithFormat");
     //     ValidationTestSupport.expectFailure(subject, "asd");
     // }
     //
@@ -52,7 +55,7 @@ public class StringSchemaTest {
     @Test
     public void formatFailure() {
         var schemaValidator = validatorFactory.createValidator(
-                buildWithLocation(StringSchema.builder().format("test-format-failure"))
+                buildWithLocation(mockStringSchema().format("test-format-failure"))
         );
         failureOf(schemaValidator)
                 .expectedKeyword("format")
@@ -62,19 +65,19 @@ public class StringSchemaTest {
 
     @Test
     public void formatSuccess() {
-        var schemaValidator = validatorFactory.createValidator(StringSchema.builder().format("test-format-success").build());
+        var schemaValidator = validatorFactory.createValidator(mockStringSchema().format("test-format-success").build());
         expectSuccess(() -> schemaValidator.validate(jsonStringValue("string")));
     }
 
     public void issue38Pattern() {
-        final StringSchema schema = StringSchema.builder().requiresString(true).pattern("\\+?\\d+").build();
-        final PartialSchemaValidator<StringSchema> validator = validatorFactory.createValidator(schema);
+        final Schema schema = mockStringSchema().pattern("\\+?\\d+").build();
+        final JsonSchemaValidator validator = createTestValidator(schema);
         verifyFailure(() -> validator.validate(jsonStringValue("aaa")));
     }
 
     @Test
     public void maxLength() {
-        StringSchema subject = buildWithLocation(StringSchema.builder().maxLength(3));
+        Schema subject = buildWithLocation(mockStringSchema().maxLength(3));
         failureOf(subject)
                 .expectedKeyword("maxLength")
                 .input("foobar")
@@ -83,7 +86,7 @@ public class StringSchemaTest {
 
     @Test
     public void minLength() {
-        StringSchema subject = buildWithLocation(StringSchema.builder().minLength(2));
+        Schema subject = buildWithLocation(mockStringSchema().minLength(2));
         failureOf(subject)
                 .expectedKeyword("minLength")
                 .input("a")
@@ -92,7 +95,7 @@ public class StringSchemaTest {
 
     @Test
     public void multipleViolations() {
-        final StringSchema schema = StringSchema.builder().minLength(3).maxLength(1).pattern("^b.*").build();
+        final Schema schema = mockStringSchema().minLength(3).maxLength(1).pattern("^b.*").build();
         failureOf(schema)
                 .input("ab")
                 .expected(e -> {
@@ -103,27 +106,27 @@ public class StringSchemaTest {
 
     @Test
     public void notRequiresString() {
-        final StringSchema schema = StringSchema.builder().requiresString(false).build();
+        final Schema schema = mockSchema().build();
         expectSuccess(schema, 2);
     }
 
     @Test
     public void patternFailure() {
-        StringSchema subject = buildWithLocation(StringSchema.builder().pattern("^a*$"));
+        Schema subject = buildWithLocation(mockStringSchema().pattern("^a*$"));
         failureOf(subject).expectedKeyword("pattern").input("abc").expect();
     }
 
     @Test
     public void patternSuccess() {
 
-        final StringSchema schema = StringSchema.builder().pattern("^a*$").build();
+        final Schema schema = mockStringSchema().pattern("^a*$").build();
         expectSuccess(schema, "aaaa");
     }
 
     @Test
     public void success() {
 
-        expectSuccess(StringSchema.builder().build(), "foo");
+        expectSuccess(mockStringSchema().build(), "foo");
     }
 
     @Test
@@ -145,7 +148,7 @@ public class StringSchemaTest {
 
     @Test
     public void typeFailure() {
-        failureOf(StringSchema.builder())
+        failureOf(mockStringSchema())
                 .expectedKeyword("type")
                 .nullInput()
                 .expect();

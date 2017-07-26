@@ -16,7 +16,6 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
@@ -62,46 +61,6 @@ public class ValidationError {
     private final List models;
 
     /**
-     * Sort of static factory method. It is used by {@link io.dugnutt.jsonschema.six.ObjectKeywords} and
-     * {@link ArrayKeywordsValidator} to create {@code ValidationException}s, handling the case of multiple violations
-     * occuring during validation.
-     * <p>
-     * <ul>
-     * <li>If {@code failures} is empty, then it doesn't do anything</li>
-     * <li>If {@code failures} contains 1 exception instance, then that will be thrown</li>
-     * <li>Otherwise a new exception instance will be created, its {@link #getViolatedSchema()
-     * violated schema} will be {@code rootFailingSchema}, and its {@link #getCauses()
-     * causing exceptions} will be the {@code failures} list</li>
-     * </ul>
-     *
-     * @param rootFailingSchema the schema which detected the {@code failures}
-     * @param failures          list containing validation failures to be thrown by this method
-     */
-    public static Optional<ValidationError> collectErrors(JsonSchema rootFailingSchema,
-                                                          JsonPath currentLocation,
-                                                          List<ValidationError> failures) {
-        int failureCount = failures.size();
-        if (failureCount == 0) {
-            return Optional.empty();
-        } else if (failureCount == 1) {
-            return Optional.of(failures.get(0));
-        } else {
-            return Optional.of(
-                    validationBuilder()
-                            .violatedSchema(rootFailingSchema)
-                            .pointerToViolation(currentLocation)
-                            .message(getViolationCount(failures) + " schema violations found")
-                            .code("validation.multipleFailures")
-                            .model(getViolationCount(failures))
-                            .causingExceptions(unmodifiableList(failures))
-                            .keyword(null)
-                            .schemaLocation(rootFailingSchema.getLocation().getJsonPointerFragment())
-                            .build()
-            );
-        }
-    }
-
-    /**
      * Returns all messages collected from all violations, including nested causing exceptions.
      *
      * @return all messages
@@ -144,6 +103,10 @@ public class ValidationError {
 
     public List<Object> getModel() {
         return models;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     /**
@@ -240,9 +203,48 @@ public class ValidationError {
                 '}';
     }
 
-    private static int getViolationCount(List<ValidationError> causes) {
-        int causeCount = causes.stream().mapToInt(ValidationError::getViolationCount).sum();
-        return Math.max(1, causeCount);
+    private String escapeFragment(String fragment) {
+        return fragment.replace("~", "~0").replace("/", "~1");
+    }
+
+    /**
+     * Sort of static factory method. It is used by {@link io.dugnutt.jsonschema.six.ObjectKeywords} and
+     * {@link ArrayKeywordsValidator} to create {@code ValidationException}s, handling the case of multiple violations
+     * occuring during validation.
+     * <p>
+     * <ul>
+     * <li>If {@code failures} is empty, then it doesn't do anything</li>
+     * <li>If {@code failures} contains 1 exception instance, then that will be thrown</li>
+     * <li>Otherwise a new exception instance will be created, its {@link #getViolatedSchema()
+     * violated schema} will be {@code rootFailingSchema}, and its {@link #getCauses()
+     * causing exceptions} will be the {@code failures} list</li>
+     * </ul>
+     *
+     * @param rootFailingSchema the schema which detected the {@code failures}
+     * @param failures          list containing validation failures to be thrown by this method
+     */
+    public static Optional<ValidationError> collectErrors(Schema rootFailingSchema,
+                                                          JsonPath currentLocation,
+                                                          List<ValidationError> failures) {
+        int failureCount = failures.size();
+        if (failureCount == 0) {
+            return Optional.empty();
+        } else if (failureCount == 1) {
+            return Optional.of(failures.get(0));
+        } else {
+            return Optional.of(
+                    validationBuilder()
+                            .violatedSchema(rootFailingSchema)
+                            .pointerToViolation(currentLocation)
+                            .message(failures.size() + " schema violations found")
+                            .code("validation.multipleFailures")
+                            .model(failures.size())
+                            .causingExceptions(unmodifiableList(failures))
+                            .keyword(null)
+                            .schemaLocation(rootFailingSchema.getLocation().getJsonPointerFragment())
+                            .build()
+            );
+        }
     }
 
     private static List<String> getAllMessages(List<ValidationError> causes) {
@@ -257,24 +259,27 @@ public class ValidationError {
         return messages;
     }
 
-
-    private String escapeFragment(String fragment) {
-        return fragment.replace("~", "~0").replace("/", "~1");
+    private static int getViolationCount(List<ValidationError> causes) {
+        int causeCount = causes.stream().mapToInt(ValidationError::getViolationCount).sum();
+        return Math.max(1, causeCount);
     }
 
     public static class ValidationErrorBuilder {
+        public void addToErrorList(List<ValidationError> errors) {
+            checkNotNull(errors, "errors must not be null");
+            errors.add(this.build());
+        }
+
         public Optional<ValidationError> buildOptional() {
             return Optional.of(build());
         }
 
         public ValidationErrorBuilder message(String message, Object... args) {
             this.message = String.format(message, args);
+            for (Object arg : args) {
+                this.model(arg);
+            }
             return this;
-        }
-
-        public void addToErrorList(List<ValidationError> errors) {
-            checkNotNull(errors, "errors must not be null");
-            errors.add(this.build());
         }
 
         public ValidationErrorBuilder uriFragmentPointerToViolation(String uriFragment) {
@@ -282,6 +287,4 @@ public class ValidationError {
             return this;
         }
     }
-
-
 }

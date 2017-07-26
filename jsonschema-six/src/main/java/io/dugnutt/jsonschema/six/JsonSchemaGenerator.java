@@ -70,18 +70,18 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, JsonSchema schema) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Schema schema) {
         if (schema != null) {
             write(property, schema);
         }
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, List<JsonSchema> schemas) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, List<Schema> schemas) {
         if (schemas != null) {
             wrapped.writeKey(property.key());
             array();
-            for (JsonSchema schema : schemas) {
+            for (Schema schema : schemas) {
                 schema.toJson(this);
             }
             endArray();
@@ -89,7 +89,7 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Map<String, JsonSchema> schemas) {
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, Map<String, Schema> schemas) {
         if (schemas != null && !schemas.isEmpty()) {
             writeKey(property);
             object();
@@ -146,7 +146,7 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWritePatternProperties(Map<Pattern, JsonSchema> patterns) {
+    public JsonSchemaGenerator optionalWritePatternProperties(Map<Pattern, Schema> patterns) {
         if (patterns != null && !patterns.isEmpty()) {
             writeKey(JsonSchemaKeyword.PATTERN_PROPERTIES);
             object();
@@ -181,7 +181,7 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator write(JsonSchemaKeyword name, JsonSchema schema) {
+    public JsonSchemaGenerator write(JsonSchemaKeyword name, Schema schema) {
         wrapped.writeKey(name.key());
         schema.toJson(this);
         return this;
@@ -209,15 +209,15 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public Consumer<? super JsonSchema> schemaWriter(JsonSchemaKeyword keyword) {
+    public Consumer<? super Schema> schemaWriter(JsonSchemaKeyword keyword) {
         return schema -> write(keyword, schema);
     }
 
-    public JsonSchemaGenerator writeSchemas(JsonSchemaKeyword property, List<JsonSchema> schemas) {
+    public JsonSchemaGenerator writeSchemas(JsonSchemaKeyword property, List<Schema> schemas) {
         if (schemas != null && !schemas.isEmpty()) {
             wrapped.writeKey(property.key());
             array();
-            for (JsonSchema schema : schemas) {
+            for (Schema schema : schemas) {
                 schema.toJson(this);
             }
             endArray();

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Test;

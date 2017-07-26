@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.Schema;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,34 +18,34 @@ public class CombinedSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void combinedSchemaLoading() {
-        JsonSchema actual = getSchemaForKey("combinedSchema");
+        Schema actual = getSchemaForKey("combinedSchema");
         Assert.assertNotNull(actual);
     }
 
     @Test
     public void combinedSchemaWithBaseSchema() {
-        JsonSchema actual = getSchemaForKey("combinedSchemaWithBaseSchema");
+        Schema actual = getSchemaForKey("combinedSchemaWithBaseSchema");
         assertEquals(2, actual.getAnyOfSchemas().stream()
-                .filter(JsonSchema::hasStringKeywords)
+                .filter(Schema::hasStringKeywords)
                 .count());
     }
 
     @Test
     public void combinedSchemaWithExplicitBaseSchema() {
-        JsonSchema actual = getSchemaForKey("combinedSchemaWithExplicitBaseSchema");
+        Schema actual = getSchemaForKey("combinedSchemaWithExplicitBaseSchema");
         assertEquals(2, actual.getAnyOfSchemas().stream()
-                .filter(JsonSchema::hasStringKeywords).count());
+                .filter(Schema::hasStringKeywords).count());
     }
 
     @Test
     public void combinedSchemaWithMultipleBaseSchemas() {
-        JsonSchema actual = getSchemaForKey("combinedSchemaWithMultipleBaseSchemas");
+        Schema actual = getSchemaForKey("combinedSchemaWithMultipleBaseSchemas");
         assertSoftly(a -> {
             a.assertThat(actual.getAnyOfSchemas())
-                    .filteredOn(JsonSchema::hasStringKeywords)
+                    .filteredOn(Schema::hasStringKeywords)
                     .isNotNull();
             a.assertThat(actual.getAnyOfSchemas())
-                    .filteredOn(JsonSchema::hasNumberKeywords)
+                    .filteredOn(Schema::hasNumberKeywords)
                     .isNotNull();
         });
     }

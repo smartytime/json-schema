@@ -3,10 +3,10 @@ package io.dugnutt.jsonschema.loader;
 import com.google.common.collect.ImmutableSet;
 import io.dugnutt.jsonschema.loader.reference.DefaultSchemaClient;
 import io.dugnutt.jsonschema.loader.reference.SchemaClient;
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.NumberKeywords;
 import io.dugnutt.jsonschema.six.ObjectKeywords;
+import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.six.StringKeywords;
 import io.dugnutt.jsonschema.utils.JsonUtils;
@@ -33,13 +33,13 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void booleanSchema() {
-        JsonSchema actual = getSchemaForKey("booleanSchema");
+        Schema actual = getSchemaForKey("booleanSchema");
         Assert.assertNotNull(actual);
     }
 
     @Test
     public void emptyPatternProperties() {
-        JsonSchema actual = getSchemaForKey("emptyPatternProperties");
+        Schema actual = getSchemaForKey("emptyPatternProperties");
         assertSoftly(a -> {
             a.assertThat(actual).isNotNull();
             a.assertThat(actual.getObjectKeywords())
@@ -53,7 +53,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void emptySchema() {
-        final JsonSchema emptySchema = getSchemaForKey("emptySchema");
+        final Schema emptySchema = getSchemaForKey("emptySchema");
         assertSoftly(a -> {
             a.assertThat(emptySchema)
                     .isNotNull();
@@ -64,7 +64,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void emptySchemaWithDefault() {
-        final JsonSchema emptySchema = getSchemaForKey("emptySchemaWithDefault");
+        final Schema emptySchema = getSchemaForKey("emptySchemaWithDefault");
         assertSoftly(a -> {
             a.assertThat(emptySchema)
                     .isNotNull();
@@ -75,7 +75,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void enumSchema() {
-        JsonSchema actual = getSchemaForKey("enumSchema");
+        Schema actual = getSchemaForKey("enumSchema");
         assertSoftly(a -> {
             a.assertThat(actual).isNotNull();
             a.assertThat(actual.getEnumValues().orElse(null))
@@ -86,7 +86,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void genericProperties() {
-        JsonSchema actual = getSchemaForKey("genericProperties");
+        Schema actual = getSchemaForKey("genericProperties");
         assertEquals("myId", actual.getId().toString());
         assertEquals("my title", actual.getTitle());
         assertEquals("my description", actual.getDescription());
@@ -94,7 +94,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void implicitAnyOfLoadsTypeProps() {
-        JsonSchema schema = getSchemaForKey("multipleTypesWithProps");
+        Schema schema = getSchemaForKey("multipleTypesWithProps");
         assertSoftly(a -> {
             a.assertThat(schema.getStringKeywords().orElse(null))
                     .isNotNull()
@@ -131,56 +131,56 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void jsonPointerInArray() {
-        final JsonSchema jsonSchema = getSchemaForKey("jsonPointerInArray");
+        final Schema jsonSchema = getSchemaForKey("jsonPointerInArray");
         assertThat(jsonSchema.getArrayKeywords()).isPresent();
     }
 
     @Test
     public void multipleTypes() {
-        final JsonSchema multipleTypes = getSchemaForKey("multipleTypes");
+        final Schema multipleTypes = getSchemaForKey("multipleTypes");
         assertThat(multipleTypes)
                 .isNotNull()
-                .extracting(JsonSchema::getTypes)
+                .extracting(Schema::getTypes)
                 .contains(ImmutableSet.of(JsonSchemaType.STRING, JsonSchemaType.BOOLEAN));
     }
 
     @Test
     public void neverMatchingAnyOf() {
-        final JsonSchema anyOfNeverMatches = getSchemaForKey("anyOfNeverMatches");
+        final Schema anyOfNeverMatches = getSchemaForKey("anyOfNeverMatches");
         assertThat(anyOfNeverMatches.getTypes())
                 .isEqualTo(ImmutableSet.of(JsonSchemaType.STRING));
     }
 
     @Test
     public void noExplicitObject() {
-        JsonSchema actual = getSchemaForKey("noExplicitObject");
+        Schema actual = getSchemaForKey("noExplicitObject");
         assertThat(actual.getTypes()).isEmpty();
     }
 
     @Test
     public void notSchema() {
-        JsonSchema actual = getSchemaForKey("notSchema");
+        Schema actual = getSchemaForKey("notSchema");
         assertThat(actual.getNotSchema()).isPresent();
     }
 
     @Test
     public void nullSchema() {
-        JsonSchema actual = getSchemaForKey("nullSchema");
+        Schema actual = getSchemaForKey("nullSchema");
         assertThat(actual).isNotNull();
     }
 
     @Test
     public void numberSchema() {
-        JsonSchema actual = getSchemaForKey("numberSchema");
+        Schema actual = getSchemaForKey("numberSchema");
         assertThat(actual.getNumberKeywords()).isPresent();
         assertSoftly(a -> {
             a.assertThat(actual.getTypes()).containsExactly(JsonSchemaType.NUMBER);
             final NumberKeywords keywords = actual.getNumberKeywords().get();
-            a.assertThat(keywords.getMinimum()).isEqualTo(10);
-            a.assertThat(keywords.getMaximum()).isEqualTo(20);
-            a.assertThat(keywords.getExclusiveMaximum()).isEqualTo(21);
-            a.assertThat(keywords.getExclusiveMinimum()).isEqualTo(11);
-            a.assertThat(keywords.getMultipleOf()).isEqualTo(5);
+            a.assertThat(keywords.getMinimum().intValue()).isEqualTo(10);
+            a.assertThat(keywords.getMaximum().intValue()).isEqualTo(20);
+            a.assertThat(keywords.getExclusiveMaximum().intValue()).isEqualTo(21);
+            a.assertThat(keywords.getExclusiveMinimum().intValue()).isEqualTo(11);
+            a.assertThat(keywords.getMultipleOf().intValue()).isEqualTo(5);
         });
     }
 
@@ -190,18 +190,18 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void pointerResolution() {
-        JsonSchema actual = getSchemaForKey("pointerResolution");
+        Schema actual = getSchemaForKey("pointerResolution");
 
         assertThat(actual.getObjectKeywords()).isPresent();
         assertSoftly(a -> {
             final ObjectKeywords objectKeywords = actual.getObjectKeywords().get();
-            final JsonSchema rectangleSchema = objectKeywords.getPropertySchemas().get("rectangle");
+            final Schema rectangleSchema = objectKeywords.getPropertySchemas().get("rectangle");
             a.assertThat(rectangleSchema).isNotNull();
             a.assertThat(rectangleSchema.getObjectKeywords()).isPresent();
 
             assertSoftly(ref -> {
                 final ObjectKeywords refSchemaKeywords = rectangleSchema.getObjectKeywords().get();
-                final JsonSchema schemaA = refSchemaKeywords.getPropertySchemas().get("a");
+                final Schema schemaA = refSchemaKeywords.getPropertySchemas().get("a");
                 ref.assertThat(schemaA).isNotNull();
                 ref.assertThat(schemaA.getNumberKeywords()).isPresent();
                 ref.assertThat(schemaA.getNumberKeywords().get().getMinimum()).isEqualTo(0);
@@ -226,12 +226,12 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void refWithType() {
-        JsonSchema actualRoot = getSchemaForKey("refWithType");
+        Schema actualRoot = getSchemaForKey("refWithType");
         assertThat(actualRoot).isNotNull();
         assertThat(actualRoot.getObjectKeywords()).isPresent();
         assertSoftly(a -> {
             final ObjectKeywords keywords = actualRoot.getObjectKeywords().get();
-            final JsonSchema prop = keywords.getPropertySchemas().get("prop");
+            final Schema prop = keywords.getPropertySchemas().get("prop");
             a.assertThat(prop).isNotNull();
             a.assertThat(prop.getObjectKeywords()).isPresent();
             a.assertThat(prop.getObjectKeywords().get().getRequiredProperties())
@@ -276,7 +276,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     public void schemaPointerIsPopulated() {
         JsonObject rawSchema = JsonUtils.readResourceAsJson("/tests/objecttestschemas.json", JsonObject.class)
                 .getJsonObject("objectWithSchemaDep");
-        JsonSchema schema = schemaFactory().load(rawSchema);
+        Schema schema = schemaFactory().load(rawSchema);
 
         assertThat(schema).isNotNull();
         assertThat(schema.getObjectKeywords()).isPresent();
@@ -298,14 +298,14 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     @Test
     public void sniffByFormat() {
         JsonObject schema = provider().createObjectBuilder().add("format", "hostname").build();
-        JsonSchema actual = JsonSchemaFactory.schemaFactory().load(schema);
+        Schema actual = JsonSchemaFactory.schemaFactory().load(schema);
         assertThat(actual.getStringKeywords()).isPresent();
         assertThat(actual.getStringKeywords().get().getFormat()).isEqualTo("hostname");
     }
 
     @Test
     public void stringSchema() {
-        JsonSchema actual =  getSchemaForKey("stringSchema");
+        Schema actual =  getSchemaForKey("stringSchema");
         assertThat(actual.getStringKeywords()).isPresent();
         assertThat(actual.getStringKeywords().get().getMinLength()).isEqualTo(2);
         assertThat(actual.getStringKeywords().get().getMaxLength()).isEqualTo(3);
@@ -313,7 +313,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void tupleSchema() {
-        JsonSchema actual =  getSchemaForKey("tupleSchema");
+        Schema actual =  getSchemaForKey("tupleSchema");
         assertThat(actual.getArrayKeywords()).isPresent();
         assertThat(actual.getArrayKeywords().get().getAllItemSchema()).isNull();
         assertThat(actual.getArrayKeywords().get().getItemSchemas()).hasSize(2);

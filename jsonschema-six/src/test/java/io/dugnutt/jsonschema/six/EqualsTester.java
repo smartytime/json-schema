@@ -13,35 +13,35 @@ import java.util.List;
 @RunWith(Parameterized.class)
 public class EqualsTester {
 
-    public static final JsonSchema NUMBER_SCHEMA_A = JsonSchema.jsonSchemaBuilder()
+    public static final Schema NUMBER_SCHEMA_A = Schema.jsonSchemaBuilder()
             .multipleOf(2)
             .exclusiveMaximum(33)
             .type(JsonSchemaType.NUMBER)
             .build();
 
-    public static final JsonSchema NUMBER_SCHEMA_B = JsonSchema.jsonSchemaBuilder()
+    public static final Schema NUMBER_SCHEMA_B = Schema.jsonSchemaBuilder()
             .minimum(33)
             .type(JsonSchemaType.INTEGER)
             .build();
 
 
-    public static final JsonSchema STRING_SCHEMA_A = JsonSchema.jsonSchemaBuilder()
+    public static final Schema STRING_SCHEMA_A = Schema.jsonSchemaBuilder()
             .format("uri")
             .maxLength(32)
             .type(JsonSchemaType.STRING)
             .build();
 
-    public static final JsonSchema STRING_SCHEMA_B = JsonSchema.jsonSchemaBuilder()
+    public static final Schema STRING_SCHEMA_B = Schema.jsonSchemaBuilder()
             .maxLength(32)
             .minLength(3)
             .pattern("^[a-z]+$")
             .build();
 
-    // public static final JsonSchema BOOLEAN_SCHEMA_A = JsonSchema.builder()
+    // public static final Schema BOOLEAN_SCHEMA_A = Schema.builder()
     //         .title("Bool A")
     //         .build();
     //
-    // public static final JsonSchema BOOLEAN_SCHEMA_B = JsonSchema.builder()
+    // public static final Schema BOOLEAN_SCHEMA_B = Schema.builder()
     //         .title("Bool B")
     //         .build();
     //
@@ -53,12 +53,12 @@ public class EqualsTester {
     //         .title("Empty B")
     //         .build();
 
-    // public static final JsonSchema COMBINED_SCHEMA_A = JsonSchema.builder()
+    // public static final Schema COMBINED_SCHEMA_A = Schema.builder()
     //         .subschema(STRING_SCHEMA_A)
     //         .subschema(NUMBER_SCHEMA_A)
     //         .JsonSchemaType(JsonSchemaType.ANY_OF).build();
     //
-    // public static final JsonSchema COMBINED_SCHEMA_B = JsonSchema.builder()
+    // public static final Schema COMBINED_SCHEMA_B = Schema.builder()
     //         .subschema(STRING_SCHEMA_B)
     //         .subschema(NUMBER_SCHEMA_B)
     //         .JsonSchemaType(JsonSchemaType.ANY_OF).build();
@@ -91,7 +91,7 @@ public class EqualsTester {
         EqualsVerifier.forClass(testClass)
                 .withRedefinedSuperclass()
                 .withIgnoredFields(ignores)
-                .withPrefabValues(JsonSchema.class, NUMBER_SCHEMA_B, STRING_SCHEMA_A)
+                .withPrefabValues(Schema.class, NUMBER_SCHEMA_B, STRING_SCHEMA_A)
                 .suppress(Warning.STRICT_INHERITANCE)
                 .verify();
     }

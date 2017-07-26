@@ -1,9 +1,9 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.ObjectComparator;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,12 @@ public class BaseSchemaValidator implements PartialSchemaValidator {
     private BaseSchemaValidator() {
     }
 
-    public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema schema, SchemaValidatorFactory factory) {
+    @Override
+    public PartialSchemaValidator forSchema(Schema schema, SchemaValidatorFactory factory) {
+        return this;
+    }
+
+    public Optional<ValidationError> validate(PathAwareJsonValue subject, Schema schema, SchemaValidatorFactory factory) {
 
         // Do all the core validations
         List<ValidationError> allErrors = new ArrayList<>();
@@ -32,15 +37,23 @@ public class BaseSchemaValidator implements PartialSchemaValidator {
         validateEnum(subject, schema).ifPresent(allErrors::add);
         validateConst(subject, schema).ifPresent(allErrors::add);
         validateNot(subject, schema, factory).ifPresent(allErrors::add);
-        validateCombinedSchema(schema, schema.getAllOfSchemas(), factory, subject, ALL_OF).ifPresent(allErrors::add);
-        validateCombinedSchema(schema, schema.getAnyOfSchemas(), factory, subject, ANY_OF).ifPresent(allErrors::add);
-        validateCombinedSchema(schema, schema.getOneOfSchemas(), factory, subject, ONE_OF).ifPresent(allErrors::add);
 
+        if (!schema.getAllOfSchemas().isEmpty()) {
+            validateCombinedSchema(schema, schema.getAllOfSchemas(), factory, subject, ALL_OF).ifPresent(allErrors::add);
+        }
+
+        if (!schema.getAnyOfSchemas().isEmpty()) {
+            validateCombinedSchema(schema, schema.getAnyOfSchemas(), factory, subject, ANY_OF).ifPresent(allErrors::add);
+        }
+
+        if (!schema.getOneOfSchemas().isEmpty()) {
+            validateCombinedSchema(schema, schema.getOneOfSchemas(), factory, subject, ONE_OF).ifPresent(allErrors::add);
+        }
         return ValidationError.collectErrors(schema, subject.getPath(), allErrors);
     }
 
 
-    public Optional<ValidationError> validateConst(PathAwareJsonValue toBeValidated, JsonSchema schema) {
+    public Optional<ValidationError> validateConst(PathAwareJsonValue toBeValidated, Schema schema) {
         return schema.getConstValue()
                 .map(constValue -> {
                     if (!constValue.equals(toBeValidated)) {
@@ -53,7 +66,7 @@ public class BaseSchemaValidator implements PartialSchemaValidator {
                 });
     }
 
-    public Optional<ValidationError> validateEnum(PathAwareJsonValue toBeValidated, JsonSchema schema) {
+    public Optional<ValidationError> validateEnum(PathAwareJsonValue toBeValidated, Schema schema) {
         return schema.getEnumValues()
                 .map(enumValues -> {
                     boolean foundMatch = enumValues.stream()
@@ -67,7 +80,7 @@ public class BaseSchemaValidator implements PartialSchemaValidator {
                 });
     }
 
-    public Optional<ValidationError> validateNot(PathAwareJsonValue toBeValidated, JsonSchema schema, SchemaValidatorFactory factory) {
+    public Optional<ValidationError> validateNot(PathAwareJsonValue toBeValidated, Schema schema, SchemaValidatorFactory factory) {
         return schema.getNotSchema()
                 .map(notSchema -> {
                     Optional<ValidationError> validated = factory.createValidator(notSchema)
@@ -81,7 +94,7 @@ public class BaseSchemaValidator implements PartialSchemaValidator {
                 });
     }
 
-    private Optional<ValidationError> validateCombinedSchema(JsonSchema parent, List<JsonSchema> subschemas, SchemaValidatorFactory factory,
+    private Optional<ValidationError> validateCombinedSchema(Schema parent, List<Schema> subschemas, SchemaValidatorFactory factory,
                                                              PathAwareJsonValue subject, JsonSchemaKeyword combinedType) {
         if (subschemas != null && subschemas.size() > 0) {
             return combinedSchemaValidator().validate(subject, parent, factory, subschemas, combinedType);

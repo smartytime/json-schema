@@ -15,8 +15,8 @@
  */
 package io.dugnutt.jsonschema.loader.reference;
 
-
 import java.io.InputStream;
+import java.net.URI;
 
 /**
  * This interface is used by {@link io.dugnutt.jsonschema.loader.JsonSchemaFactory} to fetch the contents denoted by remote JSON
@@ -37,6 +37,10 @@ public interface SchemaClient {
      * @return the input stream of the response
      * @throws java.io.UncheckedIOException if an IO error occurs.
      */
-    InputStream fetchSchema(String url);
+    InputStream fetchSchema(URI url);
+
+    default InputStream fetchSchema(String url) {
+        return fetchSchema(URI.create(url));
+    }
 
 }

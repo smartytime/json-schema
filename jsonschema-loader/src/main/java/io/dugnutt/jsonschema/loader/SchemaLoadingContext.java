@@ -21,7 +21,6 @@ import javax.annotation.Nullable;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Optional;
@@ -57,50 +56,28 @@ import static javax.json.JsonValue.ValueType.TRUE;
 public class SchemaLoadingContext {
 
     public static final Set<JsonSchemaKeyword> COMBINED_SCHEMA_KEYWORDS = Sets.newHashSet(ALL_OF, ANY_OF, ONE_OF);
+
     /**
      * The parent json document (when loading a subschema)
      */
     @NonNull
-    protected final JsonObject rootSchemaJson;
+    private final JsonObject rootSchemaJson;
 
     /**
      * The path to the current schema being loaded
      */
-    @NotNull
     @NonNull
-    protected final PathAwareJsonValue schemaJson;
+    private final PathAwareJsonValue schemaJson;
+
     private final SchemaLocation location;
 
-    // SchemaLoader.SchemaLoaderBuilder initChildLoader() {
-    //     return SchemaLoader.stringKeywordsBuilder()
-    //             .resolutionScope(id)
-    //             .schemaJson(schemaJson)
-    //             .rootSchemaJson(rootSchemaJson)
-    //             .pointerSchemas(pointerSchemas)
-    //             .httpClient(httpClient)
-    //             .pointerToCurrentObj(currentJsonPath);
-    // }
-    //
-    // public LoadingState childFor(String key) {
-    //     return new LoadingState(httpClient, pointerSchemas, rootSchemaJson, schemaJson, id, currentJsonPath
-    //             .child(key), provider);
-    // }
-    //
-    // public LoadingState childFor(int arrayIndex) {
-    //     return new LoadingState(httpClient, pointerSchemas, rootSchemaJson, schemaJson, id, currentJsonPath
-    //             .child(arrayIndex), provider);
-    // }
-    //
-    // public LoadingState childForId(Object idAttr) {
-    //     URI childId = idAttr == null || !(idAttr instanceof String)
-    //             ? this.id
-    //             : ReferenceResolver.resolve(this.id, (String) idAttr);
-    //     return new LoadingState(initChildLoader().resolutionScope(childId));
-    // }
-    //
-    // String currentPathUri() {
-    //     return currentJsonPath.toURIFragment();
-    // }
+    public PathAwareJsonValue schemaJson() {
+        return schemaJson;
+    }
+
+    public JsonObject rootSchemaJson() {
+        return rootSchemaJson;
+    }
 
     @SneakyThrows
     public static SchemaLoadingContext createModelFor(JsonObject rootSchema) {

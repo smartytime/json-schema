@@ -185,7 +185,6 @@
             <version>1.0.5</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.apache.johnzon</groupId>
             <artifactId>johnzon-mapper</artifactId>

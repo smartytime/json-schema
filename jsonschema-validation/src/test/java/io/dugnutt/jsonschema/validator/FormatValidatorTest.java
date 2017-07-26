@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.FormatType;
 import io.dugnutt.jsonschema.validator.formatValidators.FormatValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;

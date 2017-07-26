@@ -6,12 +6,26 @@ import lombok.Getter;
 
 import javax.annotation.Nullable;
 
+import java.net.URI;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Builder
 @Getter
 @EqualsAndHashCode
 public class JsonSchemaInfo {
+
+    private final SchemaLocation location;
+    private final SchemaLocation containedBy;
+
+    @Nullable
+    private final String propertyName;
+
+    @Nullable
+    private final JsonSchemaKeyword keyword;
+
+    @Nullable
+    private final Integer index;
 
     public JsonSchemaInfo(SchemaLocation location, SchemaLocation containedBy, String propertyName, JsonSchemaKeyword keyword, Integer index) {
         this.containedBy = containedBy;
@@ -29,17 +43,9 @@ public class JsonSchemaInfo {
         this.index = index;
     }
 
-    private final SchemaLocation location;
-    private final SchemaLocation containedBy;
-
-    @Nullable
-    private final String propertyName;
-
-    @Nullable
-    private final JsonSchemaKeyword keyword;
-
-    @Nullable
-    private final Integer index;
+    public URI getAbsoluteURI() {
+        return location.getAbsoluteURI();
+    }
 
     public static JsonSchemaInfo indexSchema(SchemaLocation containedBy, JsonSchemaKeyword keyword, int idx) {
         return builder()

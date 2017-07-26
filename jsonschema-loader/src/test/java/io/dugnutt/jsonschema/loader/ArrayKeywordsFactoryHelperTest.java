@@ -1,8 +1,8 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.ArrayKeywords;
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class ArrayKeywordsFactoryHelperTest extends BaseLoaderTest {
 
-    public static final JsonSchema NULL_SCHEMA = JsonSchema.jsonSchemaBuilder().build();
+    public static final Schema NULL_SCHEMA = Schema.jsonSchemaBuilder().type(JsonSchemaType.NULL).build();
 
     public ArrayKeywordsFactoryHelperTest() {
         super("arraytestschemas.json");
@@ -28,12 +28,12 @@ public class ArrayKeywordsFactoryHelperTest extends BaseLoaderTest {
 
     @Test
     public void additionalItemSchema() {
-        assertTrue(getSchemaForKey("additionalItemSchema") instanceof JsonSchema);
+        assertTrue(getSchemaForKey("additionalItemSchema") instanceof Schema);
     }
 
     @Test
     public void arrayByAdditionalItems() {
-        JsonSchema actual = getSchemaForKey("arrayByAdditionalItems");
+        Schema actual = getSchemaForKey("arrayByAdditionalItems");
         assertSoftly(a -> {
             a.assertThat(actual.hasArrayKeywords()).isTrue();
             a.assertThat(actual.getTypes().contains(JsonSchemaType.ARRAY));
@@ -42,7 +42,7 @@ public class ArrayKeywordsFactoryHelperTest extends BaseLoaderTest {
 
     @Test
     public void arrayByItems() {
-        JsonSchema actual = getSchemaForKey("arrayByItems");
+        Schema actual = getSchemaForKey("arrayByItems");
         assertNotNull(actual);
     }
 
@@ -59,7 +59,7 @@ public class ArrayKeywordsFactoryHelperTest extends BaseLoaderTest {
         Assert.assertEquals(NULL_SCHEMA, actual.getAllItemSchema());
     }
 
-    private ArrayKeywords arrayKeywords(JsonSchema schema) {
+    private ArrayKeywords arrayKeywords(Schema schema) {
         assertThat(schema).isNotNull();
         assertThat(schema.getArrayKeywords()).isPresent();
         return schema.getArrayKeywords().get();

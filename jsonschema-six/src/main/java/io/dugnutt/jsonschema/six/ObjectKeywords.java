@@ -24,8 +24,11 @@ import java.util.stream.Stream;
 @EqualsAndHashCode
 public class ObjectKeywords implements SchemaKeywords {
 
-    private final Map<String, JsonSchema> propertySchemas;
-    private final JsonSchema schemaOfAdditionalProperties;
+    @NonNull
+    @Singular
+    private final Map<String, Schema> propertySchemas;
+
+    private final Schema schemaOfAdditionalProperties;
 
     @Singular
     @NonNull
@@ -37,16 +40,18 @@ public class ObjectKeywords implements SchemaKeywords {
     @Min(0)
     private final Integer maxProperties;
 
-    private final JsonSchema propertyNameSchema;
+    private final Schema propertyNameSchema;
 
     @NonNull
     private final SetMultimap<String, String> propertyDependencies;
 
     @NonNull
-    private final Map<String, JsonSchema> schemaDependencies;
+    @Singular
+    private final Map<String, Schema> schemaDependencies;
 
     @NonNull
-    private final Map<Pattern, JsonSchema> patternProperties;
+    @Singular
+    private final Map<Pattern, Schema> patternProperties;
 
     @Override
     public Set<JsonSchemaType> getApplicableTypes() {
@@ -68,18 +73,15 @@ public class ObjectKeywords implements SchemaKeywords {
         return writer;
     }
 
-
-
-
-    public Optional<JsonSchema> getPropertyNameSchema() {
+    public Optional<Schema> getPropertyNameSchema() {
         return Optional.ofNullable(propertyNameSchema);
     }
 
-    public Optional<JsonSchema> getSchemaOfAdditionalProperties() {
+    public Optional<Schema> getSchemaOfAdditionalProperties() {
         return Optional.ofNullable(schemaOfAdditionalProperties);
     }
 
-    public Optional<JsonSchema> findPropertySchema(String propertyName) {
+    public Optional<Schema> findPropertySchema(String propertyName) {
         return propertySchemas != null
                 ? Optional.ofNullable(propertySchemas.get(propertyName))
                 : Optional.empty();
@@ -115,6 +117,7 @@ public class ObjectKeywords implements SchemaKeywords {
      * Builder class for {@link ObjectKeywords}.
      */
     public static class ObjectKeywordsBuilder {
+        SetMultimap<String, String> propertyDependencies = ImmutableSetMultimap.of();
         private ImmutableSetMultimap.Builder<String, String> propertyDependencyBuilder = ImmutableSetMultimap.builder();
 
         /**

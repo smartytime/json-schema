@@ -15,8 +15,8 @@
  */
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
-import io.dugnutt.jsonschema.six.JsonSchema.JsonSchemaBuilder;
+import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import org.junit.Assert;
 
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertThat;
 
 public class ValidationTestSupport {
 
-    public static JsonSchema buildWithLocation(JsonSchemaBuilder builder) {
+    public static Schema buildWithLocation(JsonSchemaBuilder builder) {
         return builder.id("#").build();
     }
 
@@ -59,8 +59,8 @@ public class ValidationTestSupport {
                 .count();
     }
 
-    public static void expectFailure(final JsonSchema failingSchema,
-                                     final Class<? extends JsonSchema> expectedViolatedSchemaClass,
+    public static void expectFailure(final Schema failingSchema,
+                                     final Class<? extends Schema> expectedViolatedSchemaClass,
                                      final String expectedPointer, final JsonValue input) {
 
         Optional<ValidationError> errors = test(failingSchema, expectedPointer, input);
@@ -68,16 +68,16 @@ public class ValidationTestSupport {
         Assert.assertSame(expectedViolatedSchemaClass, errors.get().getViolatedSchema().getClass());
     }
 
-    public static void expectFailure(final JsonSchema failingSchema, final double num) {
+    public static void expectFailure(final Schema failingSchema, final double num) {
         expectFailure(failingSchema, null, provider().createValue(num));
     }
 
-    public static void expectFailure(final JsonSchema failingSchema, final JsonValue input) {
+    public static void expectFailure(final Schema failingSchema, final JsonValue input) {
         expectFailure(failingSchema, null, input);
     }
 
-    public static void expectFailure(final JsonSchema failingSchema,
-                                     final JsonSchema expectedViolatedSchema,
+    public static void expectFailure(final Schema failingSchema,
+                                     final Schema expectedViolatedSchema,
                                      final String expectedPointer, final JsonValue input) {
 
         Optional<ValidationError> errors = test(failingSchema, expectedPointer, input);
@@ -85,7 +85,7 @@ public class ValidationTestSupport {
         Assert.assertSame("Matching violation schemas", expectedViolatedSchema, errors.get().getViolatedSchema());
     }
 
-    public static void expectFailure(final JsonSchema failingSchema, final String expectedPointer,
+    public static void expectFailure(final Schema failingSchema, final String expectedPointer,
                                      final JsonValue input) {
         expectFailure(failingSchema, failingSchema, expectedPointer, input);
     }
@@ -102,7 +102,7 @@ public class ValidationTestSupport {
         failure.expectedConsumer().ifPresent(consumer-> consumer.accept(error));
         Assert.assertSame("Expected violated schema", failure.expectedViolatedSchema(), error.getViolatedSchema());
         assertEquals("Pointer to violation", failure.expectedPointer(), error.getPointerToViolation());
-        assertEquals("JsonSchema location", failure.expectedSchemaLocation(), error.getSchemaLocation().toString());
+        assertEquals("Schema location", failure.expectedSchemaLocation(), error.getSchemaLocation().toString());
         if (failure.expectedKeyword() != null) {
             assertNotNull("Error expected to have a keyword, but didn't", error.getKeyword());
             assertEquals(failure.expectedKeyword(), error.getKeyword().key());
@@ -118,7 +118,7 @@ public class ValidationTestSupport {
         return new Failure().schema(validator.schema()).validator(validator);
     }
 
-    public static Failure failureOf(JsonSchema schema) {
+    public static Failure failureOf(Schema schema) {
         return new Failure().schema(schema);
     }
 
@@ -126,7 +126,7 @@ public class ValidationTestSupport {
         return failureOf(buildWithLocation(subjectBuilder));
     }
 
-    private static Optional<ValidationError> test(final JsonSchema failingSchema, final String expectedPointer,
+    private static Optional<ValidationError> test(final Schema failingSchema, final String expectedPointer,
                                                   final JsonValue input) {
 
         Optional<ValidationError> error = createValidatorForSchema(failingSchema).validate(input);
@@ -139,11 +139,11 @@ public class ValidationTestSupport {
 
     public static class Failure {
 
-        private JsonSchema subject;
+        private Schema subject;
 
         private JsonSchemaValidator validator;
 
-        private JsonSchema expectedViolatedSchema;
+        private Schema expectedViolatedSchema;
 
         private String expectedPointer = "#";
 
@@ -222,12 +222,12 @@ public class ValidationTestSupport {
             return expectedSchemaLocation;
         }
 
-        public Failure expectedViolatedSchema(final JsonSchema expectedViolatedSchema) {
+        public Failure expectedViolatedSchema(final Schema expectedViolatedSchema) {
             this.expectedViolatedSchema = expectedViolatedSchema;
             return this;
         }
 
-        public JsonSchema expectedViolatedSchema() {
+        public Schema expectedViolatedSchema() {
             if (expectedViolatedSchema != null) {
                 return expectedViolatedSchema;
             }
@@ -263,7 +263,7 @@ public class ValidationTestSupport {
             return input;
         }
 
-        public Failure schema(final JsonSchema subject) {
+        public Failure schema(final Schema subject) {
             this.subject = subject;
             return this;
         }
@@ -273,7 +273,7 @@ public class ValidationTestSupport {
             return this;
         }
 
-        public JsonSchema schema() {
+        public Schema schema() {
             return subject;
         }
 
@@ -293,23 +293,23 @@ public class ValidationTestSupport {
         error.ifPresent(e -> Assert.fail("Should have succeeded: " + e));
     }
 
-    public static void expectSuccess(JsonSchema schema, long input) {
+    public static void expectSuccess(Schema schema, long input) {
         expectSuccess(schema, jsonNumberValue(input));
     }
 
-    public static void expectSuccess(JsonSchema schema, double input) {
+    public static void expectSuccess(Schema schema, double input) {
         expectSuccess(schema, jsonNumberValue(input));
     }
 
-    public static void expectSuccess(JsonSchema schema, String input) {
+    public static void expectSuccess(Schema schema, String input) {
         expectSuccess(schema, jsonStringValue(input));
     }
 
-    public static void expectSuccess(JsonSchema schema, boolean input) {
+    public static void expectSuccess(Schema schema, boolean input) {
         expectSuccess(schema, input ? JsonValue.TRUE : JsonValue.FALSE);
     }
 
-    public static void expectSuccess(JsonSchema schema, JsonValue input) {
+    public static void expectSuccess(Schema schema, JsonValue input) {
         final Optional<ValidationError> error = createValidatorForSchema(schema).validate(input);
         if (error.isPresent()) {
             Assert.assertFalse("Found errors: " + error.toString(), error.isPresent());

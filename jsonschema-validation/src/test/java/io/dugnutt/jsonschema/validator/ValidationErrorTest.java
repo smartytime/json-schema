@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.validator.ValidationError;
+import io.dugnutt.jsonschema.six.JsonPath;
+import io.dugnutt.jsonschema.six.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,12 +27,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.dugnutt.jsonschema.six.JsonSchema.*;
+import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
-import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
-import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockBooleanSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNullSchema;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 public class ValidationErrorTest {
 
     public static final ResourceLoader loader = ResourceLoader.DEFAULT;
-    private final JsonSchema rootSchema = jsonSchemaBuilder().build();
+    private final Schema rootSchema = jsonSchemaBuilder().build();
 
     // @Test
     // public void fragmentEscapingBoth() {

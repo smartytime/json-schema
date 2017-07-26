@@ -1,5 +1,6 @@
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.ObjectComparator;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;

@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 
@@ -25,8 +25,8 @@ public class CombinedSchemaValidator {
         return new CombinedSchemaValidator();
     }
 
-    public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema parentSchema, SchemaValidatorFactory factory,
-                                              List<JsonSchema> subschemas, JsonSchemaKeyword combinedType) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject, Schema parentSchema, SchemaValidatorFactory factory,
+                                              List<Schema> subschemas, JsonSchemaKeyword combinedType) {
         checkArgument(COMBINED_SCHEMA_KEYWORDS.contains(combinedType), "Should contain this item");
         List<ValidationError> failures = subschemas.stream()
                 .map(schema ->

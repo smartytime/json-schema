@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.ValidationTestSupport;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNullSchema;
 import static org.junit.Assert.assertEquals;
 
 public class NullSchemaTest {
 
     @Test
     public void failure() {
-        ValidationTestSupport.failureOf(NullSchema.builder())
+        ValidationTestSupport.failureOf(mockNullSchema())
                 .expectedKeyword("type")
                 .input("null")
                 .expect();
@@ -37,11 +37,11 @@ public class NullSchemaTest {
     @Test
     public void success() {
         JsonObject obj = JsonUtils.readJsonObject("{\"a\" : null}");
-        createValidatorForSchema(NullSchema.NULL_SCHEMA).validate(obj.get("a"));
+        createTestValidator(mockNullSchema()).validate(obj.get("a"));
     }
 
     @Test
     public void toStringTest() {
-        assertEquals("{\"type\":\"null\"}", NullSchema.NULL_SCHEMA.toString());
+        assertEquals("{\"type\":\"null\"}", mockNullSchema().build().toString());
     }
 }

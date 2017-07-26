@@ -1,4 +1,4 @@
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;

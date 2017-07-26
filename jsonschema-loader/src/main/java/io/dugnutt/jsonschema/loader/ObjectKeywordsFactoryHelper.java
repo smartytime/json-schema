@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 
 import javax.json.JsonString;
@@ -24,7 +24,7 @@ import static javax.json.JsonValue.ValueType.OBJECT;
  */
 class ObjectKeywordsFactoryHelper {
 
-    public static void appendObjectKeywords(PathAwareJsonValue schemaJson, JsonSchema.JsonSchemaBuilder schemaBuilder,
+    public static void appendObjectKeywords(PathAwareJsonValue schemaJson, Schema.JsonSchemaBuilder schemaBuilder,
                                             JsonSchemaFactory schemaFactory) {
 
         schemaJson.findInt(MIN_PROPERTIES).ifPresent(schemaBuilder::minProperties);

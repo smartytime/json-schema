@@ -13,20 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.dugnutt.jsonschema.six;
+package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.validator.ValidationTestSupport;
+import io.dugnutt.jsonschema.six.Schema;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonNumberValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockIntegerSchema;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNumberSchema;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockSchema;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static org.junit.Assert.assertEquals;
 
 public class NumberSchemaTest {
@@ -35,7 +38,7 @@ public class NumberSchemaTest {
 
     @Test
     public void exclusiveMaximum() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().exclusiveMaximum(20));
+        Schema subject = mockNumberSchema().exclusiveMaximum(20).build();
         ValidationTestSupport.failureOf(subject)
                 .expectedKeyword("exclusiveMaximum")
                 .input(20)
@@ -44,7 +47,7 @@ public class NumberSchemaTest {
 
     @Test
     public void exclusiveMinimum() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().exclusiveMinimum(10.0));
+        Schema subject = ValidationTestSupport.buildWithLocation(mockNumberSchema().exclusiveMinimum(10.0));
         ValidationTestSupport.failureOf(subject)
                 .expectedKeyword("exclusiveMinimum")
                 .input(10)
@@ -53,13 +56,13 @@ public class NumberSchemaTest {
 
     @Test
     public void longNumber() {
-        final NumberSchema schema = NumberSchema.builder().requiresNumber(true).build();
+        final Schema schema = mockNumberSchema().build();
         createValidatorForSchema(schema).validate(jsonNumberValue(4278190207L));
     }
 
     @Test
     public void maximum() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().maximum(20.0));
+        Schema subject = ValidationTestSupport.buildWithLocation(mockNumberSchema().maximum(20.0));
         ValidationTestSupport.failureOf(subject)
                 .expectedKeyword("maximum")
                 .input(21)
@@ -68,7 +71,7 @@ public class NumberSchemaTest {
 
     @Test
     public void minimumFailure() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().minimum(10.0));
+        Schema subject = ValidationTestSupport.buildWithLocation(mockNumberSchema().minimum(10.0));
         ValidationTestSupport.failureOf(subject)
                 .expectedKeyword("minimum")
                 .input(9)
@@ -77,7 +80,7 @@ public class NumberSchemaTest {
 
     @Test
     public void multipleOfFailure() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().multipleOf(10));
+        Schema subject = ValidationTestSupport.buildWithLocation(mockNumberSchema().multipleOf(10));
         ValidationTestSupport.failureOf(subject)
                 .expectedKeyword("multipleOf")
                 .input(15)
@@ -86,27 +89,26 @@ public class NumberSchemaTest {
 
     @Test
     public void notRequiresNumber() {
-        final NumberSchema numberSchema = NumberSchema.builder()
-                .requiresNumber(false)
+        final Schema numberSchema = mockSchema()
                 .build();
         expectSuccess(() -> createValidatorForSchema(numberSchema).validate(jsonStringValue("foo")));
     }
 
     @Test
     public void requiresIntegerSuccess() {
-        final NumberSchema numberSchema = NumberSchema.builder().requiresNumber(true).build();
+        final Schema numberSchema = mockNumberSchema().build();
         expectSuccess(() -> createValidatorForSchema(numberSchema).validate(jsonNumberValue(10)));
     }
 
     @Test
     public void requiresIntegerFailure() {
-        NumberSchema subject = ValidationTestSupport.buildWithLocation(NumberSchema.builder().requiresInteger(true));
+        Schema subject = mockIntegerSchema().build();
         ValidationTestSupport.expectFailure(subject, 10.2f);
     }
 
     @Test
     public void smallMultipleOf() {
-        final NumberSchema schema = NumberSchema.builder()
+        final Schema schema = mockNumberSchema()
                 .multipleOf(0.0001)
                 .build();
         createValidatorForSchema(schema).validate(jsonNumberValue(0.0075));
@@ -114,7 +116,7 @@ public class NumberSchemaTest {
 
     @Test
     public void success() {
-        final NumberSchema schema = NumberSchema.builder()
+        final Schema schema = mockNumberSchema()
                 .minimum(10.0)
                 .exclusiveMaximum(11.0)
                 .multipleOf(10)
@@ -147,7 +149,7 @@ public class NumberSchemaTest {
 
     @Test
     public void typeFailure() {
-        ValidationTestSupport.failureOf(NumberSchema.builder())
+        ValidationTestSupport.failureOf(mockNumberSchema())
                 .expectedKeyword("type")
                 .input(JsonValue.NULL)
                 .expect();

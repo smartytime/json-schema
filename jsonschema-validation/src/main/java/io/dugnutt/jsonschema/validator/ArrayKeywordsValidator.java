@@ -2,7 +2,7 @@ package io.dugnutt.jsonschema.validator;
 
 import com.google.common.base.Preconditions;
 import io.dugnutt.jsonschema.six.ArrayKeywords;
-import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.ObjectComparator;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
@@ -30,7 +30,12 @@ public class ArrayKeywordsValidator implements PartialSchemaValidator {
     }
 
     @Override
-    public boolean appliesToSchema(JsonSchema schema) {
+    public PartialSchemaValidator forSchema(Schema schema, SchemaValidatorFactory factory) {
+        return this;
+    }
+
+    @Override
+    public boolean appliesToSchema(Schema schema) {
         return schema.getArrayKeywords().isPresent();
     }
 
@@ -40,7 +45,7 @@ public class ArrayKeywordsValidator implements PartialSchemaValidator {
     }
 
     @Override
-    public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema schema, SchemaValidatorFactory factory) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject, Schema schema, SchemaValidatorFactory factory) {
         Preconditions.checkArgument(subject.is(ValueType.ARRAY), "Requires JsonArray as input");
         ArrayKeywords keywords = schema.getArrayKeywords()
                 .orElseThrow(() -> new IllegalArgumentException("Schema must have array keywords"));
@@ -55,7 +60,7 @@ public class ArrayKeywordsValidator implements PartialSchemaValidator {
         return ValidationError.collectErrors(schema, subject.getPath(), failures);
     }
 
-    private Optional<ValidationError> testItemCount(final PathAwareJsonValue subject, JsonSchema schema, ArrayKeywords keywords) {
+    private Optional<ValidationError> testItemCount(final PathAwareJsonValue subject, Schema schema, ArrayKeywords keywords) {
         int actualLength = subject.arraySize();
         Integer minItems = keywords.getMinItems();
         Integer maxItems = keywords.getMaxItems();
@@ -74,29 +79,31 @@ public class ArrayKeywordsValidator implements PartialSchemaValidator {
         return Optional.empty();
     }
 
-    private List<ValidationError> testItems(final PathAwareJsonValue subject, JsonSchema schema, ArrayKeywords keywords, SchemaValidatorFactory factory) {
+    private List<ValidationError> testItems(final PathAwareJsonValue subject, Schema schema, ArrayKeywords keywords, SchemaValidatorFactory factory) {
         List<ValidationError> errors = new ArrayList<>();
-        JsonSchema allItemSchema = keywords.getAllItemSchema();
-        List<JsonSchema> itemSchemas = keywords.getItemSchemas();
-        JsonSchema schemaOfAdditionalItems = keywords.getSchemaOfAdditionalItems();
 
-        if (allItemSchema != null) {
+        List<Schema> itemSchemas = keywords.getItemSchemas();
+
+        keywords.findAllItemSchema().ifPresent(allItemSchema->{
             validateItemsAgainstSchema(factory, IntStream.range(0, subject.arraySize()),
                     subject,
                     allItemSchema,
                     errors::add);
-        } else if (itemSchemas != null) {
+        });
+
+        if (itemSchemas.size() > 0) {
             int itemValidationUntil = Math.min(subject.arraySize(), itemSchemas.size());
             validateItemsAgainstSchema(factory, IntStream.range(0, itemValidationUntil),
                     subject,
                     itemSchemas::get,
                     errors::add);
-            if (schemaOfAdditionalItems != null) {
+
+            keywords.findSchemaOfAdditionalItems().ifPresent(schemaOfAdditionalItems->{
                 validateItemsAgainstSchema(factory, IntStream.range(itemValidationUntil, subject.arraySize()),
                         subject,
                         schemaOfAdditionalItems,
                         errors::add);
-            }
+            });
         }
 
         keywords.findContainsSchema().ifPresent(containsSchema->{
@@ -115,22 +122,22 @@ public class ArrayKeywordsValidator implements PartialSchemaValidator {
     }
 
     private void validateItemsAgainstSchema(final SchemaValidatorFactory factory, final IntStream indices, final PathAwareJsonValue items,
-                                            final JsonSchema schema, final Consumer<ValidationError> failureCollector) {
+                                            final Schema schema, final Consumer<ValidationError> failureCollector) {
         validateItemsAgainstSchema(factory, indices, items, i -> schema, failureCollector);
     }
 
     private void validateItemsAgainstSchema(final SchemaValidatorFactory factory, final IntStream indices, final PathAwareJsonValue items,
-                                            final IntFunction<JsonSchema> schemaForIndex,
+                                            final IntFunction<Schema> schemaForIndex,
                                             final Consumer<ValidationError> failureCollector) {
         indices.forEach(i-> {
-            JsonSchema schema = schemaForIndex.apply(i);
+            Schema schema = schemaForIndex.apply(i);
             factory.createValidator(schema)
                     .validate(items.getItem(i))
                     .ifPresent(failureCollector);
         });
     }
 
-    private Optional<ValidationError> testUniqueness(final PathAwareJsonValue subject, final JsonSchema schema, final ArrayKeywords arrayKeywords) {
+    private Optional<ValidationError> testUniqueness(final PathAwareJsonValue subject, final Schema schema, final ArrayKeywords arrayKeywords) {
         if (arrayKeywords.isNeedsUniqueItems()) {
             if (subject.arraySize() == 0) {
                 return Optional.empty();

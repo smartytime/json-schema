@@ -15,44 +15,44 @@
  */
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.BooleanSchema;
-import io.dugnutt.jsonschema.six.CombinedSchema;
-import io.dugnutt.jsonschema.six.NumberSchema;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
 
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
+import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
+import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.dugnutt.jsonschema.validator.CombinedSchemaValidator.combinedSchemaValidator;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNumberSchema;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.pathAware;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 
 public class CombinedSchemaValidatorTest {
 
-    private static final List<Schema> SUBSCHEMAS = asList(
-            NumberSchema.builder().multipleOf(10).build(),
-            NumberSchema.builder().multipleOf(3).build());
-
-    @Test
-    public void factories() {
-        CombinedSchema.allOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
-        CombinedSchema.anyOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
-        CombinedSchema.oneOf(asList(BooleanSchema.BOOLEAN_SCHEMA));
-    }
+    private static final List<JsonSchemaBuilder> SUBSCHEMAS = asList(
+            mockNumberSchema().multipleOf(10),
+            mockNumberSchema().multipleOf(3));
 
     @Test
     public void reportCauses() {
-        CombinedSchema combinedSchema = CombinedSchema.allOf(SUBSCHEMAS).build();
-        Optional<ValidationError> error = SchemaValidatorFactory.createValidatorForSchema(combinedSchema).validate(JsonUtils.readValue("24"));
+        final Schema parentSchema = jsonSchemaBuilder().allOfSchemas(SUBSCHEMAS).build();
+        final JsonValue subject = JsonUtils.readValue("24");
+        Optional<ValidationError> error =
+                combinedSchemaValidator().validate(pathAware(subject), parentSchema, DEFAULT_VALIDATOR, parentSchema.getAllOfSchemas(), ALL_OF);
         assertTrue("Has an error", error.isPresent());
         Assert.assertEquals(1, error.get().getCauses().size());
     }
 
     @Test
     public void validateAll() {
-        ValidationTestSupport.failureOf(CombinedSchema.allOf(SUBSCHEMAS))
+        ValidationTestSupport.failureOf(jsonSchemaBuilder().allOfSchemas(SUBSCHEMAS).build())
                 .input("20")
                 .expectedKeyword("allOf")
                 .expect();
@@ -60,7 +60,7 @@ public class CombinedSchemaValidatorTest {
 
     @Test
     public void validateAny() {
-        ValidationTestSupport.failureOf(CombinedSchema.anyOf(SUBSCHEMAS))
+        ValidationTestSupport.failureOf(jsonSchemaBuilder().anyOfSchemas(SUBSCHEMAS).build())
                 .input("5")
                 .expectedKeyword("anyOf")
                 .expect();
@@ -68,7 +68,7 @@ public class CombinedSchemaValidatorTest {
 
     @Test
     public void validateOne() {
-        ValidationTestSupport.failureOf(CombinedSchema.oneOf(SUBSCHEMAS))
+        ValidationTestSupport.failureOf(jsonSchemaBuilder().oneOfSchemas(SUBSCHEMAS).build())
                 .input("30")
                 .expectedKeyword("oneOf")
                 .expect();

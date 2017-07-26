@@ -1,13 +1,14 @@
 package io.dugnutt.jsonschema.validator;
 
 import com.google.common.base.Preconditions;
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.ObjectKeywords;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.Schema;
 
-import javax.json.JsonString;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -30,13 +31,23 @@ public class ObjectKeywordsValidator implements PartialSchemaValidator {
     private ObjectKeywordsValidator() {
     }
 
+    private final Map<String, JsonSchemaValidator> propertyValidators = new HashMap<>();
+
+    private ObjectKeywordsValidator(Schema schema, SchemaValidatorFactory factory) {
+        checkNotNull(schema, "schema must not be null");
+        schema.getObjectKeywords().ifPresent(keywords ->
+                keywords.getPropertySchemas()
+                        .forEach((k, v) -> propertyValidators.put(k, factory.createValidator(v)))
+        );
+    }
+
     public static ObjectKeywordsValidator objectKeywordsValidator() {
         return new ObjectKeywordsValidator();
     }
 
     @Override
-    public boolean appliesToSchema(JsonSchema schema) {
-        return schema.getObjectKeywords().isPresent();
+    public boolean appliesToSchema(Schema schema) {
+        return schema.hasObjectKeywords();
     }
 
     @Override
@@ -44,13 +55,17 @@ public class ObjectKeywordsValidator implements PartialSchemaValidator {
         return value.is(ValueType.OBJECT);
     }
 
+    public ObjectKeywordsValidator forSchema(Schema schema, SchemaValidatorFactory factory) {
+        return new ObjectKeywordsValidator(schema, factory);
+    }
+
     @Override
-    public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema schema, SchemaValidatorFactory factory) {
+    public Optional<ValidationError> validate(PathAwareJsonValue subject, Schema schema, SchemaValidatorFactory factory) {
         Preconditions.checkArgument(subject.is(ValueType.OBJECT), "Requires JsonArray as input");
         ObjectKeywords keywords = schema.getObjectKeywords()
                 .orElseThrow(() -> new IllegalArgumentException("Schema must have object keywords"));
 
-        Helper helper = new Helper(subject, schema, keywords, factory);
+        Helper helper = new Helper(subject, schema, keywords, factory, propertyValidators);
         List<ValidationError> failures = new ArrayList<>();
 
         // These are nested by nature
@@ -68,14 +83,17 @@ public class ObjectKeywordsValidator implements PartialSchemaValidator {
     }
 
     private static class Helper {
-        private final JsonSchema schema;
+        private final Schema schema;
         private final ObjectKeywords keywords;
         private final SchemaValidatorFactory factory;
+        private final Map<String, JsonSchemaValidator> propertyValidators;
 
-        public Helper(PathAwareJsonValue subject, JsonSchema schema, ObjectKeywords keywords, SchemaValidatorFactory factory) {
+        public Helper(PathAwareJsonValue subject, Schema schema, ObjectKeywords keywords, SchemaValidatorFactory factory,
+                      Map<String, JsonSchemaValidator> propertyValidators) {
             this.schema = checkNotNull(schema);
             this.keywords = checkNotNull(keywords);
             this.factory = checkNotNull(factory);
+            this.propertyValidators = propertyValidators;
         }
 
         private Optional<ValidationError> testAdditionalProperties(final PathAwareJsonValue subject) {
@@ -129,34 +147,24 @@ public class ObjectKeywordsValidator implements PartialSchemaValidator {
             final List<ValidationError> propertyErrors = new ArrayList<>();
             final List<ValidationError> propertyNameErrors = new ArrayList<>();
 
-            final Optional<JsonSchemaValidator> propertyNameValidator = keywords.getPropertyNameSchema().map(factory::createValidator);
+            final Set<String> subjectProperties = subject.asJsonObject().keySet();
 
-            subject.forEachKey((propertyName, pathAwareProperty) -> {
-                // Validate against property schema if one exists
-                keywords.findPropertySchema(propertyName)
-                        .ifPresent(propertySchema -> {
-                            final JsonSchema validateSchema;
-                            if (propertySchema.getRefURI() != null) {
-                                // validateSchema = propertySchema.getFullyDereferencedSchema()
-                                //         .orElse(propertySchema);
-                                throw new UnsupportedOperationException();
-                            } else {
-                                validateSchema = propertySchema;
-                            }
-                            factory.createValidator(validateSchema)
-                                    .validate(pathAwareProperty)
-                                    .ifPresent(propertyErrors::add);
-                        });
+            for (Map.Entry<String, JsonSchemaValidator> propertySchemas : this.propertyValidators.entrySet()) {
+                final String propertyName = propertySchemas.getKey();
+                if (subjectProperties.contains(propertyName)) {
+                    propertySchemas.getValue()
+                            .validate(subject.getPathAware(propertyName))
+                            .ifPresent(propertyErrors::add);
+                }
+            }
 
-                // Validate against property name schema if one exists
-                propertyNameValidator.ifPresent(validator -> {
-                    //The validators work against json objects, not raw java objects, so we need to
-                    //wrap this in a JsonString here.
-                    final JsonString jsonValue = this.factory.getProvider().createValue(propertyName);
-                    validator.validate(pathAwareProperty.withValue(jsonValue))
+            keywords.getPropertyNameSchema().map(factory::createValidator)
+                    .ifPresent(validator->{
+                        for (String subjectProperty : subjectProperties) {
+                            validator.validate(factory.getProvider().createValue(subjectProperty))
                             .ifPresent(propertyNameErrors::add);
-                });
-            });
+                        }
+                    });
 
             if (propertyNameErrors.size() > 0) {
                 propertyErrors.add(
