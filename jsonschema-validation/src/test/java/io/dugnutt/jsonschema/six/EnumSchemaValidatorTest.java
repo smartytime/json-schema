@@ -16,8 +16,8 @@
 package io.dugnutt.jsonschema.six;
 
 import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readValue;
 import static org.junit.Assert.assertEquals;

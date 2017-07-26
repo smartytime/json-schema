@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 
-import javax.json.JsonObject;
 import javax.validation.constraints.Min;
 import java.util.Collections;
 import java.util.Map;
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
 @Getter
 @Builder
 @EqualsAndHashCode
-public class ObjectKeywords implements SchemaKeywords<JsonObject> {
+public class ObjectKeywords implements SchemaKeywords {
 
     private final Map<String, JsonSchema> propertySchemas;
     private final JsonSchema schemaOfAdditionalProperties;
@@ -68,6 +67,9 @@ public class ObjectKeywords implements SchemaKeywords<JsonObject> {
         describePropertyDependenciesTo(writer);
         return writer;
     }
+
+
+
 
     public Optional<JsonSchema> getPropertyNameSchema() {
         return Optional.ofNullable(propertyNameSchema);

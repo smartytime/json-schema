@@ -17,7 +17,7 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
 import static io.dugnutt.jsonschema.validator.CombinedSchemaValidator.combinedSchemaValidator;
 
-public class BaseSchemaValidator {
+public class BaseSchemaValidator implements PartialSchemaValidator {
 
     private static final BaseSchemaValidator INSTANCE = new BaseSchemaValidator();
 
@@ -39,11 +39,12 @@ public class BaseSchemaValidator {
         return ValidationError.collectErrors(schema, subject.getPath(), allErrors);
     }
 
+
     public Optional<ValidationError> validateConst(PathAwareJsonValue toBeValidated, JsonSchema schema) {
         return schema.getConstValue()
                 .map(constValue -> {
                     if (!constValue.equals(toBeValidated)) {
-                        return SchemaValidator.buildKeywordFailure(toBeValidated, schema, CONST)
+                        return ValidationErrorHelper.buildKeywordFailure(toBeValidated, schema, CONST)
                                 .message("%s does not match the const value", toBeValidated)
                                 .build();
                     } else {
@@ -58,7 +59,7 @@ public class BaseSchemaValidator {
                     boolean foundMatch = enumValues.stream()
                             .anyMatch(val -> ObjectComparator.lexicalEquivalent(val, toBeValidated.getWrapped()));
                     if (!foundMatch) {
-                        return SchemaValidator.buildKeywordFailure(toBeValidated, schema, ENUM)
+                        return ValidationErrorHelper.buildKeywordFailure(toBeValidated, schema, ENUM)
                                 .message("%s does not match the enum values", toBeValidated)
                                 .build();
                     }
@@ -72,7 +73,7 @@ public class BaseSchemaValidator {
                     Optional<ValidationError> validated = factory.createValidator(notSchema)
                             .validate(toBeValidated);
                     if (!validated.isPresent()) {
-                        return SchemaValidator.buildKeywordFailure(toBeValidated, schema, NOT)
+                        return ValidationErrorHelper.buildKeywordFailure(toBeValidated, schema, NOT)
                                 .message("subject must not be valid against schema", notSchema)
                                 .build();
                     }

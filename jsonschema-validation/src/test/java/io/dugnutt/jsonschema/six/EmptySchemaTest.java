@@ -22,7 +22,7 @@ import org.junit.Test;
 import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.$ID;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.EmptySchemaValidator.EMPTY_SCHEMA_VALIDATOR;
 
 public class EmptySchemaTest {

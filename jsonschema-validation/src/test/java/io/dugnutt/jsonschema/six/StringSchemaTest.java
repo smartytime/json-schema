@@ -15,7 +15,7 @@
  */
 package io.dugnutt.jsonschema.six;
 
-import io.dugnutt.jsonschema.validator.SchemaValidator;
+import io.dugnutt.jsonschema.validator.PartialSchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import lombok.experimental.var;
 import org.junit.Assert;
@@ -26,10 +26,10 @@ import java.util.Optional;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.ResourceLoader.DEFAULT;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.buildWithLocation;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 import static javax.json.spi.JsonProvider.provider;
@@ -68,7 +68,7 @@ public class StringSchemaTest {
 
     public void issue38Pattern() {
         final StringSchema schema = StringSchema.builder().requiresString(true).pattern("\\+?\\d+").build();
-        final SchemaValidator<StringSchema> validator = validatorFactory.createValidator(schema);
+        final PartialSchemaValidator<StringSchema> validator = validatorFactory.createValidator(schema);
         verifyFailure(() -> validator.validate(jsonStringValue("aaa")));
     }
 

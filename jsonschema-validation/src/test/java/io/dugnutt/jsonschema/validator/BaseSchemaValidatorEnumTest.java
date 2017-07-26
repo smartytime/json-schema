@@ -1,13 +1,14 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.EmptySchema;
-import io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.JsonSchema;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
@@ -18,16 +19,21 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.six.JsonSchema.JsonSchemaBuilder;
+import static io.dugnutt.jsonschema.six.JsonSchema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonObjectBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readValue;
-import static io.dugnutt.jsonschema.validator.ValidationMocks.alwaysSuccessfulValidator;
-import static io.dugnutt.jsonschema.validator.ValidationMocks.vsubject;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockAlwaysSuccessfulValidator;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.pathAware;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static javax.json.spi.JsonProvider.provider;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -59,13 +65,13 @@ public class BaseSchemaValidatorEnumTest {
                         .build())
                 .build();
 
-        Schema subject = subject().enumValues(possibleValues).build();
+        JsonSchema subject = subject().enumValues(possibleValues).build();
 
         JsonObject testValues = jsonObjectBuilder()
                 .add("a", true)
                 .build();
         expectSuccess(() -> {
-            Optional<ValidationError> error = SchemaValidatorFactory.createValidatorForSchema(subject).validate(testValues);
+            Optional<ValidationError> error = createTestValidator(subject).validate(testValues);
             return error;
         });
     }
@@ -75,11 +81,13 @@ public class BaseSchemaValidatorEnumTest {
         possibleValues.add(blankJsonArray());
         final JsonValue validJsonObject = JsonUtils.readValue("{\"a\" : 0}");
         possibleValues.add(validJsonObject);
-        BaseSchemaValidator<?> subject = new BaseSchemaValidator(subject().build(), alwaysSuccessfulValidator());
-        expectSuccess(() -> subject.validate(vsubject(JsonValue.TRUE)));
-        expectSuccess(() -> subject.validate(vsubject(jsonStringValue("foo"))));
-        expectSuccess(() -> subject.validate(vsubject(blankJsonArray())));
-        expectSuccess(() -> subject.validate(vsubject(validJsonObject)));
+        BaseSchemaValidator subject = BaseSchemaValidator.baseSchemaValidator();
+        JsonSchema schema = subject().build();
+
+        expectSuccess(() -> subject.validate(pathAware(JsonValue.TRUE), schema, DEFAULT_VALIDATOR));
+        expectSuccess(() -> subject.validate(pathAware(jsonStringValue("foo")), schema, DEFAULT_VALIDATOR));
+        expectSuccess(() -> subject.validate(pathAware(blankJsonArray()), schema, DEFAULT_VALIDATOR));
+        expectSuccess(() -> subject.validate(pathAware(validJsonObject), schema, DEFAULT_VALIDATOR));
     }
 
     @Test
@@ -96,8 +104,8 @@ public class BaseSchemaValidatorEnumTest {
         JsonArray testEnum = JsonUtils.readValue("[1, 1.0, 1.00]", JsonArray.class);
         JsonNumber testValNotSame = JsonUtils.readValue("1.000", JsonNumber.class);
 
-        final Schema schema = EmptySchema.builder().enumValues(testEnum).build();
-        final SchemaValidator<?> validator = new BaseSchemaValidator<>(schema, alwaysSuccessfulValidator());
+        final Schema schema = jsonSchemaBuilder().enumValues(testEnum).build();
+        final PartialSchemaValidator<?> validator = new BaseSchemaValidator<>(schema, mockAlwaysSuccessfulValidator());
 
         final Optional<ValidationError> validate = validator.validate(testValNotSame);
 
@@ -111,7 +119,7 @@ public class BaseSchemaValidatorEnumTest {
         JsonNumber testValNotSame = JsonUtils.readValue("1.00", JsonNumber.class);
 
         final Schema schema = EmptySchema.builder().enumValues(testEnum).build();
-        final SchemaValidator<?> validator = new BaseSchemaValidator<>(schema, alwaysSuccessfulValidator());
+        final PartialSchemaValidator<?> validator = new BaseSchemaValidator<>(schema, mockAlwaysSuccessfulValidator());
 
         final Optional<ValidationError> validate = validator.validate(testValNotSame);
 
@@ -129,7 +137,7 @@ public class BaseSchemaValidatorEnumTest {
                         this.possibleValues
                                 .add(jsonObjectBuilder()
                                         .add("a", true)
-                                        ))
+                                ))
                 .add(42).build();
 
         Schema subject = subject().enumValues(possibleValuesContainer).build();
@@ -142,7 +150,7 @@ public class BaseSchemaValidatorEnumTest {
                 .build();
 
         expectSuccess(() -> {
-            Optional<ValidationError> error = SchemaValidatorFactory.createValidatorForSchema(subject).validate(testValues);
+            Optional<ValidationError> error = createValidatorForSchema(subject).validate(testValues);
             return error;
         });
     }
@@ -164,14 +172,13 @@ public class BaseSchemaValidatorEnumTest {
                 .build();
 
         verifyFailure(() -> {
-            Optional<ValidationError> error = SchemaValidatorFactory.createValidatorForSchema(subject).validate(testValues);
+            Optional<ValidationError> error = createValidatorForSchema(subject).validate(testValues);
             return error;
         });
     }
 
-    private Schema.Builder subject() {
-        return EmptySchema.builder()
-                .enumValues(possibleValues.build());
+    private JsonSchemaBuilder subject() {
+        return jsonSchemaBuilder().enumValues(possibleValues.build());
     }
 
     private Set<Object> asSet(final JsonArray array) {

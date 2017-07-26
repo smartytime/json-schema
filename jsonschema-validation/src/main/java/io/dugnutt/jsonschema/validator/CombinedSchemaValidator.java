@@ -14,17 +14,15 @@ import static io.dugnutt.jsonschema.loader.SchemaLoadingContext.COMBINED_SCHEMA_
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ANY_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
+import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class CombinedSchemaValidator {
 
-    static final CombinedSchemaValidator COMBINED_SCHEMA_VALIDATOR = new CombinedSchemaValidator();
-
-    public static CombinedSchemaValidator combinedSchemaValidator() {
-        return COMBINED_SCHEMA_VALIDATOR;
+    private CombinedSchemaValidator() {
     }
 
-    private CombinedSchemaValidator() {
-
+    public static CombinedSchemaValidator combinedSchemaValidator() {
+        return new CombinedSchemaValidator();
     }
 
     public Optional<ValidationError> validate(PathAwareJsonValue subject, JsonSchema parentSchema, SchemaValidatorFactory factory,
@@ -44,7 +42,7 @@ public class CombinedSchemaValidator {
         switch (combinedType) {
             case ANY_OF:
                 if (matchingCount == 0) {
-                    return SchemaValidator.buildKeywordFailure(subject, parentSchema, ANY_OF)
+                    return buildKeywordFailure(subject, parentSchema, ANY_OF)
                             .message("no subschema matched out of the total %d subschemas", subschemaCount)
                             .causingExceptions(failures)
                             .buildOptional();
@@ -52,7 +50,7 @@ public class CombinedSchemaValidator {
                 break;
             case ALL_OF:
                 if (matchingCount < subschemaCount) {
-                    return SchemaValidator.buildKeywordFailure(subject, parentSchema, ALL_OF)
+                    return buildKeywordFailure(subject, parentSchema, ALL_OF)
                             .message("only %d subschema matches out of %d", matchingCount, subschemaCount)
                             .causingExceptions(failures)
                             .buildOptional();
@@ -60,7 +58,7 @@ public class CombinedSchemaValidator {
                 break;
             case ONE_OF:
                 if (matchingCount != 1) {
-                    return SchemaValidator.buildKeywordFailure(subject, parentSchema, ONE_OF)
+                    return buildKeywordFailure(subject, parentSchema, ONE_OF)
                             .message("%d subschemas matched instead of one", matchingCount)
                             .causingExceptions(failures)
                             .buildOptional();

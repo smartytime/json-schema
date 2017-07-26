@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema;
 
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.validator.SchemaValidator;
+import io.dugnutt.jsonschema.validator.PartialSchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.junit.Test;
 
@@ -23,7 +23,7 @@ public class EndToEndTest {
         Schema loadedSchema = schemaFactory()
                 .withPreloadedSchema(primitives)
                 .load(jsonSchema);
-        final SchemaValidator<?> validator = createValidatorForSchema(loadedSchema);
+        final PartialSchemaValidator<?> validator = createValidatorForSchema(loadedSchema);
         final Optional<ValidationError> errors = validator.validate(jsonData);
         System.out.println();
     }

@@ -19,11 +19,11 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import javax.json.JsonArray;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -32,7 +32,7 @@ import java.util.Set;
 @Getter
 @Builder(builderClassName = "ArrayKeywordsBuilder")
 @EqualsAndHashCode
-public class ArrayKeywords implements SchemaKeywords<JsonArray> {
+public class ArrayKeywords implements SchemaKeywords {
 
     @Min(0)
     private final Integer minItems;
@@ -56,6 +56,25 @@ public class ArrayKeywords implements SchemaKeywords<JsonArray> {
     @Valid
     private final JsonSchema schemaOfAdditionalItems;
 
+    public Optional<JsonSchema> findAllItemSchema() {
+        return Optional.ofNullable(allItemSchema);
+    }
+
+    public Optional<JsonSchema> findContainsSchema() {
+        return Optional.ofNullable(containsSchema);
+    }
+
+    public Optional<JsonSchema> findSchemaOfAdditionalItems() {
+        return Optional.ofNullable(schemaOfAdditionalItems);
+    }
+
+    public JsonSchema getAllItemSchema() {
+        if (allItemSchema == null) {
+            throw new NullPointerException("allItemSchema is null");
+        }
+        return allItemSchema;
+    }
+
     @Override
     public Set<JsonSchemaType> getApplicableTypes() {
         return Collections.singleton(JsonSchemaType.ARRAY);
@@ -69,6 +88,20 @@ public class ArrayKeywords implements SchemaKeywords<JsonArray> {
                 .optionalWrite(JsonSchemaKeyword.ITEMS, allItemSchema)
                 .optionalWrite(JsonSchemaKeyword.ITEMS, itemSchemas)
                 .optionalWrite(JsonSchemaKeyword.ADDITIONAL_ITEMS, schemaOfAdditionalItems);
+    }
+
+    public JsonSchema getContainsSchema() {
+        if (containsSchema == null) {
+            throw new NullPointerException("containsSchema is null");
+        }
+        return containsSchema;
+    }
+
+    public JsonSchema getSchemaOfAdditionalItems() {
+        if (schemaOfAdditionalItems == null) {
+            throw new NullPointerException("schemaOfAdditionalItems is null");
+        }
+        return schemaOfAdditionalItems;
     }
 
     static class ArrayKeywordsBuilder {

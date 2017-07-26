@@ -15,6 +15,7 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.validator.ValidationTestSupport;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +23,7 @@ import org.junit.Test;
 import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 
 public class PointerBubblingTest {

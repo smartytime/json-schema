@@ -1,30 +1,28 @@
 package io.dugnutt.jsonschema.validator;
 
 import com.google.common.base.Strings;
-import io.dugnutt.jsonschema.six.ArraySchema;
-import io.dugnutt.jsonschema.six.BooleanSchema;
-import io.dugnutt.jsonschema.six.CombinedSchema;
-import io.dugnutt.jsonschema.six.EmptySchema;
 import io.dugnutt.jsonschema.six.FormatType;
 import io.dugnutt.jsonschema.six.JsonSchema;
-import io.dugnutt.jsonschema.six.MultipleTypeSchema;
-import io.dugnutt.jsonschema.six.NullSchema;
-import io.dugnutt.jsonschema.six.NumberSchema;
-import io.dugnutt.jsonschema.six.ObjectSchema;
-import io.dugnutt.jsonschema.six.ReferenceSchema;
-import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.StringSchema;
+import io.dugnutt.jsonschema.six.StreamUtils;
 import io.dugnutt.jsonschema.validator.formatValidators.FormatValidator;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 import javax.json.spi.JsonProvider;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+import static io.dugnutt.jsonschema.validator.ArrayKeywordsValidator.arrayKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.NumberKeywordsValidator.numberKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.ObjectKeywordsValidator.objectKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.StringKeywordsValidator.stringKeywordsValidator;
 
 @Builder(builderClassName = "Builder", toBuilder = true)
 public class SchemaValidatorFactory {
@@ -35,22 +33,27 @@ public class SchemaValidatorFactory {
     private final Map<String, FormatValidator> customFormatValidators;
 
     @NonNull
-    private final Map<Class<Schema>, Factory<?>> schemaValidators;
+    @Singular
+    private final List<PartialSchemaValidator> validators;
 
     private final JsonProvider provider;
 
-    public static SchemaValidator createValidatorForSchema(Schema schema) {
+    public static JsonSchemaValidator createValidatorForSchema(JsonSchema schema) {
         return DEFAULT_VALIDATOR.createValidator(schema);
     }
 
-    public <S extends Schema> SchemaValidator createValidator(JsonSchema schema) {
+    public JsonSchemaValidator createValidator(JsonSchema schema) {
         checkNotNull(schema, "schema must not be null when creating validator");
-        final Factory<S> validatorFunction = (Factory<S>) schemaValidators.get(schema.getClass());
-        if (validatorFunction == null) {
-            throw new IllegalArgumentException("Unable to locate validator for schema: " + schema.getClass());
-        }
-        SchemaValidator<S> validator = validatorFunction.createValidator(schema, this);
-        return new BaseSchemaValidator<S>(schema, this, validator);
+        List<PartialSchemaValidator> applicableValidators = validators.stream()
+                .filter(validator -> validator.appliesToSchema(schema))
+                .collect(StreamUtils.toImmutableList());
+        checkState(applicableValidators.size() > 0, "Need at least one validator");
+
+        return JsonSchemaValidator.jsonSchemaValidator()
+                .factory(this)
+                .schema(schema)
+                .childValidators(applicableValidators)
+                .build();
     }
 
     public Optional<FormatValidator> getFormatValidator(String input) {
@@ -65,15 +68,15 @@ public class SchemaValidatorFactory {
     }
 
     @FunctionalInterface
-    interface Factory<X extends Schema> {
-        SchemaValidator<X> createValidator(X schema, SchemaValidatorFactory factory);
+    interface Factory {
+        PartialSchemaValidator createValidator(JsonSchema schema, SchemaValidatorFactory factory);
     }
 
     public static class Builder {
         public Builder() {
             this.provider = JsonProvider.provider();
             this.customFormatValidators = new HashMap<>();
-            this.schemaValidators = new HashMap<>();
+            this.validators = new ArrayList<>();
             initCoreSchemaValidators();
             initCoreFormatValidators();
         }
@@ -85,23 +88,19 @@ public class SchemaValidatorFactory {
             return this;
         }
 
-        public <X extends Schema> Builder schemaValidator(Class<X> schemaClass, Factory<X> factory) {
-            Class<Schema> classOfSchema = (Class<Schema>) schemaClass;
-            this.schemaValidators.put(classOfSchema, factory);
-            return this;
-        }
-
         private void initCoreSchemaValidators() {
-            schemaValidator(ObjectSchema.class, ObjectSchemaValidator::new);
-            schemaValidator(ArraySchema.class, ArrayKeywordValidator::new);
-            schemaValidator(BooleanSchema.class, BooleanSchemaValidator::new);
-            schemaValidator(CombinedSchema.class, CombinedSchemaValidator::new);
-            schemaValidator(EmptySchema.class, EmptySchemaValidator::new);
-            schemaValidator(NullSchema.class, NullSchemaValidator::new);
-            schemaValidator(NumberSchema.class, NumberKeywordsValidator::new);
-            schemaValidator(ReferenceSchema.class, ReferenceSchemaValidator::new);
-            schemaValidator(StringSchema.class, StringSchemaValidator::new);
-            schemaValidator(MultipleTypeSchema.class, MultipleTypeSchemaValidator::new);
+            // ##########################################
+            // BASE VALIDATOR
+            // ##########################################
+            validator(BaseSchemaValidator.baseSchemaValidator());
+
+            // ##########################################
+            // KEYWORD VALIDATORS
+            // ##########################################
+            validator(stringKeywordsValidator());
+            validator(numberKeywordsValidator());
+            validator(arrayKeywordsValidator());
+            validator(objectKeywordsValidator());
         }
 
         private void initCoreFormatValidators() {

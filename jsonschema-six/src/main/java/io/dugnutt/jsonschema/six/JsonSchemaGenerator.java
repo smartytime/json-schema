@@ -139,7 +139,7 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(SchemaKeywords<?> typeSpecificSchemaKeywords) {
+    public JsonSchemaGenerator optionalWrite(SchemaKeywords typeSpecificSchemaKeywords) {
         if (typeSpecificSchemaKeywords != null) {
             typeSpecificSchemaKeywords.toJson(this);
         }
@@ -163,7 +163,7 @@ public class JsonSchemaGenerator {
         return value -> this.optionalWrite(keyword, value);
     }
 
-    public JsonSchemaGenerator write(SchemaKeywords<?> keywords) {
+    public JsonSchemaGenerator write(SchemaKeywords keywords) {
         keywords.toJson(this);
         return this;
     }

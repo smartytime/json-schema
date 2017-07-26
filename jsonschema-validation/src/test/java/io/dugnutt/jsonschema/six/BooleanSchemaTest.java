@@ -20,8 +20,8 @@ import nl.jqno.equalsverifier.Warning;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
 
 public class BooleanSchemaTest {
 

@@ -5,9 +5,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
-import javax.json.JsonString;
 import javax.validation.constraints.Min;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -21,7 +21,7 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_LENGTH;
 @Builder(builderClassName = "StringKeywordsBuilder")
 @Getter
 @EqualsAndHashCode
-public class StringKeywords implements SchemaKeywords<JsonString> {
+public class StringKeywords implements SchemaKeywords {
 
     @Min(0)
     @Nullable
@@ -49,6 +49,17 @@ public class StringKeywords implements SchemaKeywords<JsonString> {
                 .optionalWrite(MAX_LENGTH, getMaxLength())
                 .optionalWrite(getPattern())
                 .optionalWrite(FORMAT, getFormat());
+    }
+
+    public Pattern getPattern() {
+        if (pattern == null) {
+            throw new NullPointerException("Pattern is null.  Use findPattern to get an Optional instead");
+        }
+        return pattern;
+    }
+
+    public Optional<Pattern> findPattern() {
+        return Optional.ofNullable(pattern);
     }
 
     static class StringKeywordsBuilder {

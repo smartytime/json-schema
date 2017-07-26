@@ -19,7 +19,7 @@ import io.dugnutt.jsonschema.validator.ValidationError;
 import lombok.SneakyThrows;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.SchemaValidator;
+import io.dugnutt.jsonschema.validator.PartialSchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -113,7 +113,7 @@ public class IssueTest {
     private void validate(final File file, final Schema schema, final boolean shouldBeValid) {
         JsonValue subject = loadJsonFile(file);
 
-        SchemaValidator validator = SchemaValidatorFactory.createValidatorForSchema(schema);
+        PartialSchemaValidator validator = SchemaValidatorFactory.createValidatorForSchema(schema);
         Optional<ValidationError> errors = validator.validate(subject);
 
         if (shouldBeValid && errors.isPresent()) {

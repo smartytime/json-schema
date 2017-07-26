@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Builder(toBuilder = true, builderClassName = "Builder", builderMethodName = "locationBuilder")
+@Builder(toBuilder = true, builderMethodName = "locationBuilder")
 @Getter
 @EqualsAndHashCode
 public class SchemaLocation {
@@ -32,28 +32,28 @@ public class SchemaLocation {
      */
     private final URI resolutionScope;
 
-    public SchemaLocation(URI absoluteURI, URI documentURI, JsonPath jsonPath, URI resolutionScope) {
-        checkNotNull(absoluteURI, "absoluteURI must not be null");
-        checkNotNull(documentURI, "documentURI must not be null");
-        checkNotNull(jsonPath, "jsonPath must not be null");
-        checkNotNull(resolutionScope, "resolutionScope must not be null");
-
-        this.absoluteURI = absoluteURI;
-        this.documentURI = documentURI;
-        this.jsonPath = jsonPath;
-        this.resolutionScope = resolutionScope;
-    }
+    // private SchemaLocation(URI absoluteURI, URI documentURI, JsonPath jsonPath, URI resolutionScope) {
+    //     checkNotNull(absoluteURI, "absoluteURI must not be null");
+    //     checkNotNull(documentURI, "documentURI must not be null");
+    //     checkNotNull(jsonPath, "jsonPath must not be null");
+    //     checkNotNull(resolutionScope, "resolutionScope must not be null");
+    //
+    //     this.absoluteURI = absoluteURI;
+    //     this.documentURI = documentURI;
+    //     this.jsonPath = jsonPath;
+    //     this.resolutionScope = resolutionScope;
+    // }
 
     public URI getAbsoluteJsonPointerURI() {
-        return getDocumentURI().resolve(getJsonPointerFragment());
+        return this.documentURI.resolve(getJsonPointerFragment());
     }
 
     public List<String> getJsonPathTokens() {
-        return getJsonPath().toStringPath();
+        return jsonPath.toStringPath();
     }
 
     public URI getJsonPointerFragment() {
-        return getJsonPath().toURIFragment();
+        return jsonPath.toURIFragment();
     }
 
     public SchemaLocation withChildPath(String... jsonPath) {
@@ -97,10 +97,6 @@ public class SchemaLocation {
                 .build();
     }
 
-    public static Builder locationBuilder() {
-        return new Builder();
-    }
-
     public static SchemaLocation schemaLocation(URI rootDocument) {
         checkNotNull(rootDocument, "rootDocument must not be null");
 
@@ -117,11 +113,11 @@ public class SchemaLocation {
         return schemaLocation(rootAsURI);
     }
 
-    public static class Builder {
+    public static class SchemaLocationBuilder {
 
         private URI id;
 
-        public Builder() {
+        private SchemaLocationBuilder() {
             jsonPath(ROOT_PATH);
             resolutionScope(ROOT_URI);
             documentURI(ROOT_URI);
@@ -140,27 +136,31 @@ public class SchemaLocation {
                 } else {
                     resolutionScope = resolutionScope.resolve(id);
                 }
-                absoluteURI(this.resolutionScope);
+                this.absoluteURI = this.resolutionScope;
             } else {
                 final URI jsonPathFragment = this.jsonPath.toURIFragment();
-                absoluteURI(resolutionScope.resolve(jsonPathFragment));
+                this.absoluteURI = resolutionScope.resolve(jsonPathFragment);
             }
 
             return new SchemaLocation(this.absoluteURI, this.documentURI, this.jsonPath,
                     this.resolutionScope);
         }
 
-        public Builder id(URI id) {
+        public SchemaLocationBuilder id(URI id) {
             this.id = id;
             return this;
         }
 
-        public Builder id(String uri) {
+        public SchemaLocationBuilder id(String uri) {
             this.id = URI.create(uri);
             return this;
         }
 
-        private Builder appendJsonPath(String... pathParts) {
+        public SchemaLocationBuilder absoluteURI(URI uri) {
+            throw new UnsupportedOperationException("This field is calculated.");
+        }
+
+        private SchemaLocationBuilder appendJsonPath(String... pathParts) {
             checkNotNull(pathParts, "pathParts must not be null");
 
             JsonPath newPath = this.jsonPath;

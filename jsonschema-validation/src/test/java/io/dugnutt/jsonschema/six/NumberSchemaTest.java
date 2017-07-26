@@ -15,13 +15,14 @@
  */
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.validator.ValidationTestSupport;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonNumberValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;

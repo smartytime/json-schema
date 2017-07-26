@@ -4,9 +4,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaType.*;
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
-
+import static io.dugnutt.jsonschema.six.JsonSchemaType.NULL;
+import static io.dugnutt.jsonschema.six.JsonSchemaType.NUMBER;
+import static io.dugnutt.jsonschema.six.JsonSchemaType.STRING;
 import static io.dugnutt.jsonschema.six.TestErrorHelper.failure;
 import static org.junit.Assert.assertEquals;
 
@@ -15,18 +15,10 @@ import static org.junit.Assert.assertEquals;
  */
 public class SchemaExceptionTest {
 
-    private static final NullSchema SCHEMA = NullSchema.builder()
-            .build();
+    private static final JsonSchema NULL_SCHEMA = JsonSchema.jsonSchemaBuilder().type(NULL).build();
 
     @Rule
     public final ExpectedException expExc = ExpectedException.none();
-
-    @Test
-    public void nullActual() {
-        NullSchema schema = NullSchema.builder().location(schemaLocation("#/required/2")).build();
-        String actual = failure(schema, STRING, NULL).getMessage();
-        assertEquals("#/required/2: expected type: string, found: null", actual);
-    }
 
     @Test
     public void nullJSONPointer() {
@@ -37,14 +29,14 @@ public class SchemaExceptionTest {
 
     @Test
     public void nullWithMessage() {
-        NullSchema schema = NullSchema.builder().location(schemaLocation("#/required/2")).build();
+        JsonSchema schema = JsonSchema.jsonSchemaBuilderWithId("#/required/2").type(NULL).build();
         String actual = failure(schema, STRING, NULL).getMessage();
         assertEquals("#/required/2: expected type: string, found: null", actual);
     }
 
     @Test
     public void testBuildMessageSingleExcType() {
-        String actual = failure(SCHEMA, NUMBER, STRING)
+        String actual = failure(NULL_SCHEMA, NUMBER, STRING)
                 .getErrorMessage();
         assertEquals("expected type: number, found: string", actual);
     }

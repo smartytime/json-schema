@@ -3,14 +3,13 @@ package io.dugnutt.jsonschema.validator;
 import io.dugnutt.jsonschema.six.BooleanSchema;
 import io.dugnutt.jsonschema.six.EmptySchema;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.ValidationTestSupport;
 import org.junit.Test;
 
 import javax.json.JsonValue;
 
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
-import static io.dugnutt.jsonschema.validator.ValidationMocks.alwaysSuccessfulValidator;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockAlwaysSuccessfulValidator;
 
 public class BaseSchemaValidatorNotTest {
     @Test
@@ -18,7 +17,7 @@ public class BaseSchemaValidatorNotTest {
         Schema subject = ValidationTestSupport.buildWithLocation(EmptySchema.builder()
                 .notSchema(BooleanSchema.BOOLEAN_SCHEMA));
         ValidationTestSupport.failureOf(subject)
-                .validator(new BaseSchemaValidator<>(subject, alwaysSuccessfulValidator()))
+                .validator(new BaseSchemaValidator<>(subject, mockAlwaysSuccessfulValidator()))
                 .input(JsonValue.TRUE)
                 .expectedKeyword("not")
                 .expect();
@@ -27,6 +26,6 @@ public class BaseSchemaValidatorNotTest {
     @Test
     public void success() {
         final Schema notSchema = EmptySchema.builder().notSchema(BooleanSchema.BOOLEAN_SCHEMA).build();
-        expectSuccess(() -> new BaseSchemaValidator<>(notSchema, alwaysSuccessfulValidator()).validate(jsonStringValue("foo")));
+        expectSuccess(() -> new BaseSchemaValidator<>(notSchema, mockAlwaysSuccessfulValidator()).validate(jsonStringValue("foo")));
     }
 }

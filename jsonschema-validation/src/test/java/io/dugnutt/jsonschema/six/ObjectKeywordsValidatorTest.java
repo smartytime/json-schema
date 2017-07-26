@@ -17,8 +17,8 @@ package io.dugnutt.jsonschema.six;
 
 import io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.ObjectSchemaValidator;
-import io.dugnutt.jsonschema.validator.SchemaValidator;
+import io.dugnutt.jsonschema.validator.ObjectKeywordsValidator;
+import io.dugnutt.jsonschema.validator.PartialSchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import lombok.experimental.var;
 import org.junit.Assert;
@@ -32,14 +32,14 @@ import java.util.concurrent.Callable;
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
 import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.TYPE;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildValidatorWithLocation;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.buildWithLocation;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.countCauseByJsonPointer;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.countMatchingMessage;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectFailure;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.failureOf;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.buildValidatorWithLocation;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.buildWithLocation;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.countCauseByJsonPointer;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.countMatchingMessage;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectFailure;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
@@ -48,13 +48,13 @@ import static javax.json.spi.JsonProvider.provider;
 import static junit.framework.TestCase.assertSame;
 import static org.junit.Assert.assertEquals;
 
-public class ObjectSchemaValidatorTest {
+public class ObjectKeywordsValidatorTest {
 
     private static final JsonObject OBJECTS = JsonUtils.readResourceAsJson("/io/dugnutt/jsonschema/six/objecttestcases.json", JsonObject.class);
 
     @Test
     public void additionalPropertiesOnEmptyObject() {
-        expectSuccess(() -> new ObjectSchemaValidator(ObjectSchema.builder()
+        expectSuccess(() -> new ObjectKeywordsValidator(ObjectSchema.builder()
                 .schemaOfAdditionalProperties(BooleanSchema.BOOLEAN_SCHEMA).build())
                 .validate(OBJECTS.getJsonObject("emptyObject")));
     }
@@ -104,7 +104,7 @@ public class ObjectSchemaValidatorTest {
 
     @Test
     public void multipleAdditionalProperties() {
-        SchemaValidator<?> subject = buildValidatorWithLocation(ObjectSchema.builder().schemaOfAdditionalProperties(
+        PartialSchemaValidator<?> subject = buildValidatorWithLocation(ObjectSchema.builder().schemaOfAdditionalProperties(
                 StringSchema.builder().requiresString(true).build()
         ));
         var error = verifyFailure(() -> subject.validate(readJsonObject("{\"a\":true,\"b\":true}")));

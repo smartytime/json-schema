@@ -16,6 +16,7 @@
 package io.dugnutt.jsonschema.six;
 
 import io.dugnutt.jsonschema.utils.JsonUtils;
+import io.dugnutt.jsonschema.validator.ValidationTestSupport;
 import org.junit.Test;
 
 import javax.json.JsonObject;

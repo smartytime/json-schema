@@ -26,9 +26,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.dugnutt.jsonschema.six.schema.JsonSchemaKeyword.TYPE;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.expectSuccess;
-import static io.dugnutt.jsonschema.six.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.six.JsonSchema.*;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
+import static io.dugnutt.jsonschema.validator.ValidationTestSupport.verifyFailure;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockBooleanSchema;
+import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNullSchema;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +40,7 @@ import static org.junit.Assert.assertEquals;
 public class ValidationErrorTest {
 
     public static final ResourceLoader loader = ResourceLoader.DEFAULT;
-    private final Schema rootSchema = ObjectSchema.builder().build();
+    private final JsonSchema rootSchema = jsonSchemaBuilder().build();
 
     // @Test
     // public void fragmentEscapingBoth() {
@@ -75,7 +78,7 @@ public class ValidationErrorTest {
     //     ValidationError changedExc = exc.prepend("frag");
     //     Assert.assertEquals("#/frag", changedExc.getPointerToViolation());
     //     Assert.assertEquals("type", changedExc.getKeyword());
-    //     Assert.assertEquals(BooleanSchema.BOOLEAN_SCHEMA, changedExc.getViolatedSchema());
+    //     Assert.assertEquals(mockBooleanSchema().build(), changedExc.getViolatedSchema());
     // }
     //
     // @Test
@@ -111,7 +114,7 @@ public class ValidationErrorTest {
     @Test
     public void testToJson() {
         ValidationError subject = ValidationError.validationBuilder().
-                violatedSchema(BooleanSchema.BOOLEAN_SCHEMA)
+                violatedSchema(mockBooleanSchema().build())
                 .uriFragmentPointerToViolation("#/a/b")
                 .message("exception message")
                 .keyword(TYPE)
@@ -125,7 +128,7 @@ public class ValidationErrorTest {
     @Test
     public void testToJsonWithSchemaLocation() {
         ValidationError subject =
-                new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
+                new ValidationError(mockBooleanSchema().build(),
                         JsonPath.parseFromURIFragment("#/a/b"),
                         "exception message",
                         emptyList(),
@@ -142,7 +145,7 @@ public class ValidationErrorTest {
 
     @Test
     public void throwForMultipleFailures() {
-        ValidationError input1 = new ValidationError(NullSchema.NULL_SCHEMA,
+        ValidationError input1 = new ValidationError(mockNullSchema().build(),
                 JsonPath.rootPath(),
                 "msg1",
                 emptyList(),
@@ -150,7 +153,7 @@ public class ValidationErrorTest {
                 "code",
                 URI.create("#"), emptyList());
 
-        ValidationError input2 = new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
+        ValidationError input2 = new ValidationError(mockBooleanSchema().build(),
                 JsonPath.parseFromURIFragment("#"),
                 "msg2",
                 emptyList(),
@@ -174,7 +177,7 @@ public class ValidationErrorTest {
 
     @Test
     public void throwForSingleFailure() {
-        ValidationError input = new ValidationError(NullSchema.NULL_SCHEMA,
+        ValidationError input = new ValidationError(mockNullSchema().build(),
                 JsonPath.parseFromURIFragment("#"),
                 "msg",
                 emptyList(),
@@ -189,7 +192,7 @@ public class ValidationErrorTest {
     @Test
     public void toJsonNullPointerToViolation() {
         ValidationError subject =
-                new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
+                new ValidationError(mockBooleanSchema().build(),
                         null,
                         "exception message",
                         emptyList(),
@@ -204,7 +207,7 @@ public class ValidationErrorTest {
     @Test
     public void toJsonWithCauses() {
         ValidationError cause =
-                new ValidationError(NullSchema.NULL_SCHEMA,
+                new ValidationError(mockNullSchema().build(),
                         JsonPath.parseFromURIFragment("#/a/0"),
                         "cause msg",
                         emptyList(),
@@ -212,7 +215,7 @@ public class ValidationErrorTest {
                         null,
                         null, singletonList("Joe"));
         ValidationError subject =
-                new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
+                new ValidationError(mockBooleanSchema().build(),
                         JsonPath.parseFromURIFragment("#/a"),
                         "exception message",
                         Arrays.asList(cause),
@@ -256,7 +259,7 @@ public class ValidationErrorTest {
     }
 
     private ValidationError createTestValidationError() {
-        return new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
+        return new ValidationError(mockBooleanSchema().build(),
                 JsonPath.parseFromURIFragment("#"),
                 "Failed Validation",
                 emptyList(),
@@ -266,7 +269,7 @@ public class ValidationErrorTest {
     }
 
     private ValidationError createDummyException(final String pointer) {
-        return new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
+        return new ValidationError(mockBooleanSchema().build(),
                 JsonPath.parseFromURIFragment(pointer),
                 "stuff went wrong",
                 emptyList(), TYPE,
@@ -278,7 +281,7 @@ public class ValidationErrorTest {
 
     private ValidationError subjectWithCauses(final ValidationError... causes) {
         if (causes.length == 0) {
-            return new ValidationError(BooleanSchema.BOOLEAN_SCHEMA,
+            return new ValidationError(mockBooleanSchema().build(),
                     JsonPath.parseFromURIFragment("#"),
                     "Failure",
                     emptyList(),

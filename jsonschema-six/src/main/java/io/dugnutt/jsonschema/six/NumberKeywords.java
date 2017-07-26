@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import javax.json.JsonNumber;
 import javax.validation.constraints.Min;
 import java.util.Set;
 
@@ -15,7 +14,7 @@ import java.util.Set;
 @Getter
 @Builder(toBuilder = true, builderClassName = "NumberKeywordsBuilder")
 @EqualsAndHashCode
-public class NumberKeywords implements SchemaKeywords<JsonNumber> {
+public class NumberKeywords implements SchemaKeywords {
 
     private final boolean requiresNumber;
     private final boolean requiresInteger;

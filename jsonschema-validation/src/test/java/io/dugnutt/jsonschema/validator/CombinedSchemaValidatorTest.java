@@ -19,7 +19,6 @@ import io.dugnutt.jsonschema.six.BooleanSchema;
 import io.dugnutt.jsonschema.six.CombinedSchema;
 import io.dugnutt.jsonschema.six.NumberSchema;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.ValidationTestSupport;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
