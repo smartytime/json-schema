@@ -37,8 +37,8 @@ import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilderWithId;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
-import static io.dugnutt.jsonschema.validator.ObjectKeywordsValidator.objectKeywordsValidator;
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR;
+import static io.dugnutt.jsonschema.validator.ObjectKeywordsValidatorFactory.objectKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR_FACTORY;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockBooleanSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNullSchema;
@@ -69,7 +69,7 @@ public class ObjectKeywordsValidatorTest {
                 .schemaOfAdditionalProperties(mockBooleanSchema())
                 .build();
 
-        expectSuccess(() -> objectKeywordsValidator().validate(pathAware(input), testSchema, DEFAULT_VALIDATOR));
+        expectSuccess(() -> objectKeywordsValidator().forSchema(testSchema, DEFAULT_VALIDATOR_FACTORY).validate(pathAware(input)));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ObjectKeywordsValidatorTest {
                 .schemaOfAdditionalProperties(mockStringSchema())
                 .build();
 
-        final JsonSchemaValidator testValidator = createTestValidator(subject);
+        final SchemaValidator testValidator = createTestValidator(subject);
         ValidationError error = verifyFailure(() -> testValidator.validate(readJsonObject("{\"a\":true,\"b\":true}")));
 
         assertEquals("#: Additional properties were invalid", error.getMessage());

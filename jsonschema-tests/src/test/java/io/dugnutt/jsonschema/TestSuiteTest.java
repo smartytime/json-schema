@@ -18,7 +18,7 @@ package io.dugnutt.jsonschema;
 import com.google.common.base.Preconditions;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
-import io.dugnutt.jsonschema.validator.JsonSchemaValidator;
+import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
@@ -119,7 +119,7 @@ public class TestSuiteTest {
     public void test() {
         try {
             Schema schema = schemaFactory().load(schemaJson);
-            JsonSchemaValidator validator = createTestValidator(schema);
+            SchemaValidator validator = createTestValidator(schema);
             Optional<ValidationError> validationErrors = validator.validate(input);
             boolean failed = validationErrors.isPresent();
             if (expectedToBeValid && failed) {

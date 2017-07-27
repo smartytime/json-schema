@@ -15,7 +15,6 @@
  */
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
@@ -71,7 +70,7 @@ public class StringSchemaTest {
 
     public void issue38Pattern() {
         final Schema schema = mockStringSchema().pattern("\\+?\\d+").build();
-        final JsonSchemaValidator validator = createTestValidator(schema);
+        final SchemaValidator validator = createTestValidator(schema);
         verifyFailure(() -> validator.validate(jsonStringValue("aaa")));
     }
 

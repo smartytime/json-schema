@@ -17,7 +17,7 @@ package io.dugnutt.jsonschema;
 
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.JsonSchemaValidator;
+import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class InvalidObjectInArrayTest {
     public void test() {
         Schema schema = schemaFactory().load(readObject("schema.json"));
         JsonObject subject = readObject("subject.json");
-        JsonSchemaValidator validator = ValidationMocks.createTestValidator(schema);
+        SchemaValidator validator = ValidationMocks.createTestValidator(schema);
         Optional<ValidationError> errors = validator.validate(subject);
         Assert.assertTrue("did not throw exception", errors.isPresent());
         Assert.assertEquals("#/notification/target/apps/0", errors.get().getPointerToViolation());

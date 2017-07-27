@@ -1,61 +1,92 @@
 package io.dugnutt.jsonschema.validator;
 
-import com.google.common.base.Preconditions;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.Schema;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.Singular;
 
-import javax.json.JsonValue;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ChainedValidator<X extends JsonValue> {
+import static com.google.common.base.Preconditions.checkNotNull;
 
-    private final ValidationError validationError;
-    private final boolean shouldContinue;
-    private final X input;
+@AllArgsConstructor
+public class ChainedValidator implements SchemaValidator {
 
-    private ChainedValidator(X input, ValidationError validationError, boolean shouldContinue, Function<X, Optional<ValidationError>> nextCheck) {
-        Preconditions.checkNotNull(nextCheck, "nextCheck must not be null");
-        Preconditions.checkNotNull(input, "input must not be null");
-        if (validationError == null && shouldContinue) {
-            this.validationError = nextCheck.apply(input).orElse(null);
-        } else {
-            this.validationError = validationError;
+    @NonNull
+    private Schema schema;
+
+    @NonNull
+    private SchemaValidatorFactory factory;
+
+    @NonNull
+    @Singular
+    List<SchemaValidator> validators;
+
+    public static ChainedValidatorBuilder builder() {
+        return new ChainedValidatorBuilder();
+    }
+
+    @Override
+    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+        boolean success= true;
+        for (SchemaValidator validator : validators) {
+            success = success && validator.validate(subject, report);
+            if (validator instanceof NamedSchemaValidator) {
+                System.out.println("VALIDATOR: " + validator.toString());
+            }
         }
-        this.shouldContinue = true;
-        this.input = input;
+        return success;
     }
 
-    private ChainedValidator(X input, ValidationError validationError, boolean shouldContinue, Predicate<X> shouldContinueIf) {
-        Preconditions.checkNotNull(shouldContinueIf, "nextCheck must not be null");
-        Preconditions.checkNotNull(input, "input must not be null");
-        if (validationError == null && shouldContinue) {
-            this.shouldContinue = shouldContinueIf.test(input);
-        } else {
-            this.shouldContinue = shouldContinue;
+    public static class ChainedValidatorBuilder {
+        private ChainedValidatorBuilder() {
         }
-        this.validationError = validationError;
-        this.input = input;
+
+        private final List<SchemaValidator> validators = new ArrayList<>();
+        private Schema schema;
+        private SchemaValidatorFactory factory = SchemaValidatorFactory.DEFAULT_VALIDATOR_FACTORY;
+
+        // public ChainedValidatorBuilder addValidator(SchemaValidator validator) {
+        //     checkNotNull(validator, "validator must not be null");
+        //     this.validators.add(validator);
+        //     return this;
+        // }
+
+        public ChainedValidatorBuilder addValidator(JsonSchemaKeyword keyword, SchemaValidator validator) {
+            checkNotNull(validator, "validator must not be null");
+            checkNotNull(keyword, "keyword must not be null");
+            final String name;
+            if (schema != null) {
+                name = schema.getLocation().getJsonPointerFragment() + " -> (" +  keyword + ") keyword: " + schema.toString();
+            } else {
+                name = "#? -> " + keyword;
+            }
+            this.validators.add(NamedSchemaValidator.builder()
+                    .name(name)
+                    .wrapped(validator)
+                    .build());
+            return this;
+        }
+
+        public ChainedValidatorBuilder schema(Schema schema) {
+            this.schema = schema;
+            return this;
+        }
+
+        public ChainedValidatorBuilder factory(SchemaValidatorFactory factory) {
+            this.factory = factory;
+            return this;
+        }
+
+        public SchemaValidator build() {
+            if (validators.size() == 0) {
+                return NOOP_VALIDATOR;
+            } else {
+                return new ChainedValidator(this.schema, factory, validators);
+            }
+        }
     }
-
-    public static <V extends JsonValue> ChainedValidator<V> firstCheck(V v, Function<V, Optional<ValidationError>> check) {
-        return new ChainedValidator<V>(v, null, true, check);
-    }
-
-    public Optional<ValidationError> getError() {
-        return Optional.ofNullable(validationError);
-    }
-
-    public <Y extends JsonValue> ChainedValidator<Y> thenCheckAs(Class<Y> clazz, Function<Y, Optional<ValidationError>> nextCheck) {
-        return new ChainedValidator<Y>((Y) input, validationError, shouldContinue, nextCheck);
-    }
-
-    public ChainedValidator<X> thenCheck(Function<X, Optional<ValidationError>> nextCheck) {
-        return new ChainedValidator<X>(input, validationError, shouldContinue, nextCheck);
-    }
-
-    public ChainedValidator<X> thenIf(Predicate<X> shouldContinueIf) {
-        return new ChainedValidator<X>(input, validationError, shouldContinue, shouldContinueIf);
-    }
-
-
 }

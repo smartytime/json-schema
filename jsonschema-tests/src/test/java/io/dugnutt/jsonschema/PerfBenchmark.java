@@ -1,7 +1,11 @@
 package io.dugnutt.jsonschema;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
+import io.dugnutt.jsonschema.six.JsonPath;
+import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.validator.JsonSchemaValidator;
+import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 
 import javax.json.JsonObject;
@@ -14,15 +18,19 @@ import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
 public class PerfBenchmark {
 
     public static void main(String[] args) {
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JSR353Module());
+
         final JsonObject draft6 = ResourceLoader.DEFAULT.readObj("json-schema-draft-06.json");
         final Schema draft6Schema = schemaFactory()
                 .load(draft6);
-        final JsonSchemaValidator validator = SchemaValidatorFactory.createValidatorForSchema(draft6Schema);
+        final SchemaValidator validator = SchemaValidatorFactory.createValidatorForSchema(draft6Schema);
 
         final JsonObject jsonObject = ResourceLoader.DEFAULT.readObj("perftest.json");
-        final List<JsonValue> testSubjects = new ArrayList<>();
+        final List<PathAwareJsonValue> testSubjects = new ArrayList<>();
         jsonObject.getJsonObject("schemas").forEach((k, v) -> {
-            testSubjects.add(v);
+            testSubjects.add(new PathAwareJsonValue(v, JsonPath.rootPath()));
         });
 
         long startAt = System.currentTimeMillis();

@@ -8,8 +8,10 @@ import io.dugnutt.jsonschema.six.Schema;
 import javax.json.JsonNumber;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.EXCLUSIVE_MAXIMUM;
@@ -20,10 +22,10 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MULTIPLE_OF;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 import static javax.json.JsonValue.ValueType;
 
-public class NumberKeywordsValidator implements PartialSchemaValidator {
+public class NumberKeywordsValidatorFactory implements PartialValidatorFactory {
 
-    public static NumberKeywordsValidator numberKeywordsValidator() {
-        return new NumberKeywordsValidator();
+    public static NumberKeywordsValidatorFactory numberKeywordsValidator() {
+        return new NumberKeywordsValidatorFactory();
     }
 
     @Override
@@ -32,30 +34,32 @@ public class NumberKeywordsValidator implements PartialSchemaValidator {
     }
 
     @Override
-    public boolean appliesToValue(PathAwareJsonValue value) {
-        return value.is(ValueType.NUMBER);
+    public Set<ValueType> appliesToTypes() {
+        return Collections.singleton(ValueType.NUMBER);
     }
 
     @Override
-    public PartialSchemaValidator forSchema(Schema schema, SchemaValidatorFactory factory) {
-        return this;
-    }
+    public SchemaValidator forSchema(Schema schema, SchemaValidatorFactory factory) {
+        if (schema.hasNumberKeywords()) {
+            return (subject, report) -> {
+                Preconditions.checkArgument(subject.is(ValueType.NUMBER), "Requires JsonArray as input");
+                NumberKeywords keywords = schema.getNumberKeywords()
+                        .orElseThrow(() -> new IllegalArgumentException("Schema must have number keywords"));
 
-    @Override
-    public Optional<ValidationError> validate(PathAwareJsonValue subject, Schema schema, SchemaValidatorFactory factory) {
-        Preconditions.checkArgument(subject.is(ValueType.NUMBER), "Requires JsonArray as input");
-        NumberKeywords keywords = schema.getNumberKeywords()
-                .orElseThrow(() -> new IllegalArgumentException("Schema must have number keywords"));
-
-        Helper helper = new Helper(schema, keywords);
-
-        List<ValidationError> errors = new ArrayList<>();
-        JsonNumber jsonNumber = subject.asJsonNumber();
-        double intSubject = jsonNumber.doubleValue();
-        helper.checkMinimum(subject, intSubject).ifPresent(errors::add);
-        helper.checkMaximum(subject, intSubject).ifPresent(errors::add);
-        helper.checkMultipleOf(subject, intSubject).ifPresent(errors::add);
-        return errors.stream().findFirst();
+                Helper helper = new Helper(schema, keywords);
+                List<ValidationError> errors = new ArrayList<>();
+                JsonNumber jsonNumber = subject.asJsonNumber();
+                double intSubject = jsonNumber.doubleValue();
+                helper.checkMinimum(subject, intSubject).ifPresent(errors::add);
+                helper.checkMaximum(subject, intSubject).ifPresent(errors::add);
+                helper.checkMultipleOf(subject, intSubject).ifPresent(errors::add);
+                Optional<ValidationError> foundError = errors.stream().findFirst();
+                foundError.ifPresent(report::addError);
+                return !foundError.isPresent();
+            };
+        } else {
+            return SchemaValidator.NOOP_VALIDATOR;
+        }
     }
 
     private static class Helper {

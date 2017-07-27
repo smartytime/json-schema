@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.six;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import lombok.Builder;
@@ -14,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Object schema validator.
@@ -87,16 +87,20 @@ public class ObjectKeywords implements SchemaKeywords {
                 : Optional.empty();
     }
 
-    public Stream<String> getAdditionalProperties(final PathAwareJsonValue subject) {
-        Set<String> names = subject.propertyNames();
-        return names.stream()
-                .filter(key -> !propertySchemas.containsKey(key))
-                .filter(key -> !matchesAnyPattern(key));
-    }
-
-    private boolean matchesAnyPattern(final String key) {
-        return patternProperties.keySet().stream()
-                .anyMatch(pattern -> pattern.matcher(key).find());
+    public Set<String> getAdditionalProperties(final PathAwareJsonValue subject) {
+        Set<String> propertySchemaKeys = propertySchemas.keySet();
+        ImmutableSet.Builder<String> addtlProps = ImmutableSet.builder();
+        prop: for (String propName : subject.propertyNames()) {
+            for (Pattern pattern : patternProperties.keySet()) {
+                if(pattern.matcher(propName).find()) {
+                    continue prop;
+                }
+            }
+            if (!propertySchemaKeys.contains(propName)) {
+                addtlProps.add(propName);
+            }
+        }
+        return addtlProps.build();
     }
 
     private void describePropertyDependenciesTo(JsonSchemaGenerator writer) {

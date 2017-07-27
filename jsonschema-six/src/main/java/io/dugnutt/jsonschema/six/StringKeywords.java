@@ -47,7 +47,7 @@ public class StringKeywords implements SchemaKeywords {
         return writer
                 .optionalWrite(MIN_LENGTH, getMinLength())
                 .optionalWrite(MAX_LENGTH, getMaxLength())
-                .optionalWrite(getPattern())
+                .optionalWrite(pattern)
                 .optionalWrite(FORMAT, getFormat());
     }
 

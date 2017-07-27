@@ -24,7 +24,7 @@ import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonObjectBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readValue;
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR_FACTORY;
 import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockSchema;
@@ -79,13 +79,13 @@ public class BaseSchemaValidatorEnumTest {
         possibleValues.add(blankJsonArray());
         final JsonValue validJsonObject = JsonUtils.readValue("{\"a\" : 0}");
         possibleValues.add(validJsonObject);
-        BaseSchemaValidator subject = BaseSchemaValidator.baseSchemaValidator();
+        BaseValidatorFactory subject = BaseValidatorFactory.baseSchemaValidator();
         Schema schema = subject().build();
 
-        expectSuccess(() -> subject.validate(pathAware(JsonValue.TRUE), schema, DEFAULT_VALIDATOR));
-        expectSuccess(() -> subject.validate(pathAware(jsonStringValue("foo")), schema, DEFAULT_VALIDATOR));
-        expectSuccess(() -> subject.validate(pathAware(blankJsonArray()), schema, DEFAULT_VALIDATOR));
-        expectSuccess(() -> subject.validate(pathAware(validJsonObject), schema, DEFAULT_VALIDATOR));
+        expectSuccess(() -> subject.validate(pathAware(JsonValue.TRUE), schema, DEFAULT_VALIDATOR_FACTORY));
+        expectSuccess(() -> subject.validate(pathAware(jsonStringValue("foo")), schema, DEFAULT_VALIDATOR_FACTORY));
+        expectSuccess(() -> subject.validate(pathAware(blankJsonArray()), schema, DEFAULT_VALIDATOR_FACTORY));
+        expectSuccess(() -> subject.validate(pathAware(validJsonObject), schema, DEFAULT_VALIDATOR_FACTORY));
     }
 
     @Test

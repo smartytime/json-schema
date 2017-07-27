@@ -24,13 +24,10 @@ import javax.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.dugnutt.jsonschema.validator.CombinedSchemaValidator.combinedSchemaValidator;
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR_FACTORY;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNumberSchema;
-import static io.dugnutt.jsonschema.validator.ValidationMocks.pathAware;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 
@@ -44,8 +41,7 @@ public class CombinedSchemaValidatorTest {
     public void reportCauses() {
         final Schema parentSchema = jsonSchemaBuilder().allOfSchemas(SUBSCHEMAS).build();
         final JsonValue subject = JsonUtils.readValue("24");
-        Optional<ValidationError> error =
-                combinedSchemaValidator().validate(pathAware(subject), parentSchema, DEFAULT_VALIDATOR, parentSchema.getAllOfSchemas(), ALL_OF);
+        Optional<ValidationError> error = BaseValidatorFactory.baseSchemaValidator().forSchema(parentSchema, DEFAULT_VALIDATOR_FACTORY).validate(subject);
         assertTrue("Has an error", error.isPresent());
         Assert.assertEquals(1, error.get().getCauses().size());
     }

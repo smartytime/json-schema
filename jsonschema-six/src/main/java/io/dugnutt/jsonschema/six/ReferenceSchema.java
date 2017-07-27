@@ -77,7 +77,9 @@ public final class ReferenceSchema implements Schema {
 
     @Override
     public JsonSchemaGenerator toJson(JsonSchemaGenerator writer) {
-        return writer.write($REF, refURI);
+        return writer.object()
+                .write($REF, refURI)
+                .endObject();
     }
 
     @Override

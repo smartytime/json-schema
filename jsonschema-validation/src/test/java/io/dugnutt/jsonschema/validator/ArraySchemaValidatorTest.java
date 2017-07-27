@@ -37,7 +37,7 @@ import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.dugnutt.jsonschema.validator.ResourceLoader.DEFAULT;
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR;
+import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR_FACTORY;
 import static io.dugnutt.jsonschema.validator.ValidationErrorTest.loader;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockArraySchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockBooleanSchema;
@@ -320,7 +320,7 @@ public class ArraySchemaValidatorTest {
 
     private JsonSchemaValidator createTestValidator(Schema schema) {
         return JsonSchemaValidator.jsonSchemaValidator()
-                .factory(DEFAULT_VALIDATOR)
+                .validatorFactory(DEFAULT_VALIDATOR_FACTORY)
                 .schema(schema)
                 .build();
     }

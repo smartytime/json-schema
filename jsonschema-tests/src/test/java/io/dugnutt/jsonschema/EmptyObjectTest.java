@@ -18,7 +18,7 @@ package io.dugnutt.jsonschema;
 import io.dugnutt.jsonschema.loader.JsonSchemaFactory;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.JsonSchemaValidator;
+import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class EmptyObjectTest {
         JsonObject schemaJson = ResourceLoader.DEFAULT.readObj("json-schema-draft-06.json");
 
         Schema schema = JsonSchemaFactory.schemaFactory(JsonProvider.provider()).load(schemaJson);
-        JsonSchemaValidator validator = ValidationMocks.createTestValidator(schema);
+        SchemaValidator validator = ValidationMocks.createTestValidator(schema);
         Optional<ValidationError> errors = validator.validate(jsonSubject);
         assertFalse(errors.isPresent());
     }

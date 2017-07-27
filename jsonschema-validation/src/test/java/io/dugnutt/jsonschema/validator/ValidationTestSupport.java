@@ -42,7 +42,7 @@ public class ValidationTestSupport {
         return builder.id("#").build();
     }
 
-    public static JsonSchemaValidator buildValidatorWithLocation(JsonSchemaBuilder builder) {
+    public static SchemaValidator buildValidatorWithLocation(JsonSchemaBuilder builder) {
         return ValidationMocks.createTestValidator(builder.id("#").build());
     }
 
@@ -91,7 +91,7 @@ public class ValidationTestSupport {
     }
 
     public static ValidationError expectFailure(final Failure failure) {
-        final JsonSchemaValidator validator = failure.validator()
+        final SchemaValidator validator = failure.validator()
                 .orElse(ValidationMocks.createTestValidator(failure.schema()));
         if (failure.input() == null) {
             throw new RuntimeException("Invalid test configuration.  Must provide input value");
@@ -114,7 +114,11 @@ public class ValidationTestSupport {
         return error;
     }
 
-    public static Failure failureOf(JsonSchemaValidator validator) {
+    public static Failure failureOf(SchemaValidator validator, Schema schema) {
+        return new Failure().schema(schema).validator(validator);
+
+    }
+    public static Failure failureOf(SchemaValidator validator) {
         return new Failure().schema(validator.schema()).validator(validator);
     }
 
@@ -141,7 +145,7 @@ public class ValidationTestSupport {
 
         private Schema subject;
 
-        private JsonSchemaValidator validator;
+        private SchemaValidator validator;
 
         private Schema expectedViolatedSchema;
 
@@ -268,7 +272,7 @@ public class ValidationTestSupport {
             return this;
         }
 
-        public Failure validator(final JsonSchemaValidator validator) {
+        public Failure validator(final SchemaValidator validator) {
             this.validator = validator;
             return this;
         }
@@ -277,7 +281,7 @@ public class ValidationTestSupport {
             return subject;
         }
 
-        public Optional<JsonSchemaValidator> validator() {
+        public Optional<SchemaValidator> validator() {
             return Optional.ofNullable(validator);
         }
     }

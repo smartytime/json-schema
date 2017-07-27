@@ -2,9 +2,10 @@ package io.dugnutt.jsonschema.validator;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.StreamUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -12,17 +13,17 @@ import lombok.Singular;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkState;
-
 @Builder(builderMethodName = "jsonSchemaValidator")
-public class JsonSchemaValidator {
+public class JsonSchemaValidator implements SchemaValidator {
+    @NonNull
+    private final Multimap<JsonValue.ValueType, SchemaValidator> childValidators;
+
     @NonNull
     @Singular
-    private final List<PartialSchemaValidator> childValidators;
+    private final List<PartialValidatorFactory> factories;
 
     @NonNull
     private final Schema schema;
@@ -32,29 +33,38 @@ public class JsonSchemaValidator {
     private final JsonProvider provider;
 
     @NotNull
-    private final SchemaValidatorFactory factory;
+    private final SchemaValidatorFactory validatorFactory;
 
-    public JsonSchemaValidator(List<PartialSchemaValidator> validators, Schema schema, JsonProvider provider, @NotNull SchemaValidatorFactory factory) {
+    public JsonSchemaValidator(Multimap<JsonValue.ValueType, SchemaValidator> childValidators, List<PartialValidatorFactory> factories, Schema schema, JsonProvider provider, @NotNull SchemaValidatorFactory validatorFactory) {
         this.schema = schema;
         this.provider = MoreObjects.firstNonNull(provider, JsonProvider.provider());
-        this.factory = factory;
-        this.factory.cacheSchema(schema.getLocation().getAbsoluteURI(), this);
-        this.childValidators = validators.stream()
+        this.factories = factories;
+        this.validatorFactory = validatorFactory;
+        this.validatorFactory.cacheSchema(schema.getLocation().getAbsoluteURI(), this);
+        ImmutableMultimap.Builder<JsonValue.ValueType, SchemaValidator> builder = ImmutableMultimap.builder();
+        factories.stream()
                 .filter(validator -> validator.appliesToSchema(schema))
-                .map(validator -> factory.createPartialValidator(validator, schema))
-                .collect(StreamUtils.toImmutableList());
-
-        checkState(childValidators.size() > 0, "Need at least one validator");
+                .forEach(f -> {
+                    SchemaValidator schemaValidator = f.forSchema(schema, validatorFactory);
+                    if (schemaValidator instanceof ChainedValidator) {
+                        ((ChainedValidator) schemaValidator).validators.forEach(validator->{
+                            f.appliesToTypes().forEach(type-> builder.put(type, validator));
+                        });
+                    } else if(schemaValidator != SchemaValidator.NOOP_VALIDATOR) {
+                        f.appliesToTypes().forEach(type-> builder.put(type, schemaValidator));
+                    }
+                });
+        this.childValidators = builder.build();
     }
 
-    public Optional<ValidationError> validate(PathAwareJsonValue subject) {
-        List<ValidationError> errors = new ArrayList<>();
-        for (PartialSchemaValidator childValidator : childValidators) {
-            if (childValidator.appliesToValue(subject)) {
-                childValidator.validate(subject, schema, factory).ifPresent(errors::add);
-            }
+    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+        JsonValue.ValueType valueType = subject.getValueType();
+        boolean success = true;
+        for (SchemaValidator schemaValidator : childValidators.get(valueType)) {
+            success = success && schemaValidator.validate(subject, report);
+            report.log(schemaValidator);
         }
-        return ValidationError.collectErrors(schema, subject.getPath(), errors);
+        return success;
     }
 
     public Optional<ValidationError> validate(JsonValue subject) {
@@ -62,8 +72,16 @@ public class JsonSchemaValidator {
         return validate(pathAwareSubject);
     }
 
+    @Deprecated
+    @Override
+    public Optional<ValidationError> validate(PathAwareJsonValue subject) {
+        ValidationReport report = new ValidationReport();
+        validate(subject, report);
+        return ValidationError.collectErrors(schema, subject.getPath(), report.getErrors());
+    }
+
     @VisibleForTesting
-    Schema schema() {
+    public Schema schema() {
         return schema;
     }
 }

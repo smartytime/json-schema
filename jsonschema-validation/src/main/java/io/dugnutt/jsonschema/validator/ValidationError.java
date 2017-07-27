@@ -209,7 +209,7 @@ public class ValidationError {
 
     /**
      * Sort of static factory method. It is used by {@link io.dugnutt.jsonschema.six.ObjectKeywords} and
-     * {@link ArrayKeywordsValidator} to create {@code ValidationException}s, handling the case of multiple violations
+     * {@link ArrayKeywordsValidatorFactory} to create {@code ValidationException}s, handling the case of multiple violations
      * occuring during validation.
      * <p>
      * <ul>

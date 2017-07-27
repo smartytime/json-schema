@@ -19,26 +19,26 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.validator.ArrayKeywordsValidator.arrayKeywordsValidator;
-import static io.dugnutt.jsonschema.validator.NumberKeywordsValidator.numberKeywordsValidator;
-import static io.dugnutt.jsonschema.validator.ObjectKeywordsValidator.objectKeywordsValidator;
-import static io.dugnutt.jsonschema.validator.StringKeywordsValidator.stringKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.ArrayKeywordsValidatorFactory.arrayKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.NumberKeywordsValidatorFactory.numberKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.ObjectKeywordsValidatorFactory.objectKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.StringKeywordsValidatorFactory.stringKeywordsValidator;
 
 @Builder(builderClassName = "Builder", toBuilder = true)
 public class SchemaValidatorFactory {
 
-    public static final SchemaValidatorFactory DEFAULT_VALIDATOR = builder().build();
+    public static final SchemaValidatorFactory DEFAULT_VALIDATOR_FACTORY = builder().build();
 
-    private final Map<URI, JsonSchemaValidator> validatorCache = new HashMap<>();
+    private final Map<URI, SchemaValidator> validatorCache = new HashMap<>();
 
-    private final Map<PartialValidatorKey, PartialSchemaValidator> partialValidatorCache = new HashMap<>();
+    private final Map<PartialValidatorKey, PartialValidatorFactory> partialValidatorCache = new HashMap<>();
 
     @NonNull
     private final Map<String, FormatValidator> customFormatValidators;
 
     @NonNull
     @Singular
-    private final List<PartialSchemaValidator> validators;
+    private final List<PartialValidatorFactory> validators;
 
     private final JsonProvider provider;
 
@@ -46,34 +46,29 @@ public class SchemaValidatorFactory {
         validatorCache.putIfAbsent(absoluteURI, validator);
     }
 
-    public static JsonSchemaValidator createValidatorForSchema(Schema schema) {
-        return DEFAULT_VALIDATOR.createValidator(schema);
+    public static SchemaValidator createValidatorForSchema(Schema schema) {
+        return DEFAULT_VALIDATOR_FACTORY.createValidator(schema);
     }
 
     void cacheValidator(URI schemaURI, JsonSchemaValidator validator) {
         validatorCache.putIfAbsent(schemaURI, validator);
     }
 
-    public JsonSchemaValidator createValidator(Schema schema) {
+    public SchemaValidator createValidator(Schema schema) {
         checkNotNull(schema, "schema must not be null when creating validator");
         final URI schemaURI = schema.getLocation().getAbsoluteURI();
-        final JsonSchemaValidator cachedValue = validatorCache.get(schemaURI);
+        final SchemaValidator cachedValue = validatorCache.get(schemaURI);
         if (cachedValue != null) {
             return cachedValue;
         } else {
             final JsonSchemaValidator validator = JsonSchemaValidator.jsonSchemaValidator()
-                    .factory(this)
+                    .validatorFactory(this)
                     .schema(schema)
-                    .childValidators(validators)
+                    .factories(validators)
                     .build();
             this.cacheValidator(schemaURI, validator);
             return validator;
         }
-    }
-
-    PartialSchemaValidator createPartialValidator(PartialSchemaValidator existing, Schema schema) {
-        final PartialValidatorKey key = new PartialValidatorKey(schema.getLocation().getAbsoluteURI(), existing.getClass().getSimpleName());
-        return partialValidatorCache.computeIfAbsent(key, k -> existing.forSchema(schema, this));
     }
 
     public Optional<FormatValidator> getFormatValidator(String input) {
@@ -89,7 +84,7 @@ public class SchemaValidatorFactory {
 
     @FunctionalInterface
     interface Factory {
-        PartialSchemaValidator createValidator(Schema schema, SchemaValidatorFactory factory);
+        PartialValidatorFactory createValidator(Schema schema, SchemaValidatorFactory factory);
     }
 
     public static class Builder {
@@ -112,7 +107,7 @@ public class SchemaValidatorFactory {
             // ##########################################
             // BASE VALIDATOR
             // ##########################################
-            validator(BaseSchemaValidator.baseSchemaValidator());
+            validator(BaseValidatorFactory.baseSchemaValidator());
 
             // ##########################################
             // KEYWORD VALIDATORS
