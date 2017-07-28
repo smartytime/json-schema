@@ -7,7 +7,7 @@
           "$ref": "#"
         }
       },
-      "additionalProperties": { "type": null }
+      "additionalProperties": { "type": "null" }
     },
     "tests": [
       {

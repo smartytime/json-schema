@@ -4,5 +4,5 @@
             "type" : "number"
         }
     },
-    "additionalProperties" : {"type": null}
+    "additionalProperties" : {"type": "null"}
 }

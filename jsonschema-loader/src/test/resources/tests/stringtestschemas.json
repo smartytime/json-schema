@@ -1,0 +1,7 @@
+{
+  "patternSchema": {
+    "description": "lowercase",
+    "type": "string",
+    "pattern": "[a-z]*"
+  }
+}

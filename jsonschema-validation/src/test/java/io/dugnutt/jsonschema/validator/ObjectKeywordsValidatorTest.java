@@ -23,6 +23,7 @@ import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import java.util.List;
@@ -33,12 +34,10 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
 import static io.dugnutt.jsonschema.six.JsonSchemaType.BOOLEAN;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilderWithId;
+import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
-import static io.dugnutt.jsonschema.validator.ObjectKeywordsValidatorFactory.objectKeywordsValidator;
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR_FACTORY;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockBooleanSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNullSchema;
@@ -46,7 +45,6 @@ import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNumberSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockObjectSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockStringSchema;
-import static io.dugnutt.jsonschema.validator.ValidationMocks.pathAware;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.buildWithLocation;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.countCauseByJsonPointer;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.countMatchingMessage;
@@ -69,13 +67,12 @@ public class ObjectKeywordsValidatorTest {
                 .schemaOfAdditionalProperties(mockBooleanSchema())
                 .build();
 
-        expectSuccess(() -> objectKeywordsValidator().forSchema(testSchema, DEFAULT_VALIDATOR_FACTORY).validate(pathAware(input)));
+        expectSuccess(() -> createTestValidator(testSchema).validate(input));
     }
 
     @Test
     public void additionalPropertySchema() {
-        String expectedSchemaLocation = "#/bool/location";
-        JsonSchemaBuilder boolSchema = jsonSchemaBuilderWithId(expectedSchemaLocation).type(BOOLEAN);
+        JsonSchemaBuilder boolSchema = jsonSchemaBuilder().type(BOOLEAN);
         Schema schema = mockObjectSchema().schemaOfAdditionalProperties(boolSchema).build();
         failureOf(schema)
                 .input(OBJECTS.get("additionalPropertySchema"))
@@ -83,7 +80,7 @@ public class ObjectKeywordsValidatorTest {
                     //Other stuff
                     assertEquals(1, error.getCauses().size());
                     final ValidationError cause = error.getCauses().get(0);
-                    assertEquals(expectedSchemaLocation, cause.getSchemaLocation().toString());
+                    assertEquals("#/additionalProperties", cause.getSchemaLocation().toString());
                     assertEquals(TYPE, cause.getKeyword());
                     assertEquals(boolSchema.build(), cause.getViolatedSchema());
                 })
@@ -153,11 +150,11 @@ public class ObjectKeywordsValidatorTest {
         }
         ValidationError billingAddressFailure = creditCardFailure.getCauses().get(0);
         assertEquals("#/billing_address", billingAddressFailure.getPointerToViolation());
-        assertEquals(billingAddressSchema, billingAddressFailure.getViolatedSchema());
+        assertEquals(billingAddressSchema.build(), billingAddressFailure.getViolatedSchema());
         ValidationError billingNameFailure = creditCardFailure
                 .getCauses().get(1);
         assertEquals("#/billing_name", billingNameFailure.getPointerToViolation());
-        assertEquals(billingNameSchema, billingNameFailure.getViolatedSchema());
+        assertEquals(billingNameSchema.build(), billingNameFailure.getViolatedSchema());
         assertEquals("#", ageFailure.getPointerToViolation());
         assertEquals("#: required key [age] not found", ageFailure.getMessage());
     }
@@ -376,7 +373,10 @@ public class ObjectKeywordsValidatorTest {
                 .id("#/dependencies/a")
                 .minProperties(1)
                 .build();
-        ValidationError e = verifyFailure(() -> createTestValidator(subject).validate(provider().createValue(1)));
+        ValidationError e = verifyFailure(() -> {
+            final JsonNumber testValue = provider().createValue(1);
+            return createTestValidator(subject).validate(testValue);
+        });
         assertEquals("#/dependencies/a", e.getSchemaLocation());
     }
 

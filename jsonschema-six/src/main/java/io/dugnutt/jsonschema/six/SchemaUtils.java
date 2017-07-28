@@ -5,7 +5,7 @@ import java.net.URI;
 public class SchemaUtils {
 
     public static boolean isJsonPointer(URI uri) {
-        return uri.getFragment() != null && uri.getFragment().startsWith("#/");
+        return uri.toString().startsWith("#/");
     }
 
     public static boolean isJsonPointer(String uri) {

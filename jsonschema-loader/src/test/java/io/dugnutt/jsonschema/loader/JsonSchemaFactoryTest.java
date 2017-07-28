@@ -12,11 +12,11 @@ import io.dugnutt.jsonschema.six.StringKeywords;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import javax.json.JsonObject;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.function.Supplier;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
@@ -24,6 +24,8 @@ import static javax.json.spi.JsonProvider.provider;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
@@ -42,12 +44,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         Schema actual = getSchemaForKey("emptyPatternProperties");
         assertSoftly(a -> {
             a.assertThat(actual).isNotNull();
-            a.assertThat(actual.getObjectKeywords())
-                    .isPresent()
-                    .hasValueSatisfying(keywords -> {
-                        a.assertThat(keywords.getPatternProperties())
-                                .hasSize(0);
-                    });
+            a.assertThat(actual.getObjectKeywords()).isNotPresent();
         });
     }
 
@@ -55,10 +52,8 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     public void emptySchema() {
         final Schema emptySchema = getSchemaForKey("emptySchema");
         assertSoftly(a -> {
-            a.assertThat(emptySchema)
-                    .isNotNull();
-            a.assertThat(emptySchema.toString())
-                    .isEqualTo("{}");
+            a.assertThat(emptySchema).isNotNull();
+            a.assertThat(emptySchema.toString()).isEqualTo("{}");
         });
     }
 
@@ -103,7 +98,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
             a.assertThat(schema.getNumberKeywords().orElse(null))
                     .isNotNull()
-                    .extracting(NumberKeywords::getMinimum)
+                    .extracting(k->k.getMinimum().intValue())
                     .containsExactly(5);
         });
     }
@@ -204,14 +199,14 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
                 final Schema schemaA = refSchemaKeywords.getPropertySchemas().get("a");
                 ref.assertThat(schemaA).isNotNull();
                 ref.assertThat(schemaA.getNumberKeywords()).isPresent();
-                ref.assertThat(schemaA.getNumberKeywords().get().getMinimum()).isEqualTo(0);
+                ref.assertThat(schemaA.getNumberKeywords().get().getMinimum().intValue()).isEqualTo(0);
             });
         });
     }
 
     @Test(expected = SchemaException.class)
     public void pointerResolutionFailure() {
-        getSchemaForKey("pointerResolutionFailure");
+        final Schema pointerResolutionFailure = getSchemaForKey("pointerResolutionFailure");
     }
 
     @Test(expected = SchemaException.class)
@@ -241,10 +236,10 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void remotePointerResulion() {
-        SchemaClient httpClient = Mockito.mock(SchemaClient.class);
-        Mockito.when(httpClient.fetchSchema("http://example.org/asd")).thenReturn(asStream("{}"));
-        Mockito.when(httpClient.fetchSchema("http://example.org/otherschema.json")).thenReturn(asStream("{}"));
-        Mockito.when(httpClient.fetchSchema("http://example.org/folder/subschemaInFolder.json")).thenReturn(
+        SchemaClient httpClient = mock(SchemaClient.class);
+        when(httpClient.fetchSchema(URI.create("http://example.org/asd"))).thenReturn(asStream("{}"));
+        when(httpClient.fetchSchema(URI.create("http://example.org/otherschema.json"))).thenReturn(asStream("{}"));
+        when(httpClient.fetchSchema(URI.create("http://example.org/folder/subschemaInFolder.json"))).thenReturn(
                 asStream("{}"));
         schemaFactory()
                 .withHttpClient(httpClient)
@@ -264,12 +259,14 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
 
     @Test
     public void schemaJsonIdIsRecognized() {
-        SchemaClient client = Mockito.mock(SchemaClient.class);
+        SchemaClient client = mock(SchemaClient.class);
         ByteArrayInputStream retval = new ByteArrayInputStream("{}".getBytes());
-        Mockito.when(client.fetchSchema("http://example.org/schema/schema.json")).thenReturn(retval);
+        when(client.fetchSchema("http://example.org/schema/schema.json")).thenReturn(retval);
+        when(client.fetchSchema(URI.create("http://example.org/schema/schema.json"))).thenReturn(retval);
+        final JsonObject schemaWithId = getJsonObjectForKey("schemaWithId");
         JsonSchemaFactory.schemaFactory()
                 .withHttpClient(client)
-                .load(getJsonObjectForKey("schemaWithId"));
+                .load(schemaWithId);
     }
 
     @Test
@@ -315,7 +312,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     public void tupleSchema() {
         Schema actual =  getSchemaForKey("tupleSchema");
         assertThat(actual.getArrayKeywords()).isPresent();
-        assertThat(actual.getArrayKeywords().get().getAllItemSchema()).isNull();
+        assertThat(actual.getArrayKeywords().get().findAllItemSchema()).isNotPresent();
         assertThat(actual.getArrayKeywords().get().getItemSchemas()).hasSize(2);
     }
 

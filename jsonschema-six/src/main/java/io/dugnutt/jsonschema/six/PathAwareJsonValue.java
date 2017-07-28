@@ -10,7 +10,6 @@ import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
-import javax.json.JsonStructure;
 import javax.json.JsonValue;
 import java.util.Optional;
 import java.util.Set;
@@ -124,11 +123,13 @@ public class PathAwareJsonValue implements PartialJsonObject {
         return Optional.empty();
     }
 
-    public Optional<JsonObject> findIfObject(String property) {
+    public Optional<PathAwareJsonValue> findIfObject(String property) {
         checkNotNull(property, "property must not be null");
-        return findByKey(property, JsonStructure.class)
-                .filter(childJson -> JsonObject.class.isAssignableFrom(childJson.getClass()))
-                .map(JsonObject.class::cast);
+        final JsonValue jsonValue = get(property);
+        if (jsonValue != null && jsonValue instanceof JsonObject) {
+            return Optional.of(forChild(jsonValue, property));
+        }
+        return Optional.empty();
     }
 
     public Optional<Integer> findInt(JsonSchemaKeyword property) {
@@ -368,7 +369,7 @@ public class PathAwareJsonValue implements PartialJsonObject {
      */
     @Override
     public String toString() {
-        return wrapped.toString();
+        return path.toURIFragment() + " -> " + wrapped;
     }
 
     public boolean is(ValueType... types) {

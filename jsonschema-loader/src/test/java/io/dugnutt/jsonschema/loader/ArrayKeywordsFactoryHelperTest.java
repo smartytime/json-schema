@@ -86,7 +86,7 @@ public class ArrayKeywordsFactoryHelperTest extends BaseLoaderTest {
 
     @Test
     public void invalidItemsJsonSchema() {
-        final JsonObject schemaJson = getJsonObjectForKey("invalidItemsJsonSchema");
+        final JsonObject schemaJson = getJsonObjectForKey("invalidItemsArraySchema");
         failWith(UnexpectedValueException.class)
                 .input(schemaJson)
                 .expectedSchemaLocation("#/items")

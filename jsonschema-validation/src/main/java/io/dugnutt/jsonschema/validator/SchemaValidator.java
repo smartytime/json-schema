@@ -8,19 +8,23 @@ import java.util.Optional;
 
 @FunctionalInterface
 public interface SchemaValidator {
-    SchemaValidator NOOP_VALIDATOR = NamedSchemaValidator.builder().name("NOOP").wrapped((subject, report) -> true).build();
 
     boolean validate(PathAwareJsonValue subject, ValidationReport report);
 
-    default Optional<ValidationError> validate(PathAwareJsonValue subject) {
-        throw new UnsupportedOperationException();
-    }
-
     default Optional<ValidationError> validate(JsonValue subject) {
-        throw new UnsupportedOperationException();
+        PathAwareJsonValue pathAwareSubject = new PathAwareJsonValue(subject, getSchema().getLocation().getJsonPath());
+        return validate(pathAwareSubject);
     }
 
-    default Schema schema() {
+    @Deprecated
+    default Optional<ValidationError> validate(PathAwareJsonValue subject) {
+        ValidationReport report = new ValidationReport();
+        validate(subject, report);
+        return ValidationError.collectErrors(getSchema(), subject.getPath(), report.getErrors());
+    }
+
+
+    default Schema getSchema() {
         throw new UnsupportedOperationException();
     }
 }

@@ -78,7 +78,7 @@ public class JsonSchemaGenerator {
     }
 
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword property, List<Schema> schemas) {
-        if (schemas != null) {
+        if (schemas != null && schemas.size() > 0) {
             wrapped.writeKey(property.key());
             array();
             for (Schema schema : schemas) {
@@ -189,6 +189,11 @@ public class JsonSchemaGenerator {
 
     public JsonSchemaGenerator write(String value) {
         wrapped.write(value);
+        return this;
+    }
+
+    public JsonSchemaGenerator write(JsonSchemaKeyword keyword, JsonValue value) {
+        wrapped.write(keyword.key(), value);
         return this;
     }
 

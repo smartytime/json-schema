@@ -15,10 +15,9 @@
  */
 package io.dugnutt.jsonschema.validator;
 
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import org.junit.Assert;
 
 import javax.json.JsonValue;
 import java.util.List;
@@ -33,8 +32,12 @@ import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.createValid
 import static javax.json.spi.JsonProvider.provider;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ValidationTestSupport {
 
@@ -64,8 +67,8 @@ public class ValidationTestSupport {
                                      final String expectedPointer, final JsonValue input) {
 
         Optional<ValidationError> errors = test(failingSchema, expectedPointer, input);
-        Assert.assertTrue(errors.isPresent());
-        Assert.assertSame(expectedViolatedSchemaClass, errors.get().getViolatedSchema().getClass());
+        assertTrue(errors.isPresent());
+        assertSame(expectedViolatedSchemaClass, errors.get().getViolatedSchema().getClass());
     }
 
     public static void expectFailure(final Schema failingSchema, final double num) {
@@ -81,8 +84,8 @@ public class ValidationTestSupport {
                                      final String expectedPointer, final JsonValue input) {
 
         Optional<ValidationError> errors = test(failingSchema, expectedPointer, input);
-        Assert.assertTrue(errors.isPresent());
-        Assert.assertSame("Matching violation schemas", expectedViolatedSchema, errors.get().getViolatedSchema());
+        assertTrue(errors.isPresent());
+        assertEquals("Matching violation schemas", expectedViolatedSchema, errors.get().getViolatedSchema());
     }
 
     public static void expectFailure(final Schema failingSchema, final String expectedPointer,
@@ -98,9 +101,9 @@ public class ValidationTestSupport {
         }
         ValidationError error = validator.validate(failure.input())
                 .orElseThrow(() -> new AssertionError(failure.schema() + " did not fail for " + failure.input()));
-        failure.expected().ifPresent(p-> Assert.assertTrue("Predicate failed validation", p.test(error)));
+        failure.expected().ifPresent(p-> assertTrue("Predicate failed validation", p.test(error)));
         failure.expectedConsumer().ifPresent(consumer-> consumer.accept(error));
-        Assert.assertSame("Expected violated schema", failure.expectedViolatedSchema(), error.getViolatedSchema());
+        assertEquals("Expected violated schema", failure.expectedViolatedSchema(), error.getViolatedSchema());
         assertEquals("Pointer to violation", failure.expectedPointer(), error.getPointerToViolation());
         assertEquals("Schema location", failure.expectedSchemaLocation(), error.getSchemaLocation().toString());
         if (failure.expectedKeyword() != null) {
@@ -119,7 +122,7 @@ public class ValidationTestSupport {
 
     }
     public static Failure failureOf(SchemaValidator validator) {
-        return new Failure().schema(validator.schema()).validator(validator);
+        return new Failure().schema(validator.getSchema()).validator(validator);
     }
 
     public static Failure failureOf(Schema schema) {
@@ -134,7 +137,7 @@ public class ValidationTestSupport {
                                                   final JsonValue input) {
 
         Optional<ValidationError> error = createValidatorForSchema(failingSchema).validate(input);
-        Assert.assertTrue(failingSchema + " did not fail for " + input, error.isPresent());
+        assertTrue(failingSchema + " did not fail for " + input, error.isPresent());
         if (expectedPointer != null) {
             assertEquals(expectedPointer, error.get().getPointerToViolation());
         }
@@ -288,13 +291,13 @@ public class ValidationTestSupport {
 
     public static ValidationError verifyFailure(Supplier<Optional<ValidationError>> validationFn) {
         Optional<ValidationError> error = validationFn.get();
-        Assert.assertTrue("Should have failed", error.isPresent());
+        assertTrue("Should have failed", error.isPresent());
         return error.get();
     }
 
     public static void expectSuccess(Supplier<Optional<ValidationError>> validationFn) {
         Optional<ValidationError> error = validationFn.get();
-        error.ifPresent(e -> Assert.fail("Should have succeeded: " + e));
+        error.ifPresent(e -> fail("Should have succeeded: " + e));
     }
 
     public static void expectSuccess(Schema schema, long input) {
@@ -316,7 +319,7 @@ public class ValidationTestSupport {
     public static void expectSuccess(Schema schema, JsonValue input) {
         final Optional<ValidationError> error = createValidatorForSchema(schema).validate(input);
         if (error.isPresent()) {
-            Assert.assertFalse("Found errors: " + error.toString(), error.isPresent());
+            assertFalse("Found errors: " + error.toString(), error.isPresent());
         }
     }
 }

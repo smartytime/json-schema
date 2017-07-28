@@ -69,7 +69,7 @@
                         </Import-Package>
                         <Export-Package>
                             io.dugnutt.jsonschema.validator;version=${project.version},
-                            io.dugnutt.jsonschema.validator.formatValidators;version=${project.version}
+                            io.dugnutt.jsonschema.validator.keywords.string.formatValidators;version=${project.version}
                         </Export-Package>
                     </instructions>
                 </configuration>

@@ -26,7 +26,11 @@ public enum JsonSchemaType {
         if (type == null) {
             return NULL;
         }
-        return valueOf(type.toUpperCase());
+        try {
+            return valueOf(type.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new SchemaException("Invalid schema type:" + type);
+        }
     }
 
 }

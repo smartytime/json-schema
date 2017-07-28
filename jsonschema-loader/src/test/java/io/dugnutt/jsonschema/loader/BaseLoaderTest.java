@@ -18,11 +18,14 @@ public class BaseLoaderTest {
     }
 
     protected JsonObject getJsonObjectForKey(String schemaName) {
-        return testsForType.getJsonObject(schemaName);
+        final JsonObject jsonObject = testsForType.getJsonObject(schemaName);
+        Preconditions.checkArgument(jsonObject != null, "schema was null");
+        return jsonObject;
     }
 
     protected Schema getSchemaForKey(String propertyKey) {
-        return JsonSchemaFactory.schemaFactory().load(getJsonObjectForKey(propertyKey));
+        final JsonObject jsonObjectForKey = getJsonObjectForKey(propertyKey);
+        return JsonSchemaFactory.schemaFactory().load(jsonObjectForKey);
     }
 
     protected JsonObject readResource(String relativeURL) {

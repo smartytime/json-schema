@@ -91,7 +91,7 @@ To demonstrate the above concepts, lets see an example. Lets consider the follow
 	"definitions" : {
 		"size" : {
 			"type" : "number",
-			"minimum" : 0
+			"exclusiveMinimum" : 0
 		},
 		"Rectangle" : {
 			"type" : "object",

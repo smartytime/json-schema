@@ -6,24 +6,27 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.validator.builders.KeywordValidatorBuilder;
+import io.dugnutt.jsonschema.validator.keywords.TypeValidator;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 
+import javax.annotation.Nullable;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import javax.validation.constraints.NotNull;
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
-@Builder(builderMethodName = "jsonSchemaValidator")
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class JsonSchemaValidator implements SchemaValidator {
     @NonNull
     private final Multimap<JsonValue.ValueType, SchemaValidator> childValidators;
 
-    @NonNull
-    @Singular
-    private final List<PartialValidatorFactory> factories;
+    @Nullable
+    private final TypeValidator typeValidator;
 
     @NonNull
     private final Schema schema;
@@ -35,53 +38,68 @@ public class JsonSchemaValidator implements SchemaValidator {
     @NotNull
     private final SchemaValidatorFactory validatorFactory;
 
-    public JsonSchemaValidator(Multimap<JsonValue.ValueType, SchemaValidator> childValidators, List<PartialValidatorFactory> factories, Schema schema, JsonProvider provider, @NotNull SchemaValidatorFactory validatorFactory) {
+    private final boolean noop;
+
+    @Builder(builderMethodName = "jsonSchemaValidator")
+    public JsonSchemaValidator(@Singular List<KeywordValidatorBuilder> factories, Schema schema, JsonProvider provider,
+                               SchemaValidatorFactory validatorFactory) {
+        checkNotNull(factories, "factories must not be null");
         this.schema = schema;
         this.provider = MoreObjects.firstNonNull(provider, JsonProvider.provider());
-        this.factories = factories;
         this.validatorFactory = validatorFactory;
-        this.validatorFactory.cacheSchema(schema.getLocation().getAbsoluteURI(), this);
-        ImmutableMultimap.Builder<JsonValue.ValueType, SchemaValidator> builder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<JsonValue.ValueType, SchemaValidator> validatorsByType = ImmutableMultimap.builder();
+
+        if (schema.getTypes().size() > 0) {
+            typeValidator = TypeValidator.builder()
+                    .schema(schema)
+                    .requiredTypes(schema.getTypes())
+                    .build();
+        } else {
+            typeValidator = null;
+        }
+
+        this.validatorFactory.cacheValidator(schema.getAbsoluteURI(), this);
         factories.stream()
                 .filter(validator -> validator.appliesToSchema(schema))
                 .forEach(f -> {
-                    SchemaValidator schemaValidator = f.forSchema(schema, validatorFactory);
-                    if (schemaValidator instanceof ChainedValidator) {
-                        ((ChainedValidator) schemaValidator).validators.forEach(validator->{
-                            f.appliesToTypes().forEach(type-> builder.put(type, validator));
-                        });
-                    } else if(schemaValidator != SchemaValidator.NOOP_VALIDATOR) {
-                        f.appliesToTypes().forEach(type-> builder.put(type, schemaValidator));
-                    }
+                    f.getKeywordValidators(schema, validatorFactory).forEach(validator->{
+                        f.appliesToTypes().forEach(type -> validatorsByType.put(type, validator));
+                    });
                 });
-        this.childValidators = builder.build();
+        this.childValidators = validatorsByType.build();
+        this.noop = this.childValidators.isEmpty() && this.typeValidator == null;
     }
 
     public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
-        JsonValue.ValueType valueType = subject.getValueType();
-        boolean success = true;
-        for (SchemaValidator schemaValidator : childValidators.get(valueType)) {
-            success = success && schemaValidator.validate(subject, report);
-            report.log(schemaValidator);
+        if (noop) {
+            return true;
         }
+        JsonValue.ValueType valueType = subject.getValueType();
+        ValidationReport thisReport = new ValidationReport();
+
+        boolean success = true;
+        if (typeValidator != null) {
+            final boolean typeValid = typeValidator.validate(subject, report);
+            success = typeValid;
+        }
+
+        final Collection<SchemaValidator> validatorsForType = childValidators.get(valueType);
+        for (SchemaValidator schemaValidator : validatorsForType) {
+            boolean thisSuccess = schemaValidator.validate(subject, thisReport);
+            success = success && thisSuccess;
+        }
+        report.addReport(schema, subject, thisReport);
         return success;
     }
 
-    public Optional<ValidationError> validate(JsonValue subject) {
-        PathAwareJsonValue pathAwareSubject = new PathAwareJsonValue(subject, schema.getLocation().getJsonPath());
-        return validate(pathAwareSubject);
-    }
-
-    @Deprecated
-    @Override
-    public Optional<ValidationError> validate(PathAwareJsonValue subject) {
-        ValidationReport report = new ValidationReport();
-        validate(subject, report);
-        return ValidationError.collectErrors(schema, subject.getPath(), report.getErrors());
-    }
-
     @VisibleForTesting
-    public Schema schema() {
+    public Schema getSchema() {
         return schema;
+    }
+
+    public static class JsonSchemaValidatorBuilder {
+        public JsonSchemaValidator build() {
+            return new JsonSchemaValidator(this.factories, this.schema, this.provider, this.validatorFactory);
+        }
     }
 }

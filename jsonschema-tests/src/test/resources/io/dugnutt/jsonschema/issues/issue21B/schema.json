@@ -4,7 +4,7 @@
   "definitions": {
     "language_object": {
       "type": "object",
-      "additionalProperties": { "type": null },
+      "additionalProperties": { "type": "null" },
       "patternProperties": {
         "^[a-z]{2}$": {
           "type": "string"

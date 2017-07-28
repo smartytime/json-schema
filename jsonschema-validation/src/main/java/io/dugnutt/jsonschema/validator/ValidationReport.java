@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import com.google.common.collect.ImmutableListMultimap;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.PathAwareJsonValue;
 import io.dugnutt.jsonschema.six.Schema;
 
@@ -20,6 +21,23 @@ public class ValidationReport {
         String key = validationError.getPointerToViolation();
         allErrors.put(key, validationError);
         return false;
+    }
+
+    public boolean addReport(Schema schema, PathAwareJsonValue subject, JsonSchemaKeyword keyword, String message, ValidationReport report) {
+        final List<ValidationError> errors = report.getErrors();
+        if (errors.size() > 0) {
+            addError(ValidationError.validationBuilder()
+                    .schemaLocation(schema.getPointerFragmentURI())
+                    .violatedSchema(schema)
+                    .causingExceptions(errors)
+                    .keyword(keyword)
+                    .message(message)
+                    .code("validation.keyword." + keyword.key())
+                    .pointerToViolation(subject.getPath())
+                    .build());
+            return false;
+        }
+        return true;
     }
 
     public boolean addReport(Schema schema, PathAwareJsonValue subject, ValidationReport report) {

@@ -19,7 +19,7 @@ public class SchemaLocationTest {
 
         assertEquals("JSON Pointer Correct", "/definitions/core/platformEntity/properties/id", childLocation.getJsonPath().toJsonPointer());
         assertEquals("Child Canonical URL", "http://mywebsite.com/schemas/core/entities#platformIdentifier", childLocation.getAbsoluteURI().toString());
-        assertEquals("Child Resolution Scope", "http://mywebsite.com/schemas/core/entities", childLocation.getResolutionScope().toString());
+        assertEquals("Child Resolution Scope", "http://mywebsite.com/schemas/core/entities#platformIdentifier", childLocation.getResolutionScope().toString());
         assertEquals("Child Relative URL", "#/definitions/core/platformEntity/properties/id", childLocation.getJsonPointerFragment().toString());
     }
 

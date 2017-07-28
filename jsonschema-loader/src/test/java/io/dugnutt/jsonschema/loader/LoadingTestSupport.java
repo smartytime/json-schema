@@ -48,6 +48,7 @@ public class LoadingTestSupport {
             failure.expectedException()
                     .ifPresent(expected -> {
                         if (!expected.isAssignableFrom(e.getClass())) {
+                            e.printStackTrace();
                             Assert.fail(String.format("Exception is of wrong type.  Expected %s but got %s",
                                     expected, e));
                         } else {

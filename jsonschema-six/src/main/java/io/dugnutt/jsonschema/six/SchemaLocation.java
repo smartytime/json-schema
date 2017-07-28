@@ -87,6 +87,18 @@ public class SchemaLocation {
         return withChildPath(keyword.key());
     }
 
+    public SchemaLocation withId(URI id) {
+        checkNotNull(id, "id must not be null");
+        return toBuilder()
+                .id(id)
+                .build();
+
+    }
+
+    public boolean isAutoAssign() {
+        return DUGNUTT_UUID_SCHEME.equals(absoluteURI.getScheme());
+    }
+
     public static SchemaLocation anonymousRoot() {
         // If there's not ID for a base schema, assign something unique to avoid false-positive cache-hites
         final URI baseURN = URI.create(DUGNUTT_UUID_SCHEME + "://autoassign-" + UUID.randomUUID().toString() + "/schema");
@@ -99,11 +111,17 @@ public class SchemaLocation {
 
     public static SchemaLocation schemaLocation(URI rootDocument) {
         checkNotNull(rootDocument, "rootDocument must not be null");
-
+        final JsonPath path;
+        if (SchemaUtils.isJsonPointer(rootDocument)) {
+            path = JsonPath.parseFromURIFragment(rootDocument);
+        } else {
+            path = JsonPath.rootPath();
+        }
         return locationBuilder()
                 .id(rootDocument)
                 .resolutionScope(rootDocument)
                 .documentURI(rootDocument)
+                .jsonPath(path)
                 .build();
     }
 
@@ -117,7 +135,7 @@ public class SchemaLocation {
 
         private URI id;
 
-        private SchemaLocationBuilder() {
+        public SchemaLocationBuilder() {
             jsonPath(ROOT_PATH);
             resolutionScope(ROOT_URI);
             documentURI(ROOT_URI);

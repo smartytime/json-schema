@@ -17,6 +17,7 @@ package io.dugnutt.jsonschema;
 
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
+import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import lombok.SneakyThrows;
 import org.junit.Assert;
@@ -109,7 +110,8 @@ public class IssueTest {
 
     private void validate(final File file, final Schema schema, final boolean shouldBeValid) {
         JsonValue subject = loadJsonFile(file);
-        Optional<ValidationError> errors = ValidationMocks.createTestValidator(schema).validate(subject);
+        final SchemaValidator validator = ValidationMocks.createTestValidator(schema);
+        Optional<ValidationError> errors = validator.validate(subject);
 
         if (shouldBeValid && errors.isPresent()) {
             StringBuilder failureBuilder = new StringBuilder("validation failed with: " + errors.get());

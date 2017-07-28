@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.loader;
 
+import io.dugnutt.jsonschema.six.JsonSchemaType;
 import io.dugnutt.jsonschema.six.ObjectKeywords;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class ObjectKeywordsFactoryHelperTest extends BaseLoaderTest {
 
-    public static final Schema BOOLEAN_SCHEMA = Schema.jsonSchemaBuilder().build();
+    public static final Schema BOOLEAN_SCHEMA = Schema.jsonSchemaBuilder().type(JsonSchemaType.BOOLEAN).build();
 
     public ObjectKeywordsFactoryHelperTest() {
         super("objecttestschemas.json");
@@ -57,7 +58,8 @@ public class ObjectKeywordsFactoryHelperTest extends BaseLoaderTest {
         Schema actual = getSchemaForKey("objectWithAdditionalPropSchema");
         assertThat(actual.getObjectKeywords()).isPresent();
         assertThat(actual.getObjectKeywords().get().getSchemaOfAdditionalProperties())
-                .isEqualTo(BOOLEAN_SCHEMA);
+                .isPresent()
+                .hasValue(BOOLEAN_SCHEMA);
     }
 
     private ObjectKeywords assertObjectKeywords(Schema actual) {

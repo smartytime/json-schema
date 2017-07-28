@@ -29,13 +29,15 @@ public class ValidationErrorHelper {
         checkNotNull(expectedTypes, "expectedType must not be null");
         checkNotNull(subject, "subject must not be null");
 
+        if (expectedTypes.size() == 1) {
+            return buildTypeMismatchError(subject, schema, expectedTypes.iterator().next());
+        }
+
         String commaSeparatedTypes = Joiner.on(",").join(expectedTypes);
         return createBuilder(subject, schema)
                 .keyword(JsonSchemaKeyword.TYPE)
-                .message("expected one of the following keywords: %s, found: %s", commaSeparatedTypes, subject.getJsonSchemaType())
-                .code("validation.typeMismatch")
-                .model(expectedTypes)
-                .model(subject.getJsonSchemaType());
+                .message("expected one of the following types: %s, found: %s", commaSeparatedTypes, subject.getJsonSchemaType())
+                .code("validation.typeMismatch");
     }
 
     public static ValidationError.ValidationErrorBuilder buildTypeMismatchError(PathAwareJsonValue subject, Schema schema, JsonSchemaType expectedType) {
@@ -45,9 +47,8 @@ public class ValidationErrorHelper {
         return createBuilder(subject, schema)
                 .keyword(JsonSchemaKeyword.TYPE)
                 .message(TYPE_MISMATCH_ERROR_MESSAGE, expectedType, subject.getJsonSchemaType())
-                .code("validation.typeMismatch")
-                .model(expectedType)
-                .model(subject.getJsonSchemaType());
+                .code("validation.typeMismatch");
+
     }
 
     public static ValidationError.ValidationErrorBuilder createBuilder(PathAwareJsonValue subject, Schema schema) {

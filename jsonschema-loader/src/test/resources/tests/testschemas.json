@@ -43,7 +43,7 @@
   },
   "tupleSchema": {
     "type": "array",
-    "additionalItems": {"type": null},
+    "additionalItems": {"type": "null"},
     "items": [
       {
         "type": "boolean"
@@ -354,7 +354,7 @@
         "dependencies": {
           "2ndLevel": {
             "type": "object",
-            "additionalProperties": {"type": null},
+            "additionalProperties": {"type": "null"},
             "patternProperties": {
               "2ndL.*l$": {
                 "type": "object",
@@ -363,13 +363,13 @@
                     "type": "string"
                   }
                 },
-                "additionalProperties": {"type": null}
+                "additionalProperties": {"type": "null"}
               }
             }
           }
         }
       }
     },
-    "additionalProperties": {"type": null}
+    "additionalProperties": {"type": "null"}
   }
 }

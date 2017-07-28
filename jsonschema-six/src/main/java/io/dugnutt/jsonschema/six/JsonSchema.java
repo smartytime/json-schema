@@ -12,58 +12,42 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ANY_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.CONST;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DEFAULT;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
 
-@EqualsAndHashCode(exclude = "info")
+@EqualsAndHashCode(of = "details")
 public class JsonSchema implements Schema {
 
     @NonNull
-    private final JsonSchemaInfo info;
+    private final SchemaLocation location;
 
     @NonNull
     @Delegate
     private final JsonSchemaDetails details;
 
-    JsonSchema(SchemaBuildingContext context, JsonSchemaInfo info, JsonSchemaDetails details) {
-        this.info = checkNotNull(info, "info must not be null");
+    JsonSchema(SchemaLocation location, JsonSchemaDetails details) {
+        this.location = checkNotNull(location, "location must not be null");
         this.details = checkNotNull(details);
-        context.cacheSchema(info.getAbsoluteURI(), this);
     }
 
     @Override
     public SchemaLocation getLocation() {
-        return info.getLocation();
+        return location;
     }
-
-    // public Optional<JsonSchema> getFullyDereferencedSchema() {
-    //
-    //     Set<JsonSchema> encountered = new HashSet<>();
-    //     JsonSchema schema = this;
-    //     while (encountered.add(schema)) {
-    //         JsonSchema dereferencedSchema = schema.getReferredSchema().orElse(null);
-    //         if (dereferencedSchema == null) {
-    //             return Optional.empty();
-    //         } else if (dereferencedSchema instanceof ReferenceSchema) {
-    //             schema = (ReferenceSchema) dereferencedSchema;
-    //         } else {
-    //             return Optional.of(dereferencedSchema);
-    //         }
-    //     }
-    //     throw new SchemaException(absoluteReferenceURI, "Infinite recursion found between schemas.  Probably bug: %s", encountered);
-    // }
 
     @Override
     public JsonSchemaGenerator toJson(final JsonSchemaGenerator writer) {
         writer.object();
-        if (!"#".equals(info.getLocation().getAbsoluteURI().toString())) {
+        if (!"#".equals(location.getAbsoluteURI().toString())) {
             writer.optionalWrite(JsonSchemaKeyword.$ID, getId());
         }
 
         writer.optionalWrite(JsonSchemaKeyword.TITLE, getTitle());
         writer.optionalWrite(JsonSchemaKeyword.DESCRIPTION, getDescription());
+        getDefaultValue().ifPresent(defValue -> writer.write(DEFAULT, defValue));
         getEnumValues().ifPresent(writer.jsonValueWriter(ENUM));
         getConstValue().ifPresent(writer.jsonValueWriter(CONST));
         if (getTypes().size() > 1) {

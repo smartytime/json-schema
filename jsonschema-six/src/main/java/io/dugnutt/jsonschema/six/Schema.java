@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static io.dugnutt.jsonschema.six.ArrayKeywords.ArrayKeywordsBuilder;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_ITEMS;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
@@ -73,6 +72,8 @@ public interface Schema {
 
     Optional<StringKeywords> getStringKeywords();
 
+    Optional<JsonValue> getDefaultValue();
+
     boolean hasStringKeywords();
 
     boolean hasObjectKeywords();
@@ -83,12 +84,16 @@ public interface Schema {
 
     JsonSchemaGenerator toJson(final JsonSchemaGenerator writer);
 
-    static JsonSchemaBuilder jsonSchemaBuilder() {
-        return new JsonSchemaBuilder(JsonSchemaInfo.rootSchema());
+    default URI getAbsoluteURI() {
+        return getLocation().getAbsoluteURI();
     }
 
-    static JsonSchemaBuilder jsonSchemaBuilder(JsonSchemaInfo info) {
-        return new JsonSchemaBuilder(info);
+    default URI getPointerFragmentURI() {
+        return getLocation().getJsonPointerFragment();
+    }
+
+    static JsonSchemaBuilder jsonSchemaBuilder() {
+        return new JsonSchemaBuilder(SchemaLocation.anonymousRoot());
     }
 
     static JsonSchemaBuilder jsonSchemaBuilderWithId(String id) {
@@ -97,13 +102,13 @@ public interface Schema {
     }
 
     class JsonSchemaBuilder {
-        private SchemaBuildingContext context;
         private JsonObject currentDocument;
         private JsonProvider provider;
         private SchemaFactory schemaFactory;
         private URI ref;
+        private URI id;
 
-        private JsonSchemaInfo schemaInfo;
+        private SchemaLocation location;
         private final JsonSchemaDetails.JsonSchemaDetailsBuilder detailsBuilder;
 
         private ArrayKeywordsBuilder arrayKeywords;
@@ -129,23 +134,23 @@ public interface Schema {
         private JsonSchemaBuilder schemaOfAdditionalProperties;
 
         private JsonSchemaBuilder(String id) {
-            this.schemaInfo = JsonSchemaInfo.rootSchema(id);
+            this.location = SchemaLocation.schemaLocation(id);
             this.detailsBuilder = JsonSchemaDetails.builder();
             this.id(id);
         }
 
-        private JsonSchemaBuilder(JsonSchemaInfo schemaInfo) {
-            this.schemaInfo = schemaInfo;
+        private JsonSchemaBuilder(SchemaLocation location) {
+            this.location = location;
             this.detailsBuilder = JsonSchemaDetails.builder();
-        }
-
-        public JsonSchemaBuilder schemaInfo(JsonSchemaInfo schemaInfo) {
-            this.schemaInfo = schemaInfo;
-            return this;
         }
 
         public JsonSchemaBuilder currentDocument(JsonObject currentDocument) {
             this.currentDocument = currentDocument;
+            return this;
+        }
+
+        public JsonSchemaBuilder location(SchemaLocation location) {
+            this.location = location;
             return this;
         }
 
@@ -181,26 +186,24 @@ public interface Schema {
         }
 
         public Schema build() {
-            return build(new SchemaBuildingContext());
-        }
+            checkNotNull(location, "location must not be null");
+            if (this.id != null) {
+                this.location = this.location.withId(this.id);
+            }
+            final URI thisSchemaURI = this.location.getAbsoluteURI();
 
-        public Schema build(SchemaBuildingContext context) {
-            checkNotNull(context, "context must not be null");
-            this.context = context;
-            final URI thisSchemaURI = this.schemaInfo.getLocation().getAbsoluteURI();
-
-            final Optional<JsonSchema> cachedSchema = context.findSchema(thisSchemaURI);
-            if (cachedSchema.isPresent()) {
-                return cachedSchema.get();
+            if (schemaFactory != null) {
+                final Optional<Schema> cachedSchema = schemaFactory.findCachedSchema(thisSchemaURI);
+                if (cachedSchema.isPresent()) {
+                    return cachedSchema.get();
+                }
             }
 
-            context.cacheBuilder(thisSchemaURI, this);
             if (this.ref != null) {
                 return ReferenceSchema.refSchemaBuilder(this.ref)
                         .factory(schemaFactory)
                         .currentDocument(currentDocument)
-                        .buildingContext(context)
-                        .info(this.schemaInfo)
+                        .location(this.location)
                         .build();
             }
 
@@ -230,7 +233,7 @@ public interface Schema {
 
             //Verify that they didn't provide both an indexed array item checker AND a global array item checker.
             if (allItemSchema != null && itemSchemas.size() > 0) {
-                raiseIssue(schemaInfo().getLocation(), ITEMS, "invalidSchema.indexedSchemaWithAllItemSchema");
+                raiseIssue(location, ITEMS, "invalidSchema.indexedSchemaWithAllItemSchema");
             }
             buildKeywordSubschema(ITEMS, allItemSchema).ifPresent(schema -> arrayKeywords().allItemSchema(schema));
             buildKeywordSubschemaList(ITEMS, this.itemSchemas).ifPresent(list -> arrayKeywords().itemSchemas(list));
@@ -253,7 +256,7 @@ public interface Schema {
             buildNumberKeywords().ifPresent(detailsBuilder::numberKeywords);
 
             final JsonSchemaDetails schemaDetails = detailsBuilder.build();
-            return new JsonSchema(context, schemaInfo(), schemaDetails);
+            return new JsonSchema(location, schemaDetails);
         }
 
         // #############################
@@ -261,12 +264,23 @@ public interface Schema {
         // #############################
 
         public JsonSchemaBuilder id(String id) {
-            detailsBuilder.id(id);
+            if (id != null) {
+                this.id = URI.create(id);
+                if (this.location.isAutoAssign()) {
+                    this.location = SchemaLocation.schemaLocation(this.id);
+                }
+                detailsBuilder.id(id);
+            }
             return this;
         }
 
         public JsonSchemaBuilder title(String title) {
             detailsBuilder.title(title);
+            return this;
+        }
+
+        public JsonSchemaBuilder defaultValue(JsonValue defaultValue) {
+            this.detailsBuilder.defaultValue(defaultValue);
             return this;
         }
 
@@ -565,9 +579,10 @@ public interface Schema {
             if (subschemaBuilder == null) {
                 return Optional.empty();
             }
-            final JsonSchemaInfo thisInfo = this.schemaInfo();
-            final JsonSchemaInfo childSchema = JsonSchemaInfo.keywordSchemaInfo(thisInfo.getContainedBy(), keyword);
-            return Optional.of(subschemaBuilder.currentDocument(currentDocument).schemaInfo(childSchema).build(context));
+            final SchemaLocation subschemaLocation = location.withChildPath(keyword);
+            return Optional.of(
+                    findCachedOrBuild(subschemaLocation, subschemaBuilder)
+            );
         }
 
         private <X> Optional<Map<X, Schema>> buildKeywordSubschemaMap(JsonSchemaKeyword keyword, Map<X, JsonSchemaBuilder> builders) {
@@ -575,11 +590,11 @@ public interface Schema {
             if (builders == null || builders.size() == 0) {
                 return Optional.empty();
             }
-            SchemaLocation thisLocation = schemaInfo().getLocation();
+
             Map<X, Schema> values = new LinkedHashMap<>();
             builders.forEach((x, builder) -> {
-                final JsonSchemaInfo propertyInfo = JsonSchemaInfo.propertySchema(thisLocation, keyword, String.valueOf(x));
-                values.put(x, builder.currentDocument(currentDocument).schemaInfo(propertyInfo).build(context));
+                final SchemaLocation childLocation = location.withChildPath(keyword.key(), x.toString());
+                values.put(x, findCachedOrBuild(childLocation, builder));
             });
             return Optional.of(values);
         }
@@ -589,11 +604,26 @@ public interface Schema {
                 return Optional.empty();
             }
             AtomicInteger idx = new AtomicInteger(0);
-            SchemaLocation thisLocation = schemaInfo().getLocation();
+
             return Optional.of(safeTransform(builders, builder -> {
-                final JsonSchemaInfo idxInfo = JsonSchemaInfo.indexSchema(thisLocation, keyword, idx.getAndIncrement());
-                return builder.currentDocument(currentDocument).schemaInfo(idxInfo).build(context);
+                final SchemaLocation idxInfo = location.withChildPath(keyword.key(), idx.getAndIncrement());
+                return findCachedOrBuild(idxInfo, builder);
             }));
+        }
+
+        private Schema findCachedOrBuild(SchemaLocation location, JsonSchemaBuilder builder) {
+            if (schemaFactory != null) {
+                final Optional<Schema> cachedSchema = schemaFactory.findCachedSchema(location.getAbsoluteURI());
+                if (cachedSchema.isPresent()) {
+                    return cachedSchema.get();
+                }
+            }
+
+            return builder
+                    .currentDocument(currentDocument)
+                    .schemaFactory(schemaFactory)
+                    .location(location)
+                    .build();
         }
 
         private Optional<StringKeywords> buildStringKeywords() {
@@ -615,11 +645,6 @@ public interface Schema {
         // #######################################################
         // LAZY GETTERS
         // #######################################################
-
-        private JsonSchemaInfo schemaInfo() {
-            checkState(schemaInfo != null, "Schema schemaInfo is null");
-            return schemaInfo;
-        }
 
         private JsonProvider provider() {
             return MoreObjects.firstNonNull(provider, JsonProvider.provider());

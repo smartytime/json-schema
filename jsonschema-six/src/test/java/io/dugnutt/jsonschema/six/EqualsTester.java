@@ -83,7 +83,7 @@ public class EqualsTester {
     public void equalsVerifier() {
         final String[] ignores;
         if (testClass.equals(JsonSchema.class)) {
-            ignores = new String[]{"info"};
+            ignores = new String[]{"location"};
         } else {
             ignores = new String[0];
         }

@@ -1,6 +1,5 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchema;
 import io.dugnutt.jsonschema.six.Schema;
 import org.junit.Rule;
 import org.junit.Test;

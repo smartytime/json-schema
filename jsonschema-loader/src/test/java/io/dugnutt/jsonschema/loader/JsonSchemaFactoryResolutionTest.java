@@ -29,7 +29,7 @@ public class JsonSchemaFactoryResolutionTest {
 
         final URI absoluteURI = documentURI.resolve(relativeURI);
 
-        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.attemptResolveReferenceWithinDocument(documentURI, absoluteURI, accountProfileJson);
+        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.findRefInDocument(documentURI, absoluteURI, accountProfileJson);
         assertThat(schema).isPresent();
     }
 
@@ -39,7 +39,7 @@ public class JsonSchemaFactoryResolutionTest {
 
         final URI absoluteURI = documentURI.resolve(relativeURI);
 
-        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.attemptResolveReferenceWithinDocument(documentURI, absoluteURI, accountProfileJson);
+        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.findRefInDocument(documentURI, absoluteURI, accountProfileJson);
         assertThat(schema).isPresent();
     }
 
@@ -49,7 +49,7 @@ public class JsonSchemaFactoryResolutionTest {
 
         final URI absoluteURI = documentURI.resolve(relativeURI);
 
-        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.attemptResolveReferenceWithinDocument(documentURI, absoluteURI, accountProfileJson);
+        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.findRefInDocument(documentURI, absoluteURI, accountProfileJson);
         assertThat(schema).isPresent();
     }
 
@@ -59,7 +59,7 @@ public class JsonSchemaFactoryResolutionTest {
 
         final URI absoluteURI = documentURI.resolve(relativeURI);
 
-        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.attemptResolveReferenceWithinDocument(documentURI, absoluteURI, accountProfileJson);
+        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.findRefInDocument(documentURI, absoluteURI, accountProfileJson);
         assertThat(schema).isPresent();
     }
 
@@ -69,8 +69,8 @@ public class JsonSchemaFactoryResolutionTest {
 
         final URI absoluteURI = documentURI.resolve(relativeURI);
 
-        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.attemptResolveReferenceWithinDocument(documentURI, absoluteURI, accountProfileJson);
-        assertThat(schema).isPresent();
+        Optional<JsonSchemaBuilder> schema = jsonSchemaFactory.findRefInDocument(documentURI, absoluteURI, accountProfileJson);
+        assertThat(schema).isNotPresent();
     }
 
     private JsonObject readResource(String relativePath) {

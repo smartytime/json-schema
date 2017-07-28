@@ -1,6 +1,5 @@
 package io.dugnutt.jsonschema.six;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import lombok.Builder;
@@ -21,7 +20,7 @@ import java.util.regex.Pattern;
  */
 @Getter
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(doNotUseGetters = true)
 public class ObjectKeywords implements SchemaKeywords {
 
     @NonNull
@@ -87,21 +86,7 @@ public class ObjectKeywords implements SchemaKeywords {
                 : Optional.empty();
     }
 
-    public Set<String> getAdditionalProperties(final PathAwareJsonValue subject) {
-        Set<String> propertySchemaKeys = propertySchemas.keySet();
-        ImmutableSet.Builder<String> addtlProps = ImmutableSet.builder();
-        prop: for (String propName : subject.propertyNames()) {
-            for (Pattern pattern : patternProperties.keySet()) {
-                if(pattern.matcher(propName).find()) {
-                    continue prop;
-                }
-            }
-            if (!propertySchemaKeys.contains(propName)) {
-                addtlProps.add(propName);
-            }
-        }
-        return addtlProps.build();
-    }
+
 
     private void describePropertyDependenciesTo(JsonSchemaGenerator writer) {
         if (propertyDependencies != null && propertyDependencies.size() > 0) {

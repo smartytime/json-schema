@@ -17,6 +17,7 @@ package io.dugnutt.jsonschema;
 
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
+import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,9 +34,10 @@ public class MetaSchemaTest {
     public void validateMetaSchema() {
         JsonObject jsonSchema = JsonUtils.readResourceAsJson("/io/dugnutt/jsonschema/json-schema-draft-06.json", JsonObject.class);
         Schema schema = schemaFactory().load(jsonSchema);
-        final Optional<ValidationError> error = createTestValidator(schema).validate(jsonSchema);
+        final SchemaValidator testValidator = createTestValidator(schema);
+        final Optional<ValidationError> error = testValidator.validate(jsonSchema);
         if (error.isPresent()) {
-            Assert.fail("Found errors: " + error.toString());
+            Assert.fail("Found errors: " + error.get().toJson().toString());
         }
 
     }

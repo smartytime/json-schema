@@ -1,5 +1,6 @@
 package io.dugnutt.jsonschema.utils;
 
+import com.google.common.collect.ImmutableSet;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
 import lombok.SneakyThrows;
 
@@ -17,9 +18,11 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -190,6 +193,28 @@ public class JsonUtils {
             return JsonValue.ValueType.ARRAY;
         } else {
             throw new IllegalArgumentException("Unable to determine type for class: " + clazz);
+        }
+    }
+
+    public static Set<JsonValue.ValueType> jsonTypesForSchemaType(JsonSchemaType schemaType) {
+        checkNotNull(schemaType, "schemaType must not be null");
+        switch (schemaType) {
+            case STRING:
+                return Collections.singleton(JsonValue.ValueType.STRING);
+            case OBJECT:
+                return Collections.singleton(JsonValue.ValueType.OBJECT);
+            case ARRAY:
+                return Collections.singleton(JsonValue.ValueType.ARRAY);
+            case NULL:
+                return Collections.singleton(JsonValue.ValueType.NULL);
+            case NUMBER:
+                return Collections.singleton(JsonValue.ValueType.NUMBER);
+            case INTEGER:
+                return Collections.singleton(JsonValue.ValueType.NUMBER);
+            case BOOLEAN:
+                return ImmutableSet.of(JsonValue.ValueType.TRUE, JsonValue.ValueType.FALSE);
+            default:
+                throw new IllegalStateException("Unable to map json types");
         }
     }
 

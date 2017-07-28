@@ -19,6 +19,7 @@ import io.dugnutt.jsonschema.six.JsonPath;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
+import io.dugnutt.jsonschema.validator.builders.ArrayKeywordValidatorBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Singular;
@@ -165,8 +166,10 @@ public class ValidationError {
      */
     public JsonObject toJson() {
         final JsonProvider provider = JsonProvider.provider();
-        var errorJson = provider.createObjectBuilder()
-                .add("keyword", this.keyword.key());
+        var errorJson = provider.createObjectBuilder();
+        if (this.keyword != null) {
+            errorJson.add("keyword", this.keyword.key());
+        }
 
         if (pointerToViolation == null) {
             errorJson.add("pointerToViolation", JsonValue.NULL);
@@ -209,7 +212,7 @@ public class ValidationError {
 
     /**
      * Sort of static factory method. It is used by {@link io.dugnutt.jsonschema.six.ObjectKeywords} and
-     * {@link ArrayKeywordsValidatorFactory} to create {@code ValidationException}s, handling the case of multiple violations
+     * {@link ArrayKeywordValidatorBuilder} to create {@code ValidationException}s, handling the case of multiple violations
      * occuring during validation.
      * <p>
      * <ul>
@@ -236,15 +239,24 @@ public class ValidationError {
                     validationBuilder()
                             .violatedSchema(rootFailingSchema)
                             .pointerToViolation(currentLocation)
-                            .message(failures.size() + " schema violations found")
+                            .message("%d schema violations found", getViolationCount(failures))
                             .code("validation.multipleFailures")
-                            .model(failures.size())
                             .causingExceptions(unmodifiableList(failures))
                             .keyword(null)
                             .schemaLocation(rootFailingSchema.getLocation().getJsonPointerFragment())
                             .build()
             );
         }
+    }
+
+    public ValidationError withKeyword(JsonSchemaKeyword keyword, String message) {
+        checkNotNull(keyword, "keyword must not be null");
+        checkNotNull(message, "message must not be null");
+        return toBuilder()
+                .keyword(keyword)
+                .message(message)
+                .code("validation.keyword." + keyword.key())
+                .build();
     }
 
     private static List<String> getAllMessages(List<ValidationError> causes) {

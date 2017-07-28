@@ -38,7 +38,10 @@ public class EndToEndTest {
         assertSoftly(a -> {
             assertThat(error.getCauses()).hasSize(3);
 
-            final ValidationError e1 = error.getCauses().get(0);
+            final ValidationError e1 = error.getCauses().stream()
+                    .filter(e -> e.getPointerToViolation().equals("#/secondary_color"))
+                    .findFirst().orElse(null);
+            a.assertThat(e1).isNotNull();
             a.assertThat(e1.getPointerToViolation()).as("secondary color").isEqualTo("#/secondary_color");
             a.assertThat(e1.getCauses()).as("secondary color").isEmpty();
             a.assertThat(e1.getKeyword()).as("secondary color").isEqualTo(JsonSchemaKeyword.PATTERN);
@@ -47,21 +50,26 @@ public class EndToEndTest {
             a.assertThat(e1.getModel()).as("secondary color").hasSize(2);
             a.assertThat(e1.getModel()).containsExactly("badbadleroybrown", "^#?(?:(?:[0-9a-fA-F]{2}){3}|(?:[0-9a-fA-F]){3})$");
 
-            final ValidationError e2 = error.getCauses().get(1);
+            final ValidationError e2 = error.getCauses().stream()
+                    .filter(e -> e.getPointerToViolation().equals("#/contact"))
+                    .findFirst().orElse(null);
+            a.assertThat(e1).isNotNull();
             a.assertThat(e2.getPointerToViolation()).as("multi-errors").isEqualTo("#/contact");
             a.assertThat(e2.getCauses()).as("multi-errors").hasSize(4);
             a.assertThat(e2.getKeyword()).as("multi-errors").isNull();
             a.assertThat(e2.getSchemaLocation()).as("multi-errors").isEqualTo("#/properties/contact");
             a.assertThat(e2.getCode()).as("multi-errors").isEqualTo("validation.multipleFailures");
 
-            final ValidationError e3 = error.getCauses().get(2);
+            final ValidationError e3 = error.getCauses().stream()
+                    .filter(e -> e.getPointerToViolation().equals("#"))
+                    .findFirst().orElse(null);
             a.assertThat(e3.getPointerToViolation()).as("required").isEqualTo("#");
-            a.assertThat(e3.getCauses()).as("multi-errors").isEmpty();
-            a.assertThat(e3.getKeyword()).as("multi-errors").isEqualTo(JsonSchemaKeyword.REQUIRED);
-            a.assertThat(e3.getSchemaLocation()).as("multi-errors").isEqualTo("#");
-            a.assertThat(e3.getCode()).as("multi-errors").isEqualTo("validation.keyword.required");
-            a.assertThat(e3.getModel()).as("multi-errors").hasSize(1);
-            a.assertThat(e3.getModel()).as("multi-errors").contains("website_url");
+            a.assertThat(e3.getCauses()).as("required-errors").isEmpty();
+            a.assertThat(e3.getKeyword()).as("required-errors").isEqualTo(JsonSchemaKeyword.REQUIRED);
+            a.assertThat(e3.getSchemaLocation()).as("required-errors").isEqualTo("#");
+            a.assertThat(e3.getCode()).as("required-errors").isEqualTo("validation.keyword.required");
+            a.assertThat(e3.getModel()).as("required-errors").hasSize(1);
+            a.assertThat(e3.getModel()).as("required-errors").contains("website_url");
         });
     }
 

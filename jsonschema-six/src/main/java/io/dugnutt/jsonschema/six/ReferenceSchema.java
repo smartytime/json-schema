@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -12,8 +11,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
 
 /**
@@ -22,53 +21,54 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
  * recursive schemas.
  */
 
-@EqualsAndHashCode
+@EqualsAndHashCode(of = "refURI")
 public final class ReferenceSchema implements Schema {
 
     /**
      * Contains a reference to the actual loaded schema.
      */
-    private final AtomicReference<Schema> refSchema = new AtomicReference<>();
+    private final Schema refSchema;
 
     @NonNull
-    private final SchemaFactory factory;
-
-    @NonNull
-    private final SchemaBuildingContext buildingContext;
-
-    @NonNull
-    private final JsonSchemaInfo info;
+    private final SchemaLocation location;
 
     @NonNull
     private final URI refURI;
 
-    @Nullable
-    private final JsonObject currentDocument;
-
     @Builder(builderMethodName = "refSchemaBuilder")
-    public ReferenceSchema(SchemaFactory factory, SchemaBuildingContext buildingContext, JsonSchemaInfo info, URI refURI, JsonObject currentDocument) {
-        this.factory = factory;
-        this.buildingContext = buildingContext;
-        this.info = info;
+    public ReferenceSchema(SchemaFactory factory, SchemaLocation location, URI refURI, JsonObject currentDocument) {
+        this.location = location;
         this.refURI = refURI;
-        this.currentDocument = currentDocument;
+
+
+        int infiniteLoopPrevention = 0;
+        if (factory != null) {
+            Schema schema = this;
+            while (schema instanceof ReferenceSchema) {
+                schema = factory.loadRefSchema(schema, refURI, currentDocument);
+                if (infiniteLoopPrevention++ > 10) {
+                    throw new IllegalStateException("Too many nested references");
+                }
+            }
+            this.refSchema = schema;
+        } else {
+            this.refSchema = null;
+        }
+
+
     }
 
     public static ReferenceSchemaBuilder refSchemaBuilder(URI refURI) {
         return new ReferenceSchemaBuilder().refURI(refURI);
     }
 
-    private Schema refSchema() {
-        if(refSchema.get() == null) {
-            synchronized (refSchema) {
-                if (refSchema.get() == null) {
-                    final URI documentURI = info.getContainedBy().getDocumentURI();
-                    final URI absoluteReferenceURI = info.getLocation().getResolutionScope().resolve(refURI);
-                    refSchema.set(factory.dereferenceSchema(buildingContext, documentURI, absoluteReferenceURI, currentDocument));
-                }
-            }
-        }
-        return refSchema.get();
+    public Optional<Schema> getRefSchema() {
+        return Optional.ofNullable(refSchema);
+    }
+
+    public Schema requireRefSchema() {
+        checkNotNull(refSchema, "refSchema must not be null");
+        return refSchema;
     }
 
     public URI getRefURI() {
@@ -83,98 +83,103 @@ public final class ReferenceSchema implements Schema {
     }
 
     @Override
+    public Optional<JsonValue> getDefaultValue() {
+        return requireRefSchema().getDefaultValue();
+    }
+
+    @Override
     public SchemaLocation getLocation() {
-        return info.getLocation();
+        return location;
     }
 
     @Override
     public Optional<ArrayKeywords> getArrayKeywords() {
-        return refSchema().getArrayKeywords();
+        return requireRefSchema().getArrayKeywords();
     }
 
     @Override
     public Optional<Schema> getNotSchema() {
-        return refSchema().getNotSchema();
+        return requireRefSchema().getNotSchema();
     }
 
     @Override
     public Optional<JsonValue> getConstValue() {
-        return refSchema().getConstValue();
+        return requireRefSchema().getConstValue();
     }
 
     @Override
     public Optional<NumberKeywords> getNumberKeywords() {
-        return refSchema().getNumberKeywords();
+        return requireRefSchema().getNumberKeywords();
     }
 
     @Override
     public String getId() {
-        return refSchema().getId();
+        return requireRefSchema().getId();
     }
 
     @Override
     public String getTitle() {
-        return refSchema().getTitle();
+        return requireRefSchema().getTitle();
     }
 
     @Override
     public String getDescription() {
-        return refSchema().getDescription();
+        return requireRefSchema().getDescription();
     }
 
     @Override
     public List<Schema> getAllOfSchemas() {
-        return refSchema().getAllOfSchemas();
+        return requireRefSchema().getAllOfSchemas();
     }
 
     @Override
     public List<Schema> getAnyOfSchemas() {
-        return refSchema().getAnyOfSchemas();
+        return requireRefSchema().getAnyOfSchemas();
     }
 
     @Override
     public List<Schema> getOneOfSchemas() {
-        return refSchema().getOneOfSchemas();
+        return requireRefSchema().getOneOfSchemas();
     }
 
     @Override
     public Set<JsonSchemaType> getTypes() {
-        return refSchema().getTypes();
+        return requireRefSchema().getTypes();
     }
 
     @Override
     public Optional<JsonArray> getEnumValues() {
-        return refSchema().getEnumValues();
+        return requireRefSchema().getEnumValues();
     }
 
     @Override
     public Optional<ObjectKeywords> getObjectKeywords() {
-        return refSchema().getObjectKeywords();
+        return requireRefSchema().getObjectKeywords();
     }
 
     @Override
     public Optional<StringKeywords> getStringKeywords() {
-        return refSchema().getStringKeywords();
+        return requireRefSchema().getStringKeywords();
     }
 
     @Override
     public boolean hasStringKeywords() {
-        return refSchema().hasStringKeywords();
+        return requireRefSchema().hasStringKeywords();
     }
 
     @Override
     public boolean hasObjectKeywords() {
-        return refSchema().hasObjectKeywords();
+        return requireRefSchema().hasObjectKeywords();
     }
 
     @Override
     public boolean hasArrayKeywords() {
-        return refSchema().hasArrayKeywords();
+        return requireRefSchema().hasArrayKeywords();
     }
 
     @Override
     public boolean hasNumberKeywords() {
-        return refSchema().hasNumberKeywords();
+        return requireRefSchema().hasNumberKeywords();
     }
 
     public static class ReferenceSchemaBuilder {

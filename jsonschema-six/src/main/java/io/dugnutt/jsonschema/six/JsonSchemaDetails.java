@@ -2,6 +2,7 @@ package io.dugnutt.jsonschema.six;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Singular;
 
@@ -16,6 +17,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @Getter
+@EqualsAndHashCode
 public class JsonSchemaDetails {
 
     // public static final JsonSchemaDetails BLANK_DETAILS = JsonSchemaDetails.builder().build();
@@ -35,6 +37,9 @@ public class JsonSchemaDetails {
 
     @Nullable
     private final String description;
+
+    @Nullable
+    private JsonValue defaultValue;
 
     /**
      * {@see ALL_OF}
@@ -86,6 +91,10 @@ public class JsonSchemaDetails {
     private final ObjectKeywords objectKeywords;
     private final ArrayKeywords arrayKeywords;
 
+    public Optional<JsonValue> getDefaultValue() {
+        return Optional.ofNullable(defaultValue);
+    }
+
     public boolean hasObjectKeywords() {
         return objectKeywords != null;
     }
@@ -115,7 +124,6 @@ public class JsonSchemaDetails {
     }
 
     public Optional<StringKeywords> getStringKeywords() {
-
         return Optional.ofNullable(stringKeywords);
     }
 
@@ -131,15 +139,4 @@ public class JsonSchemaDetails {
         return Optional.ofNullable(arrayKeywords);
     }
 
-    // public static class JsonSchemaDetailsBuilder {
-    //     public JsonSchemaDetailsBuilder constValue(JsonValue d) {
-    //         this.constValue = Optional.ofNullable(d);
-    //         return this;
-    //     }
-    //
-    //     public JsonSchemaDetailsBuilder enumValues(JsonArray array) {
-    //         this.enumValues = Optional.ofNullable(array);
-    //         return this;
-    //     }
-    // }
 }

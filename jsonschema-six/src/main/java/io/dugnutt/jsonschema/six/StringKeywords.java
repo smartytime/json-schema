@@ -20,7 +20,7 @@ import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_LENGTH;
  */
 @Builder(builderClassName = "StringKeywordsBuilder")
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(doNotUseGetters = true)
 public class StringKeywords implements SchemaKeywords {
 
     @Min(0)

@@ -217,22 +217,6 @@ public class SchemaLoadingContext {
     }
 
     @VisibleForTesting
-    Optional<SchemaLoadingContext> childModelIfObject(JsonSchemaKeyword keyword) {
-        final String keywordVal = keyword.key();
-        return schemaJson.findIfObject(keywordVal)
-                .map(childObject -> {
-
-                    SchemaLocation childLocation = getChildLocationWithId(childObject, keywordVal);
-                    JsonPath childPath = childLocation.getJsonPath();
-                    final PathAwareJsonValue awareJsonValue = new PathAwareJsonValue(childObject, childPath);
-
-                    return this.toBuilder().location(childLocation)
-                            .pathedSchemaJson(awareJsonValue)
-                            .build();
-                });
-    }
-
-    @VisibleForTesting
     @Nullable
     SchemaLoadingContext childModel(String childKey) {
         return schemaJson.findObject(childKey)

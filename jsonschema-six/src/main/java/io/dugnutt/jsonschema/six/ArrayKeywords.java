@@ -33,7 +33,7 @@ import java.util.Set;
  */
 @Getter
 @Builder(builderClassName = "ArrayKeywordsBuilder")
-@EqualsAndHashCode
+@EqualsAndHashCode(doNotUseGetters = true)
 public class ArrayKeywords implements SchemaKeywords {
 
     @Min(0)

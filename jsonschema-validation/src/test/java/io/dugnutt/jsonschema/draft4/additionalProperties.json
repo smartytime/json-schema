@@ -9,7 +9,7 @@
       "patternProperties": {
         "^v": {}
       },
-      "additionalProperties": { "type": null }
+      "additionalProperties": { "type": "null" }
     },
     "tests": [
       {

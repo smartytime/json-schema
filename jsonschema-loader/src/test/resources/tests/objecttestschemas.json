@@ -65,7 +65,7 @@
       }
     },
     "additionalProperties": {
-      "type": null
+      "type": "null"
     },
     "required": [
       "boolProp",

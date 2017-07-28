@@ -8,6 +8,7 @@ import java.util.Optional;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 
 public class SchemaBuildingContext {
+
     private final Map<URI, Schema.JsonSchemaBuilder> buildingCache = new HashMap<>();
     private final Map<URI, JsonSchema> schemaCache = new HashMap<>();
 
