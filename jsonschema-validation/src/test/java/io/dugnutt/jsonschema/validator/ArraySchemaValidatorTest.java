@@ -321,6 +321,6 @@ public class ArraySchemaValidatorTest {
     }
 
     private SchemaValidator createTestValidator(Schema schema) {
-        return DEFAULT_VALIDATOR_FACTORY.createValidator(schema);
+        return SchemaValidatorFactory.builder().build().createValidator(schema);
     }
 }

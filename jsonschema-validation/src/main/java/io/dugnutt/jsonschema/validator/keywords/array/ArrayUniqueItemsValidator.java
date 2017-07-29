@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords.array;
 
 import io.dugnutt.jsonschema.six.ObjectComparator;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -23,7 +23,7 @@ public class ArrayUniqueItemsValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         if (subject.arraySize() == 0) {
             return true;
         }
@@ -33,11 +33,12 @@ public class ArrayUniqueItemsValidator extends KeywordValidator {
         for (JsonValue item : arrayItems) {
             for (JsonValue contained : uniqueItems) {
                 if (ObjectComparator.lexicalEquivalent(contained, item)) {
-                    return report.addError(buildKeywordFailure(subject, schema, UNIQUE_ITEMS)
+                    report.addError(buildKeywordFailure(subject, schema, UNIQUE_ITEMS)
                             .message("array items are not unique")
                             .model(item)
                             .model(contained)
                             .build());
+                    return false;
                 }
             }
             uniqueItems.add(item);

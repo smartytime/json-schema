@@ -2,7 +2,7 @@ package io.dugnutt.jsonschema.validator.keywords;
 
 import com.google.common.collect.ImmutableMap;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationReport;
@@ -23,7 +23,7 @@ public class SchemaDependenciesValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         boolean success = true;
         for (Map.Entry<String, SchemaValidator> dependencyValidatorEntries : dependencyValidators.entrySet()) {
             String propName = dependencyValidatorEntries.getKey();

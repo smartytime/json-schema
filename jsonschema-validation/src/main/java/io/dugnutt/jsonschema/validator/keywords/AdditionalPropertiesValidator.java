@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords;
 
 import com.google.common.collect.ImmutableSet;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationReport;
@@ -34,23 +34,8 @@ public class AdditionalPropertiesValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport parentReport) {
-        ValidationReport report = new ValidationReport();
-
-        boolean success = true;
-        for (String propertyName : getAdditionalProperties(subject)) {
-            PathAwareJsonValue propertyValue = subject.getPathAware(propertyName);
-            boolean valid = additionalPropertiesValidator.validate(propertyValue, report);
-            success = success && valid;
-        }
-        if (!success) {
-            parentReport.addReport(schema, subject, ADDITIONAL_PROPERTIES, "Additional properties were invalid", report);
-        }
-        return success;
-    }
-
-    Set<String> getAdditionalProperties(final PathAwareJsonValue subject) {
-        ImmutableSet.Builder<String> additionalProps = ImmutableSet.builder();
+    public boolean validate(JsonValueWithLocation subject, ValidationReport parentReport) {
+        ValidationReport report = parentReport.createChildReport();
         prop: for (String propName : subject.propertyNames()) {
             for (Pattern pattern : patternProperties) {
                 if(pattern.matcher(propName).find()) {
@@ -58,9 +43,13 @@ public class AdditionalPropertiesValidator extends KeywordValidator {
                 }
             }
             if (!propertySchemaKeys.contains(propName)) {
-                additionalProps.add(propName);
+                JsonValueWithLocation propertyValue = subject.getPathAwareObject(propName);
+                additionalPropertiesValidator.validate(propertyValue, report);
             }
         }
-        return additionalProps.build();
+        if (!report.isValid()) {
+            parentReport.addReport(schema, subject, ADDITIONAL_PROPERTIES, "Additional properties were invalid", report);
+        }
+        return parentReport.isValid();
     }
 }

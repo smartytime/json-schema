@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator.keywords;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationReport;
@@ -30,16 +30,20 @@ public class AnyOfValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport parentReport) {
-        ValidationReport report = new ValidationReport();
+    public boolean validate(JsonValueWithLocation subject, ValidationReport parentReport) {
+        ValidationReport anyOfReport = parentReport.createChildReport();
         for (SchemaValidator anyOfValidator : anyOfValidators) {
-            if (anyOfValidator.validate(subject, report)) {
+            ValidationReport trap = anyOfReport.createChildReport();
+            if (anyOfValidator.validate(subject, trap)) {
                 return true;
             }
+            anyOfReport.addReport(schema, subject, trap);
         }
-        return parentReport.addError(buildKeywordFailure(subject, schema, ANY_OF)
+
+        parentReport.addError(buildKeywordFailure(subject, schema, ANY_OF)
                 .message("no subschema matched out of the total %d subschemas", anyOfValidators.size())
-                .causingExceptions(report.getErrors())
+                .causingExceptions(anyOfReport.getErrors())
                 .build());
+        return parentReport.isValid();
     }
 }

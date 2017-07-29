@@ -1,52 +1,47 @@
 package io.dugnutt.jsonschema.loader;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import io.dugnutt.jsonschema.loader.reference.DefaultSchemaClient;
 import io.dugnutt.jsonschema.loader.reference.SchemaCache;
 import io.dugnutt.jsonschema.loader.reference.SchemaClient;
 import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.JsonSchemaType;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.six.SchemaFactory;
 import io.dugnutt.jsonschema.six.SchemaLocation;
 import io.dugnutt.jsonschema.six.SchemaUtils;
 import io.dugnutt.jsonschema.six.URIUtils;
-import io.dugnutt.jsonschema.six.UnexpectedValueException;
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.experimental.Wither;
 
 import javax.annotation.Nullable;
 import javax.json.JsonObject;
 import javax.json.JsonPointer;
-import javax.json.JsonString;
 import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
 import javax.json.spi.JsonProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.loader.SchemaLoadingContext.COMBINED_SCHEMA_KEYWORDS;
-import static io.dugnutt.jsonschema.loader.SchemaLoadingContext.createModelFor;
+import static io.dugnutt.jsonschema.loader.ArrayKeywordsLoader.arrayKeywordsLoader;
+import static io.dugnutt.jsonschema.loader.NumberKeywordsLoader.numberKeywordsLoader;
+import static io.dugnutt.jsonschema.loader.ObjectKeywordsLoader.objectKeywordsLoader;
+import static io.dugnutt.jsonschema.loader.SharedKeywordsLoader.sharedKeywordsLoader;
+import static io.dugnutt.jsonschema.loader.StringKeywordsLoader.stringKeywordsLoader;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
 import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.CONST;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DEFAULT;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DESCRIPTION;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TITLE;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.SchemaLocation.DUGNUTT_UUID_SCHEME;
@@ -56,49 +51,69 @@ import static io.dugnutt.jsonschema.six.SchemaLocation.DUGNUTT_UUID_SCHEME;
  * instance.  This also includes looking up any referenced schemas.
  */
 @Getter
-@AllArgsConstructor
 public class JsonSchemaFactory implements SchemaFactory {
 
     public static final Charset UTF8 = Charset.forName("UTF-8");
 
-    @Wither
     private final JsonProvider provider;
-
-    @Wither
     private final SchemaClient httpClient;
-
-    @Wither
     private final Charset charset;
+    private final SchemaCache schemaCache;
+    private final Set<KeywordsLoader> keywordLoaders;
 
-    @Wither
-    private SchemaCache schemaCache;
+    @Builder
+    public JsonSchemaFactory(JsonProvider provider, SchemaClient httpClient, Charset charset, SchemaCache schemaCache,
+                             Set<KeywordsLoader> keywordLoaders) {
+        this.provider = MoreObjects.firstNonNull(provider, JsonProvider.provider());
+        this.httpClient = MoreObjects.firstNonNull(httpClient, new DefaultSchemaClient());
+        this.charset = MoreObjects.firstNonNull(charset, UTF8);
+        this.schemaCache = MoreObjects.firstNonNull(schemaCache, SchemaCache.schemaCacheBuilder().build());
 
-    public Schema createSchema(SchemaLoadingContext schemaModel) {
-        // First, get from cache, or
-        return schemaCache.getSchema(schemaModel.getLocation())
+        Set<KeywordsLoader> loaders = new LinkedHashSet<>();
+
+        loaders.add(sharedKeywordsLoader());
+        loaders.add(numberKeywordsLoader());
+        loaders.add(stringKeywordsLoader());
+        loaders.add(objectKeywordsLoader());
+        loaders.add(arrayKeywordsLoader());
+
+        if (keywordLoaders != null) {
+            loaders.addAll(keywordLoaders);
+        }
+
+        this.keywordLoaders = ImmutableSet.copyOf(loaders);
+
+
+    }
+
+    public Schema createSchema(SchemaLocation location, JsonObject schemaJson) {
+        return createSchema(location, schemaJson, schemaJson);
+    }
+
+    public Schema createSchema(SchemaLocation location, JsonObject schemaJson, JsonObject rootSchemaJson) {
+        return schemaCache.getSchema(location)
                 .orElseGet(() -> {
-                    // If not in cache, then create.  Load in the baseDocument so it will be passed
-                    Schema schema = createSchemaBuilder(schemaModel).build();
-                    schemaCache.cacheSchema(schemaModel.getLocation(), schema);
+                    Schema schema = createSchemaBuilder(location, schemaJson, rootSchemaJson).build();
+                    schemaCache.cacheSchema(location, schema);
                     return schema;
                 });
     }
 
-    public JsonSchemaBuilder createSchemaBuilder(SchemaLoadingContext schemaContext) {
-        return createSchemaBuilder(schemaContext.schemaJson())
-                .currentDocument(schemaContext.rootSchemaJson())
-                .schemaFactory(this)
-                .location(schemaContext.getLocation());
+    public JsonSchemaBuilder createSchemaBuilder(SchemaLocation location, JsonObject schemaJson, JsonObject rootSchemaJson) {
+        return createSchemaBuilder(schemaJson, location)
+                .location(location)
+                .currentDocument(rootSchemaJson)
+                .schemaFactory(this);
     }
 
-    public JsonSchemaBuilder createSchemaBuilder(JsonValue value, JsonPath path) {
+    public JsonSchemaBuilder createSchemaBuilder(JsonValue value, SchemaLocation path) {
         checkNotNull(value, "value must not be null");
         checkNotNull(path, "path must not be null");
-        final PathAwareJsonValue pathAwareJsonValue = new PathAwareJsonValue(value, path);
+        final JsonValueWithLocation pathAwareJsonValue = JsonValueWithLocation.fromJsonValue(value, path);
         return createSchemaBuilder(pathAwareJsonValue);
     }
 
-    public JsonSchemaBuilder createSchemaBuilder(PathAwareJsonValue schemaJson) {
+    public JsonSchemaBuilder createSchemaBuilder(JsonValueWithLocation schemaJson) {
 
         // ##########################
         // $ref: Overrides everything
@@ -114,67 +129,9 @@ public class JsonSchemaFactory implements SchemaFactory {
                 .map(Schema::jsonSchemaBuilderWithId)
                 .orElse(Schema.jsonSchemaBuilder());
 
-        // ############################
-        // type: either string or array
-        // ############################
-
-        schemaJson.findByKey(TYPE).ifPresent(typeJsonValue -> {
-            final JsonPath typePath = schemaJson.getPath().child(TYPE.key());
-            switch (typeJsonValue.getValueType()) {
-                case STRING:
-                    final JsonSchemaType typeEnum;
-                    try {
-                        typeEnum = JsonSchemaType.fromString(schemaJson.getString(TYPE));
-                    } catch (SchemaException e) {
-                        throw new SchemaException(typePath.toURIFragment(), e.getMessage());
-                    }
-                    schemaBuilder.type(typeEnum);
-                    break;
-                case ARRAY:
-                    schemaJson.expectArray(TYPE).getValuesAs(JsonString.class).stream()
-                            .map(JsonString::getString)
-                            .map(JsonSchemaType::fromString)
-                            .forEach(schemaBuilder::type);
-                    break;
-                default:
-                    throw new UnexpectedValueException(typePath, typeJsonValue, ValueType.STRING, ValueType.ARRAY);
-            }
-        });
-
-        // ############################
-        // title, description
-        // ############################
-
-        schemaJson.findByKey(DEFAULT).ifPresent(schemaBuilder::defaultValue);
-        schemaJson.findString(TITLE).ifPresent(schemaBuilder::title);
-        schemaJson.findString(DESCRIPTION).ifPresent(schemaBuilder::description);
-
-        // ##########################
-        // const, enum, not
-        // ##########################
-
-        schemaJson.findByKey(CONST).ifPresent(schemaBuilder::constValue);
-        schemaJson.findArray(ENUM).ifPresent(schemaBuilder::enumValues);
-        schemaJson.findPathAware(NOT).map(this::createSchemaBuilder).ifPresent(schemaBuilder::notSchema);
-
-        // #########################
-        // allOf, anyOf, oneOf
-        // #########################
-
-        COMBINED_SCHEMA_KEYWORDS.forEach(keyword -> schemaJson.streamPathAwareArrayItems(keyword)
-                .map(this::createSchemaBuilder)
-                .forEach(combinedSchema -> schemaBuilder.combinedSchema(keyword, combinedSchema)));
-
-        // ##########################################
-        // type-specific keywords
-        //
-        // Only loads when there are keywords present
-        // ##########################################
-
-        StringKeywordsFactoryHelper.appendStringKeywords(schemaJson, schemaBuilder);
-        NumberKeywordsFactoryHelper.appendNumberKeywords(schemaJson, schemaBuilder);
-        ObjectKeywordsFactoryHelper.appendObjectKeywords(schemaJson, schemaBuilder, this);
-        ArrayKeywordsFactoryHelper.appendArrayKeywords(schemaJson, schemaBuilder, this);
+        for (KeywordsLoader keywordLoader : keywordLoaders) {
+            keywordLoader.appendKeywords(schemaJson, schemaBuilder, this);
+        }
 
         return schemaBuilder;
     }
@@ -184,17 +141,19 @@ public class JsonSchemaFactory implements SchemaFactory {
         // Cache ahead to deal with any infinite recursion.
         final SchemaLocation currentLocation = referencedFrom.getLocation();
         schemaCache.cacheSchema(currentLocation.getAbsoluteURI(), referencedFrom);
+
+        // Make sure we're dealing with an absolute URI
         final URI absoluteReferenceURI = currentLocation.getResolutionScope().resolve(refURI);
+        final URI documentURI = currentLocation.getDocumentURI();
+
+        // Look for a cache schema at this URI
         final Optional<Schema> cachedSchema = schemaCache.getSchema(absoluteReferenceURI);
         if (cachedSchema.isPresent()) {
             return cachedSchema.get();
         }
 
-        final URI documentURI = currentLocation.getDocumentURI();
-        final URI remoteDocumentURI = absoluteReferenceURI.resolve("#");
-
         final JsonSchemaBuilder schemaBuilder = findRefInDocument(documentURI, absoluteReferenceURI, currentDocument)
-                .orElseGet(() -> findRefInRemoteDocument(remoteDocumentURI, absoluteReferenceURI));
+                .orElseGet(() -> findRefInRemoteDocument(absoluteReferenceURI));
         final Schema refSchema = schemaBuilder.build();
         schemaCache.cacheSchema(absoluteReferenceURI, refSchema);
         return refSchema;
@@ -207,9 +166,16 @@ public class JsonSchemaFactory implements SchemaFactory {
 
     public Schema load(JsonObject schemaJson) {
         checkNotNull(schemaJson, "schemaJson must not be null");
-        SchemaLoadingContext modelToLoad = createModelFor(schemaJson);
-        schemaCache.cacheDocument(modelToLoad.getLocation().getAbsoluteURI(), schemaJson);
-        return createSchema(modelToLoad);
+        final SchemaLocation schemaLocation;
+        if (schemaJson.containsKey($ID.key())) {
+            String $id = schemaJson.getString($ID.key());
+            schemaLocation = SchemaLocation.schemaLocation($id);
+        } else {
+            schemaLocation = SchemaLocation.anonymousRoot();
+        }
+
+        schemaCache.cacheDocument(schemaLocation.getAbsoluteURI(), schemaJson);
+        return createSchema(schemaLocation, schemaJson);
     }
 
     public Schema load(InputStream inputJson) {
@@ -263,7 +229,9 @@ public class JsonSchemaFactory implements SchemaFactory {
         return targetDocument;
     }
 
-    JsonSchemaBuilder findRefInRemoteDocument(URI remoteDocumentURI, URI referenceURI) {
+    JsonSchemaBuilder findRefInRemoteDocument(URI referenceURI) {
+        checkNotNull(referenceURI, "referenceURI must not be null");
+        URI remoteDocumentURI = referenceURI.resolve("#");
         final JsonObject remoteDocument = loadDocument(remoteDocumentURI);
         return findRefInDocument(remoteDocumentURI, referenceURI, remoteDocument)
                 .orElseThrow(() -> new SchemaException(referenceURI, "Error loading fragment '#%s' from document '%s'", referenceURI.getFragment(), remoteDocument));
@@ -311,22 +279,22 @@ public class JsonSchemaFactory implements SchemaFactory {
                     .jsonPath(pathWithinDocument)
                     .build();
 
-            SchemaLoadingContext loadingContext = SchemaLoadingContext.schemaContextBuilder()
-                    .location(fetchedDocumentLocation)
-                    .rootSchemaJson(parentDocument)
-                    .schemaJson(schemaObject)
-                    .build();
-
-            return Optional.of(this.createSchemaBuilder(loadingContext));
+            return Optional.of(this.createSchemaBuilder(fetchedDocumentLocation, schemaObject, parentDocument));
         }
         return Optional.empty();
     }
 
     public static JsonSchemaFactory schemaFactory() {
-        return schemaFactory(JsonProvider.provider());
+        return builder().build();
     }
 
     public static JsonSchemaFactory schemaFactory(JsonProvider jsonProvider) {
-        return new JsonSchemaFactory(jsonProvider, new DefaultSchemaClient(), UTF8, SchemaCache.schemaCacheBuilder().build());
+        return JsonSchemaFactory.builder()
+                .provider(jsonProvider)
+                .build();
+    }
+
+    public static class JsonSchemaFactoryBuilder {
+
     }
 }

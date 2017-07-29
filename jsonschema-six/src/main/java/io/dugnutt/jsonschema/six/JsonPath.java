@@ -16,10 +16,11 @@ import java.util.Optional;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.net.UrlEscapers.urlPathSegmentEscaper;
-import static io.dugnutt.jsonschema.six.CharUtils.FORWARD_SLASH_SEPARATOR;
-import static io.dugnutt.jsonschema.six.CharUtils.JSON_POINTER_SEGMENT_ESCAPER;
-import static io.dugnutt.jsonschema.six.CharUtils.JSON_POINTER_SEGMENT_UNESCAPER;
-import static io.dugnutt.jsonschema.six.CharUtils.URL_SEGMENT_UNESCAPER;
+import static io.dugnutt.jsonschema.six.CharUtils.escapeForJsonPointerSegment;
+import static io.dugnutt.jsonschema.six.CharUtils.forwardSlashSeparator;
+import static io.dugnutt.jsonschema.six.CharUtils.jsonPointerSegmentEscaper;
+import static io.dugnutt.jsonschema.six.CharUtils.jsonPointerSegmentUnescaper;
+import static io.dugnutt.jsonschema.six.CharUtils.urlSegmentUnescaper;
 
 public class JsonPath {
 
@@ -27,11 +28,9 @@ public class JsonPath {
     @Getter
     private final List<PathPart> path;
 
-    @NonNull
-    private final URI uriFragment;
+    private URI uriFragment;
 
-    @NonNull
-    private final String jsonPointerString;
+    private String jsonPointerString;
 
     /**
      * This method ingests a path-separated string intended as a json-pointer.  The string may be based on a URL fragment,
@@ -50,17 +49,17 @@ public class JsonPath {
         StringBuilder fragmentURI = new StringBuilder("#");
         StringBuilder jsonPointer = new StringBuilder("");
 
-        this.path = FORWARD_SLASH_SEPARATOR.splitToList(input).stream()
+        this.path = forwardSlashSeparator().splitToList(input).stream()
                 .map(rawPart -> {
                     String toUnescape = rawPart;
                     for (Unescaper unescaper : unescapers) {
                         toUnescape = unescaper.unescape(toUnescape);
                     }
 
-                    final String pathPart = JSON_POINTER_SEGMENT_UNESCAPER.unescape(toUnescape);
+                    final String pathPart = jsonPointerSegmentUnescaper().unescape(toUnescape);
 
                     //Re-escape, because we can't rely on what was escaped coming in.
-                    String pointerEscaped = JSON_POINTER_SEGMENT_ESCAPER.escape(pathPart);
+                    String pointerEscaped = jsonPointerSegmentEscaper().escape(pathPart);
 
                     jsonPointer.append("/").append(pointerEscaped);
                     fragmentURI.append("/").append(urlPathSegmentEscaper().escape(pointerEscaped));
@@ -72,25 +71,17 @@ public class JsonPath {
         this.jsonPointerString = jsonPointer.toString();
     }
 
-    JsonPath(List<PathPart> parts, URI uriFragment, String jsonPointerString, Object newPath) {
+    JsonPath(List<PathPart> parts, Object toBeAppended) {
         checkNotNull(parts, "parts must not be null");
-        checkNotNull(uriFragment, "uriFragment must not be null");
-        checkNotNull(jsonPointerString, "jsonPointerString must not be null");
-        checkNotNull(newPath, "newPath must not be null");
+        checkNotNull(toBeAppended, "toBeAppended must not be null");
 
         List<PathPart> tmp = new ArrayList<>(parts);
-        if (newPath instanceof Integer) {
-            tmp.add(new PathPart((int) newPath));
+        if (toBeAppended instanceof Integer) {
+            tmp.add(new PathPart((int) toBeAppended));
         } else {
-            tmp.add(new PathPart(newPath.toString()));
+            tmp.add(new PathPart(toBeAppended.toString()));
         }
         this.path = Collections.unmodifiableList(tmp);
-
-        String newPathVal = newPath.toString();
-        final String jsonPointerEscaped = JSON_POINTER_SEGMENT_ESCAPER.escape(newPathVal);
-        this.jsonPointerString = jsonPointerString + "/" + jsonPointerEscaped;
-        final String urlEscapedPath = urlPathSegmentEscaper().escape(jsonPointerEscaped);
-        this.uriFragment = URI.create(uriFragment.toString() + "/" + urlEscapedPath);
     }
 
     public static JsonPath parseFromURIFragment(URI uriFragment) {
@@ -107,7 +98,7 @@ public class JsonPath {
             return JsonPath.rootPath();
         }
 
-        return new JsonPath(uriFragment.substring(1), URL_SEGMENT_UNESCAPER);
+        return new JsonPath(uriFragment.substring(1), urlSegmentUnescaper());
     }
 
     @SneakyThrows
@@ -122,11 +113,11 @@ public class JsonPath {
 
     public JsonPath child(String unescapedPath) {
         checkNotNull(unescapedPath, "unescapedPath must not be null");
-        return new JsonPath(this.path, this.uriFragment, this.jsonPointerString, unescapedPath);
+        return new JsonPath(this.path, unescapedPath);
     }
 
     public JsonPath child(int index) {
-        return new JsonPath(this.path, this.uriFragment, this.jsonPointerString, index);
+        return new JsonPath(this.path,index);
     }
 
     public Optional<String> getLastPath() {
@@ -137,12 +128,8 @@ public class JsonPath {
         }
     }
 
-    public String toJsonPointer() {
-        return jsonPointerString;
-    }
-
     public String toString() {
-        return uriFragment.toString();
+        return toURIFragment().toString();
     }
 
     public List<String> toStringPath() {
@@ -152,7 +139,27 @@ public class JsonPath {
     }
 
     public URI toURIFragment() {
-        return uriFragment;
+        if (this.uriFragment == null) {
+            StringBuilder uriFragment = new StringBuilder("#");
+            for (PathPart pathPart : path) {
+                String escaped = CharUtils.escapeForURIPointerSegment(pathPart.toString());
+                uriFragment.append("/").append(escaped);
+            }
+            this.uriFragment = URI.create(uriFragment.toString());
+        }
+        return this.uriFragment;
+    }
+
+    public String toJsonPointer() {
+        if (this.jsonPointerString == null) {
+            StringBuilder jsonPointer = new StringBuilder("");
+            for (PathPart pathPart : path) {
+                String segment = String.valueOf(pathPart.getNameOrIndex());
+                jsonPointer.append("/").append(escapeForJsonPointerSegment(segment));
+            }
+            this.jsonPointerString = jsonPointer.toString();
+        }
+        return this.jsonPointerString;
     }
 
     @Value
@@ -162,14 +169,8 @@ public class JsonPath {
 
         public PathPart(String name) {
             checkNotNull(name, "name must not be null");
-            Integer integer = Ints.tryParse(name);
-            if (integer == null) {
-                this.name = name;
-                this.index = null;
-            } else {
-                this.name = null;
-                this.index = integer;
-            }
+            this.index = Ints.tryParse(name);
+            this.name = this.index == null ? name : null;
         }
 
         public PathPart(Integer index) {

@@ -2,14 +2,13 @@ package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.JsonPath;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 
 import javax.json.JsonValue;
 
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR_FACTORY;
 
 public class ValidationMocks {
 
@@ -18,7 +17,7 @@ public class ValidationMocks {
     }
 
     public static SchemaValidator createTestValidator(Schema schema) {
-        return DEFAULT_VALIDATOR_FACTORY.createValidator(schema);
+        return SchemaValidatorFactory.builder().build().createValidator(schema);
     }
 
     public static JsonSchemaBuilder mockArraySchema() {
@@ -51,9 +50,5 @@ public class ValidationMocks {
 
     public static JsonSchemaBuilder mockStringSchema() {
         return jsonSchemaBuilder().type(JsonSchemaType.STRING);
-    }
-
-    public static PathAwareJsonValue pathAware(JsonValue subject) {
-        return new PathAwareJsonValue(subject, JsonPath.rootPath());
     }
 }

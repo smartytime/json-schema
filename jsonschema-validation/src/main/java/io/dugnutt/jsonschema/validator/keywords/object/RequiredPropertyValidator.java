@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords.object;
 
 import com.google.common.collect.ImmutableSet;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -25,16 +25,15 @@ public class RequiredPropertyValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
-        boolean success = true;
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         for (String requiredProp : requiredProperties) {
             if (!subject.containsKey(requiredProp)) {
-                boolean valid = report.addError(buildKeywordFailure(subject, schema, REQUIRED)
+                report.addError(buildKeywordFailure(subject, schema, REQUIRED)
                         .message("required key [%s] not found", requiredProp)
                         .build());
-                success = success && valid;
+
             }
         }
-        return success;
+        return report.isValid();
     }
 }

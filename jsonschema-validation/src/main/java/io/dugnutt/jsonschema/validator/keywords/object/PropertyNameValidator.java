@@ -2,7 +2,7 @@ package io.dugnutt.jsonschema.validator.keywords.object;
 
 import com.google.common.base.MoreObjects;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import io.dugnutt.jsonschema.validator.ValidationReport;
@@ -26,7 +26,6 @@ public class PropertyNameValidator extends KeywordValidator {
     private final SchemaValidator propertyNameValidator;
 
     @NonNull
-    @Builder.Default
     private final JsonProvider jsonProvider;
 
     @Builder
@@ -37,23 +36,23 @@ public class PropertyNameValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport parentReport) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport parentReport) {
 
-            ValidationReport report = new ValidationReport();
+            ValidationReport report = parentReport.createChildReport();
             final Set<String> subjectProperties = subject.asJsonObject().keySet();
             for (String subjectProperty : subjectProperties) {
                 JsonString value = jsonProvider.createValue(subjectProperty);
-                propertyNameValidator.validate(new PathAwareJsonValue(value, subject.getPath()), report);
+                propertyNameValidator.validate(JsonValueWithLocation.fromJsonValue(value, subject.getLocation()), report);
             }
 
             List<ValidationError> errors = report.getErrors();
             if (!errors.isEmpty()) {
-                return parentReport.addError(buildKeywordFailure(subject, schema, PROPERTY_NAMES)
+                parentReport.addError(buildKeywordFailure(subject, schema, PROPERTY_NAMES)
                         .message("Invalid property names")
                         .causingExceptions(errors)
                         .build());
             }
-            return true;
+            return parentReport.isValid();
 
     }
 }

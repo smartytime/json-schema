@@ -94,14 +94,6 @@ public class JsonUtils {
         return provider().createArrayBuilder(Arrays.asList(values)).build();
     }
 
-    public static JsonArrayBuilder jsonArrayBuilder() {
-        return provider().createArrayBuilder();
-    }
-
-    public static JsonObject jsonObject(Map<String, Object> values) {
-        return provider().createObjectBuilder(values).build();
-    }
-
     public static JsonObjectBuilder jsonObjectBuilder() {
         return provider().createObjectBuilder();
     }
@@ -146,19 +138,8 @@ public class JsonUtils {
         return readValue(JsonUtils.class.getResourceAsStream(resourceURL), jsonValue);
     }
 
-    public static boolean isOneOf(JsonValue value, JsonValue.ValueType... anyOf) {
-        if (anyOf.length == 0) {
-            return true;
-        }
-        for (JsonValue.ValueType valueType : anyOf) {
-            if (value.getValueType() == valueType) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @SneakyThrows
+    @SuppressWarnings("unchecked")
     public static <V extends JsonValue> V readValue(String json, Class<V> expected) {
         checkNotNull(json, "json must not be null");
         return (V) provider()
@@ -175,6 +156,7 @@ public class JsonUtils {
     }
 
     @SneakyThrows
+    @SuppressWarnings("unchecked")
     public static <V extends JsonValue> V readValue(InputStream json, Class<V> expected) {
         checkNotNull(json, "json must not be null");
         return (V) provider()
@@ -193,28 +175,6 @@ public class JsonUtils {
             return JsonValue.ValueType.ARRAY;
         } else {
             throw new IllegalArgumentException("Unable to determine type for class: " + clazz);
-        }
-    }
-
-    public static Set<JsonValue.ValueType> jsonTypesForSchemaType(JsonSchemaType schemaType) {
-        checkNotNull(schemaType, "schemaType must not be null");
-        switch (schemaType) {
-            case STRING:
-                return Collections.singleton(JsonValue.ValueType.STRING);
-            case OBJECT:
-                return Collections.singleton(JsonValue.ValueType.OBJECT);
-            case ARRAY:
-                return Collections.singleton(JsonValue.ValueType.ARRAY);
-            case NULL:
-                return Collections.singleton(JsonValue.ValueType.NULL);
-            case NUMBER:
-                return Collections.singleton(JsonValue.ValueType.NUMBER);
-            case INTEGER:
-                return Collections.singleton(JsonValue.ValueType.NUMBER);
-            case BOOLEAN:
-                return ImmutableSet.of(JsonValue.ValueType.TRUE, JsonValue.ValueType.FALSE);
-            default:
-                throw new IllegalStateException("Unable to map json types");
         }
     }
 

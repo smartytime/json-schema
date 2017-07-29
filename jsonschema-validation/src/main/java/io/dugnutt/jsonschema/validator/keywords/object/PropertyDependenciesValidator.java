@@ -2,7 +2,7 @@ package io.dugnutt.jsonschema.validator.keywords.object;
 
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -26,17 +26,17 @@ public class PropertyDependenciesValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         boolean success = true;
         for (Map.Entry<String, String> dependency : propertyDependencies.entries()) {
             String ifThisPropertyExists = dependency.getKey();
             String thenThisMustAlsoExist = dependency.getValue();
             if (subject.containsKey(ifThisPropertyExists) && !subject.containsKey(thenThisMustAlsoExist)) {
-                success = success && report.addError(buildKeywordFailure(subject, schema, DEPENDENCIES)
+                report.addError(buildKeywordFailure(subject, schema, DEPENDENCIES)
                         .message("property [%s] is required because [%s] was present", thenThisMustAlsoExist, ifThisPropertyExists)
                         .build());
             }
         }
-        return success;
+        return report.isValid();
     }
 }

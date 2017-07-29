@@ -34,9 +34,8 @@ public class RelativeURITest {
     private void run() {
         JsonSchemaFactory schemaFactory = JsonSchemaFactory
                 .schemaFactory();
-        SchemaLoadingContext build = SchemaLoadingContext.createModelFor(
-                JsonUtils.readResourceAsJson("/io/dugnutt/jsonschema/relative-uri/schema/main.json", JsonObject.class))
-                .withLocation(SchemaLocation.schemaLocation("http://localhost:1234/schema/"));
-        schemaFactory.createSchema(build);
+        SchemaLocation schemaLocation = SchemaLocation.schemaLocation("http://localhost:1234/schema/");
+        JsonObject jsonObject = JsonUtils.readResourceAsJson("/io/dugnutt/jsonschema/relative-uri/schema/main.json", JsonObject.class);
+        schemaFactory.createSchema(schemaLocation, jsonObject);
     }
 }

@@ -36,6 +36,7 @@ import static io.dugnutt.jsonschema.six.JsonSchemaType.BOOLEAN;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
+import static io.dugnutt.jsonschema.utils.JsonUtils.jsonObjectBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
@@ -74,8 +75,10 @@ public class ObjectKeywordsValidatorTest {
     public void additionalPropertySchema() {
         JsonSchemaBuilder boolSchema = jsonSchemaBuilder().type(BOOLEAN);
         Schema schema = mockObjectSchema().schemaOfAdditionalProperties(boolSchema).build();
+        JsonObject fooBar = jsonObjectBuilder().add("foo", "bar").build();
+
         failureOf(schema)
-                .input(OBJECTS.get("additionalPropertySchema"))
+                .input(fooBar)
                 .expected(error -> {
                     //Other stuff
                     assertEquals(1, error.getCauses().size());
@@ -117,7 +120,12 @@ public class ObjectKeywordsValidatorTest {
                 .build();
 
         final SchemaValidator testValidator = createTestValidator(subject);
-        ValidationError error = verifyFailure(() -> testValidator.validate(readJsonObject("{\"a\":true,\"b\":true}")));
+
+        JsonObject testSubject = jsonObjectBuilder()
+                .add("a", true)
+                .add("b", true)
+                .build();
+        ValidationError error = verifyFailure(() -> testValidator.validate(testSubject));
 
         assertEquals("#: Additional properties were invalid", error.getMessage());
         assertEquals(ADDITIONAL_PROPERTIES, error.getKeyword());

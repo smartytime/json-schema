@@ -56,6 +56,10 @@ public class SchemaLocation {
         return jsonPath.toURIFragment();
     }
 
+    public boolean isAutoAssign() {
+        return DUGNUTT_UUID_SCHEME.equals(absoluteURI.getScheme());
+    }
+
     public SchemaLocation withChildPath(String... jsonPath) {
         return toBuilder()
                 .appendJsonPath(jsonPath)
@@ -65,6 +69,12 @@ public class SchemaLocation {
     public SchemaLocation withChildPath(String key1, int key2) {
         return toBuilder()
                 .jsonPath(getJsonPath().child(key1).child(key2))
+                .build();
+    }
+
+    public SchemaLocation withChildPath(int key2) {
+        return toBuilder()
+                .jsonPath(getJsonPath().child(key2))
                 .build();
     }
 
@@ -92,11 +102,6 @@ public class SchemaLocation {
         return toBuilder()
                 .id(id)
                 .build();
-
-    }
-
-    public boolean isAutoAssign() {
-        return DUGNUTT_UUID_SCHEME.equals(absoluteURI.getScheme());
     }
 
     public static SchemaLocation anonymousRoot() {
@@ -141,6 +146,11 @@ public class SchemaLocation {
             documentURI(ROOT_URI);
         }
 
+        public SchemaLocationBuilder absoluteURI(URI uri) {
+            //Noop
+            return this;
+        }
+
         public SchemaLocation build() {
             if (id != null) {
                 if (jsonPath == ROOT_PATH && SchemaUtils.isJsonPointer(id)) {
@@ -164,18 +174,13 @@ public class SchemaLocation {
                     this.resolutionScope);
         }
 
-        public SchemaLocationBuilder id(URI id) {
-            this.id = id;
-            return this;
-        }
-
         public SchemaLocationBuilder id(String uri) {
             this.id = URI.create(uri);
             return this;
         }
 
-        public SchemaLocationBuilder absoluteURI(URI uri) {
-            //Noop
+        public SchemaLocationBuilder id(URI id) {
+            this.id = id;
             return this;
         }
 

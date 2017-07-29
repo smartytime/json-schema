@@ -241,9 +241,8 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         when(httpClient.fetchSchema(URI.create("http://example.org/otherschema.json"))).thenReturn(asStream("{}"));
         when(httpClient.fetchSchema(URI.create("http://example.org/folder/subschemaInFolder.json"))).thenReturn(
                 asStream("{}"));
-        schemaFactory()
-                .withHttpClient(httpClient)
-                .load(getJsonObjectForKey("remotePointerResolution"));
+        JsonSchemaFactory factory = JsonSchemaFactory.builder().httpClient(httpClient).build();
+        factory.load(getJsonObjectForKey("remotePointerResolution"));
     }
 
     @Test
@@ -252,9 +251,8 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
             System.out.println("GET " + url);
             return new DefaultSchemaClient().fetchSchema(url);
         };
-        schemaFactory()
-                .withHttpClient(schemaClient)
-                .load(getJsonObjectForKey("resolutionScopeTest"));
+        JsonSchemaFactory factory = JsonSchemaFactory.builder().httpClient(schemaClient).build();
+        factory.load(getJsonObjectForKey("resolutionScopeTest"));
     }
 
     @Test
@@ -264,9 +262,8 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         when(client.fetchSchema("http://example.org/schema/schema.json")).thenReturn(retval);
         when(client.fetchSchema(URI.create("http://example.org/schema/schema.json"))).thenReturn(retval);
         final JsonObject schemaWithId = getJsonObjectForKey("schemaWithId");
-        JsonSchemaFactory.schemaFactory()
-                .withHttpClient(client)
-                .load(schemaWithId);
+        JsonSchemaFactory factory = JsonSchemaFactory.builder().httpClient(client).build();
+        factory.load(schemaWithId);
     }
 
     @Test
@@ -295,7 +292,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
     @Test
     public void sniffByFormat() {
         JsonObject schema = provider().createObjectBuilder().add("format", "hostname").build();
-        Schema actual = JsonSchemaFactory.schemaFactory().load(schema);
+        Schema actual = schemaFactory().load(schema);
         assertThat(actual.getStringKeywords()).isPresent();
         assertThat(actual.getStringKeywords().get().getFormat()).isEqualTo("hostname");
     }
@@ -328,7 +325,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
                 .add("type", "string")
                 .add("format", "unknown")
                 .build();
-        JsonSchemaFactory.schemaFactory().load(schema);
+        schemaFactory().load(schema);
     }
 
     private InputStream asStream(final String string) {

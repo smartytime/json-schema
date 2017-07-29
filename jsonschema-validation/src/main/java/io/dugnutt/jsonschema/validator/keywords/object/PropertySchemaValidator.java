@@ -1,43 +1,43 @@
 package io.dugnutt.jsonschema.validator.keywords.object;
 
 import com.google.common.collect.ImmutableMap;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import com.google.common.collect.Sets;
+import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
+import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.*;
 
 @ToString
 @EqualsAndHashCode
-public class PropertySchemaValidator implements SchemaValidator {
+public class PropertySchemaValidator extends KeywordValidator {
     private final ImmutableMap<String, SchemaValidator> propertyValidators;
     private final Schema schema;
 
     public PropertySchemaValidator(ImmutableMap<String, SchemaValidator> propertyValidators, Schema schema) {
+        super(PROPERTIES, schema);
         this.propertyValidators = checkNotNull(propertyValidators);
         this.schema = checkNotNull(schema);
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         final Set<String> subjectProperties = subject.asJsonObject().keySet();
-        boolean success = true;
-        for (Map.Entry<String, SchemaValidator> propertySchemas : propertyValidators.entrySet()) {
-            final String propertyName = propertySchemas.getKey();
-            if (subjectProperties.contains(propertyName)) {
-                SchemaValidator propValidator = propertySchemas.getValue();
-                PathAwareJsonValue pathAwareSubject = subject.getPathAware(propertyName);
-                final boolean validated = propValidator.validate(pathAwareSubject, report);
-                success = success && validated;
-            }
+        final Set<String> schemaNames = propertyValidators.keySet();
+        for (String property : Sets.intersection(subjectProperties, schemaNames)) {
+            SchemaValidator propValidator = propertyValidators.get(property);
+            JsonValueWithLocation pathAwareSubject = subject.getPathAwareObject(property);
+            propValidator.validate(pathAwareSubject, report);
         }
-        return success;
+        return report.isValid();
     }
 
     @Override

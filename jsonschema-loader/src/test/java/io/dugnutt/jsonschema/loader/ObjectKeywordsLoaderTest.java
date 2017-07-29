@@ -18,11 +18,11 @@ import static org.junit.Assert.assertEquals;
 /**
  * @author erosb
  */
-public class ObjectKeywordsFactoryHelperTest extends BaseLoaderTest {
+public class ObjectKeywordsLoaderTest extends BaseLoaderTest {
 
     public static final Schema BOOLEAN_SCHEMA = Schema.jsonSchemaBuilder().type(JsonSchemaType.BOOLEAN).build();
 
-    public ObjectKeywordsFactoryHelperTest() {
+    public ObjectKeywordsLoaderTest() {
         super("objecttestschemas.json");
     }
 
@@ -95,12 +95,4 @@ public class ObjectKeywordsFactoryHelperTest extends BaseLoaderTest {
     public void emptyDependencyList() {
         getSchemaForKey("emptyDependencyList");
     }
-
-    @Test @Ignore
-    public void invalidRequired() {
-        expExc.expect(SchemaException.class);
-        expExc.expectMessage("#/required/1: expected type: String, found: JsonArray");
-        getSchemaForKey("invalidRequired");
-    }
-
 }

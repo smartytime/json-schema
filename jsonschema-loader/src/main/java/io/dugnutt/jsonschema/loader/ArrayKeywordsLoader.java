@@ -1,8 +1,8 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.SchemaLocation;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 
 import javax.json.JsonValue;
@@ -17,20 +17,23 @@ import static javax.json.JsonValue.ValueType;
 /**
  * @author erosb
  */
-class ArrayKeywordsFactoryHelper {
+class ArrayKeywordsLoader implements KeywordsLoader {
+    private ArrayKeywordsLoader() {
 
-    public static void appendArrayKeywords(PathAwareJsonValue schemaJson, Schema.JsonSchemaBuilder schemaBuilder,
-                                           JsonSchemaFactory schemaFactory) {
+    }
+
+    @Override
+    public void appendKeywords(JsonValueWithLocation schemaJson, Schema.JsonSchemaBuilder schemaBuilder, JsonSchemaFactory schemaFactory) {
 
         schemaJson.findInteger(MIN_ITEMS).ifPresent(schemaBuilder::minItems);
         schemaJson.findInt(MAX_ITEMS).ifPresent(schemaBuilder::maxItems);
         schemaJson.findBoolean(UNIQUE_ITEMS).ifPresent(schemaBuilder::needsUniqueItems);
-        schemaJson.findPathAware(ADDITIONAL_ITEMS)
+        schemaJson.findPathAwareObject(ADDITIONAL_ITEMS)
                 .map(schemaFactory::createSchemaBuilder)
                 .ifPresent(schemaBuilder::schemaOfAdditionalItems);
 
         schemaJson.findByKey(ITEMS).ifPresent(itemsValue -> {
-            final JsonPath itemsPath = schemaJson.getPath().child(ITEMS.key());
+            final SchemaLocation itemsPath = schemaJson.getLocation().withChildPath(ITEMS);
             switch (itemsValue.getValueType()) {
                 case OBJECT:
                     schemaBuilder.allItemSchema(
@@ -40,7 +43,7 @@ class ArrayKeywordsFactoryHelper {
                 case ARRAY:
                     int idx = 0;
                     for (JsonValue jsonValue : itemsValue.asJsonArray()) {
-                        final JsonPath idxPath = itemsPath.child(idx++);
+                        final SchemaLocation idxPath = itemsPath.withChildPath(idx++);
                         if (jsonValue.getValueType() != ValueType.OBJECT) {
                             throw new UnexpectedValueException(idxPath, itemsValue, ValueType.OBJECT);
                         }
@@ -53,5 +56,9 @@ class ArrayKeywordsFactoryHelper {
                     throw new UnexpectedValueException(itemsPath, itemsValue, ValueType.OBJECT, ValueType.ARRAY);
             }
         });
+    }
+
+    public static ArrayKeywordsLoader arrayKeywordsLoader() {
+        return new ArrayKeywordsLoader();
     }
 }

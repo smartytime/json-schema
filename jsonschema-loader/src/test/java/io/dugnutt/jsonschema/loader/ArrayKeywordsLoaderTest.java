@@ -18,11 +18,11 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author erosb
  */
-public class ArrayKeywordsFactoryHelperTest extends BaseLoaderTest {
+public class ArrayKeywordsLoaderTest extends BaseLoaderTest {
 
     public static final Schema NULL_SCHEMA = Schema.jsonSchemaBuilder().type(JsonSchemaType.NULL).build();
 
-    public ArrayKeywordsFactoryHelperTest() {
+    public ArrayKeywordsLoaderTest() {
         super("arraytestschemas.json");
     }
 

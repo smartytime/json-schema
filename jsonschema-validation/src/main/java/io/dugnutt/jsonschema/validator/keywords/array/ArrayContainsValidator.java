@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator.keywords.array;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -24,17 +24,18 @@ public class ArrayContainsValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
-        final ValidationReport trap = new ValidationReport();
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         for (int i = 0; i < subject.arraySize(); i++) {
-            final PathAwareJsonValue item = subject.getItem(i);
+            final ValidationReport trap = report.createChildReport();
+            final JsonValueWithLocation item = subject.getItem(i);
             if (containsValidator.validate(subject, trap)) {
                 return true;
             }
         }
 
-        return report.addError(buildKeywordFailure(subject, schema, CONTAINS)
+        report.addError(buildKeywordFailure(subject, schema, CONTAINS)
                 .message("array does not contain at least 1 matching item")
                 .build());
+        return report.isValid();
     }
 }

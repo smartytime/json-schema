@@ -15,6 +15,8 @@
  */
 package io.dugnutt.jsonschema.loader.reference;
 
+import lombok.SneakyThrows;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;

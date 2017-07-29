@@ -9,11 +9,11 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 /**
  * @author erosb
  */
-public class StringKeywordsFactoryHelperTest extends BaseLoaderTest {
+public class StringKeywordsLoaderTest extends BaseLoaderTest {
 
     public static final Schema NULL_SCHEMA = Schema.jsonSchemaBuilder().type(JsonSchemaType.NULL).build();
 
-    public StringKeywordsFactoryHelperTest() {
+    public StringKeywordsLoaderTest() {
         super("stringtestschemas.json");
     }
 

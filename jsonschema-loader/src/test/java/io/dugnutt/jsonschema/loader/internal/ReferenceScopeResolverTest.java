@@ -15,7 +15,7 @@
  */
 package io.dugnutt.jsonschema.loader.internal;
 
-import io.dugnutt.jsonschema.loader.reference.ReferenceScopeResolver;
+import io.dugnutt.jsonschema.six.SchemaLocation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -43,62 +43,31 @@ public class ReferenceScopeResolverTest {
                 parList("file name after folder path", "http://x.y.z/schema/child.json",
                         "http://x.y.z/schema/", "child.json"),
                 parList("new root", "http://bserver.com", "http://aserver.com/",
-                        "http://bserver.com"),
-                parList("null parent", "http://a.b.c", null, "http://a.b.c"));
+                        "http://bserver.com"));
     }
 
     private static Object[] parList(final String... params) {
         return params;
     }
 
-    private final String expectedOutput;
+    private final URI expectedOutput;
 
-    private final String parentScope;
+    private final URI parentScope;
 
-    private final String encounteredSegment;
+    private final URI encounteredSegment;
 
     public ReferenceScopeResolverTest(final String testcaseName, final String expectedOutput,
                                       final String parentScope,
                                       final String encounteredSegment) {
-        this.expectedOutput = expectedOutput;
-        this.parentScope = parentScope;
-        this.encounteredSegment = encounteredSegment;
+        this.expectedOutput = URI.create(expectedOutput);
+        this.parentScope = URI.create(parentScope);
+        this.encounteredSegment = URI.create(encounteredSegment);
     }
 
     @Test
     public void test() {
-        String actual = ReferenceScopeResolver.resolveScope(parentScope, encounteredSegment);
-        assertEquals(expectedOutput, actual);
+        SchemaLocation parentLocation = SchemaLocation.schemaLocation(parentScope);
+        SchemaLocation childLocation = parentLocation.withChildPath(encounteredSegment);
+        assertEquals(expectedOutput, childLocation.getAbsoluteURI());
     }
-
-    @Test
-    public void testURI() {
-        URI parentScopeURI;
-        try {
-            parentScopeURI = new URI(parentScope);
-        } catch (URISyntaxException | NullPointerException e) {
-            parentScopeURI = null;
-        }
-        URI actual = ReferenceScopeResolver.resolveScope(parentScopeURI, encounteredSegment);
-    }
-
-    @Test
-    public void resolveWrapsURISyntaxException() {
-        try {
-            ReferenceScopeResolver.resolveScope("\\\\somethin\010g invalid///", "segment");
-            fail("did not throw exception for invalid URI");
-        } catch (Exception e) {
-            assertEquals(URISyntaxException.class, e.getClass());
-        }
-    }
-
-    @Test public void resolveURIWrapsURISyntaxException() throws Exception {
-        try {
-            ReferenceScopeResolver.resolveScope(new URI("http://example.com"), "\\\\somethin\010g invalid///");
-            fail("did not throw exception for invalid URI");
-        } catch (IllegalArgumentException e) {
-            assertEquals(URISyntaxException.class, e.getCause().getClass());
-        }
-    }
-
 }

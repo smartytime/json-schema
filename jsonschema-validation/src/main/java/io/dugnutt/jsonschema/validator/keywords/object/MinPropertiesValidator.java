@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator.keywords.object;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -22,13 +22,13 @@ public class MinPropertiesValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         int actualSize = subject.numberOfProperties();
         if (actualSize < minProperties) {
-            return report.addError(buildKeywordFailure(subject, schema, MIN_PROPERTIES)
+            report.addError(buildKeywordFailure(subject, schema, MIN_PROPERTIES)
                     .message("minimum size: [%d], found: [%d]", minProperties, actualSize)
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

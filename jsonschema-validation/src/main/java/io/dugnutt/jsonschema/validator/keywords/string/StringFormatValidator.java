@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator.keywords.string;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.string.formatValidators.FormatValidator;
@@ -26,14 +26,14 @@ public class StringFormatValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         String stringSubject = subject.asString();
         Optional<String> error = formatValidator.validate(stringSubject);
         if (error.isPresent()) {
-            return report.addError(buildKeywordFailure(subject, schema, FORMAT)
+            report.addError(buildKeywordFailure(subject, schema, FORMAT)
                     .message(error.get())
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

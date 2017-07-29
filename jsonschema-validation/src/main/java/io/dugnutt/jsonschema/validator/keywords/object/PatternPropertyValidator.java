@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords.object;
 
 import com.google.common.collect.ImmutableMap;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -29,19 +29,19 @@ public class PatternPropertyValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport parentReport) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport parentReport) {
         Set<String> subjectProperties = subject.propertyNames();
         if (subjectProperties.isEmpty()) {
             return true;
         }
         boolean success = true;
-        ValidationReport report = new ValidationReport();
+        ValidationReport report = parentReport.createChildReport();
         for (Map.Entry<Pattern, SchemaValidator> patternValidatorEntries : patternValidators.entrySet()) {
             Pattern pattern = patternValidatorEntries.getKey();
             SchemaValidator patternValidator = patternValidatorEntries.getValue();
             for (String propertyName : subjectProperties) {
                 if (pattern.matcher(propertyName).matches()) {
-                    final PathAwareJsonValue propertyValue = subject.getPathAware(propertyName);
+                    final JsonValueWithLocation propertyValue = subject.getPathAwareObject(propertyName);
                     success = success && patternValidator.validate(propertyValue, report);
                 }
             }

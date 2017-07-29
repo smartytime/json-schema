@@ -31,6 +31,6 @@ public class ResolutionScopeTest extends BaseLoaderTest {
     @Test
     public void resolutionScopeTest() {
         JsonObject schemaJson = getJsonObjectForKey("resolutionScopeTest");
-        schemaFactory().withHttpClient(new DefaultSchemaClient()).load(schemaJson);
+        schemaFactory().load(schemaJson);
     }
 }

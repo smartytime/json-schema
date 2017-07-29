@@ -19,14 +19,6 @@ public class StreamUtils {
         }, Collections::unmodifiableList);
     }
 
-    public static <X> Stream<X> safeStream(Collection<X> input) {
-        if (input == null) {
-            return Stream.empty();
-        } else {
-            return input.stream();
-        }
-    }
-
     public static <F, T> List<T> safeTransform(Collection<F> input, Function<F, T> fn) {
         if (input != null) {
             return input.stream()

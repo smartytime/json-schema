@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords;
 
 import io.dugnutt.jsonschema.six.ObjectComparator;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -22,14 +22,14 @@ public class EnumValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         boolean foundMatch = enumValues.stream()
                 .anyMatch(val -> ObjectComparator.lexicalEquivalent(val, subject.getWrapped()));
         if (!foundMatch) {
-            return report.addError(buildKeywordFailure(subject, schema, ENUM)
+            report.addError(buildKeywordFailure(subject, schema, ENUM)
                     .message("%s does not match the enum values", subject)
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

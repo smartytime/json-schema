@@ -3,13 +3,14 @@ package io.dugnutt.jsonschema;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
 import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.SchemaLocation;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
+import io.dugnutt.jsonschema.validator.ValidationReport;
 
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,15 +29,30 @@ public class PerfBenchmark {
         final SchemaValidator validator = SchemaValidatorFactory.createValidatorForSchema(draft6Schema);
 
         final JsonObject jsonObject = ResourceLoader.DEFAULT.readObj("perftest.json");
-        final List<PathAwareJsonValue> testSubjects = new ArrayList<>();
+        final List<JsonValueWithLocation> testSubjects = new ArrayList<>();
         jsonObject.getJsonObject("schemas").forEach((k, v) -> {
-            testSubjects.add(new PathAwareJsonValue(v, JsonPath.rootPath()));
+            testSubjects.add(JsonValueWithLocation.fromJsonValue(v, SchemaLocation.anonymousRoot()));
         });
 
         long startAt = System.currentTimeMillis();
+        ValidationReport report = doValidations(testSubjects, validator);
+
+        report.writeTo(System.out);
+        long endAt = System.currentTimeMillis();
+        long execTime = endAt - startAt;
+        System.out.println("total time: " + execTime + " ms");
+    }
+
+    public static ValidationReport doValidations(List<JsonValueWithLocation> testSubjects, SchemaValidator validator) {
+
+        ValidationReport report = new ValidationReport();
+
+        long startAt = System.currentTimeMillis();
         for (int i = 0; i < 500; ++i) {
-            for (JsonValue testSubject : testSubjects) {
-                validator.validate(testSubject);
+            for (JsonValueWithLocation testSubject : testSubjects) {
+                if(!validator.validate(testSubject, report)) {
+                    throw new IllegalStateException("OOPS: " + report.getErrors());
+                }
             }
 
             if (i % 20 == 0) {
@@ -45,8 +61,7 @@ public class PerfBenchmark {
             }
         }
 
-        long endAt = System.currentTimeMillis();
-        long execTime = endAt - startAt;
-        System.out.println("total time: " + execTime + " ms");
+        return report;
+
     }
 }

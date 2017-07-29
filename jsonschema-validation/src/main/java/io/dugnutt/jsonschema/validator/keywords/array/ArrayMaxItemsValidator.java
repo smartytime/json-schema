@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator.keywords.array;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -22,14 +22,14 @@ public class ArrayMaxItemsValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         int actualLength = subject.arraySize();
 
         if (actualLength > maxItems) {
-            return report.addError(buildKeywordFailure(subject, schema, MAX_ITEMS)
+            report.addError(buildKeywordFailure(subject, schema, MAX_ITEMS)
                     .message("expected maximum item count: %s, found: %s", maxItems, actualLength)
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

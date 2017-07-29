@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,8 +58,9 @@ public class JsonObjectTest extends BaseLoaderTest {
     @Test
     public void nestedId() {
         JsonObject schema = getJsonObjectForKey("nestedId");
-        SchemaLoadingContext modelFor = SchemaLoadingContext.createModelFor(schema);
-        SchemaLoadingContext grandChild = modelFor.childModel(JsonSchemaKeyword.PROPERTIES).get().childModel("prop");
+        JsonValueWithLocation schemaJson = JsonValueWithLocation.fromJsonValue(schema);
+
+        JsonValueWithLocation grandChild = schemaJson.getPathAwareObject(JsonSchemaKeyword.PROPERTIES).getPathAwareObject("prop");
         assertEquals("http://x.y/z#zzz", grandChild.getLocation().getAbsoluteURI().toString());
     }
 

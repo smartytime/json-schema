@@ -1,9 +1,9 @@
-package io.dugnutt.jsonschema.validator.builders;
+package io.dugnutt.jsonschema.validator.extractors;
 
 import com.google.common.collect.ImmutableList;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
+import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -16,11 +16,11 @@ import java.util.Spliterator;
 import java.util.function.Consumer;
 
 @Getter
-public class KeywordValidators implements Iterable<SchemaValidator> {
+public class KeywordValidators implements Iterable<KeywordValidator> {
 
     @NonNull
     @Singular
-    private final List<SchemaValidator> validators;
+    private final List<KeywordValidator> validators;
 
     @NonNull
     private final Schema schema;
@@ -29,24 +29,24 @@ public class KeywordValidators implements Iterable<SchemaValidator> {
     private final SchemaValidatorFactory validatorFactory;
 
     @Builder
-    public KeywordValidators(List<SchemaValidator> validators, Schema schema, SchemaValidatorFactory validatorFactory) {
+    public KeywordValidators(List<KeywordValidator> validators, Schema schema, SchemaValidatorFactory validatorFactory) {
         this.validators = ImmutableList.copyOf(validators);
         this.schema = schema;
         this.validatorFactory = validatorFactory;
     }
 
     @Override
-    public Iterator<SchemaValidator> iterator() {
+    public Iterator<KeywordValidator> iterator() {
         return validators.iterator();
     }
 
     @Override
-    public void forEach(Consumer<? super SchemaValidator> action) {
+    public void forEach(Consumer<? super KeywordValidator> action) {
         validators.forEach(action);
     }
 
     @Override
-    public Spliterator<SchemaValidator> spliterator() {
+    public Spliterator<KeywordValidator> spliterator() {
         return validators.spliterator();
     }
 
@@ -55,12 +55,12 @@ public class KeywordValidators implements Iterable<SchemaValidator> {
     }
 
     public static class KeywordValidatorsBuilder {
-        private List<SchemaValidator> validators = new ArrayList<>();
+        private List<KeywordValidator> validators = new ArrayList<>();
 
         private KeywordValidatorsBuilder() {
         }
 
-        public KeywordValidatorsBuilder addValidator(SchemaValidator validator) {
+        public KeywordValidatorsBuilder addValidator(KeywordValidator validator) {
             this.validators.add(validator);
             return this;
         }

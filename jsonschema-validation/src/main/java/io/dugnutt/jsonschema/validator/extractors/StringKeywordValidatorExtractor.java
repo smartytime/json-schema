@@ -1,7 +1,7 @@
-package io.dugnutt.jsonschema.validator.builders;
+package io.dugnutt.jsonschema.validator.extractors;
 
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.validator.builders.KeywordValidators.KeywordValidatorsBuilder;
+import io.dugnutt.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import io.dugnutt.jsonschema.validator.keywords.string.StringFormatValidator;
 import io.dugnutt.jsonschema.validator.keywords.string.StringMaxLengthValidator;
@@ -14,10 +14,10 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class StringKeywordValidatorBuilder implements KeywordValidatorBuilder {
+public class StringKeywordValidatorExtractor implements KeywordValidatorExtractor {
 
-    public static StringKeywordValidatorBuilder stringKeywordsValidator() {
-        return new StringKeywordValidatorBuilder();
+    public static StringKeywordValidatorExtractor stringKeywordsValidator() {
+        return new StringKeywordValidatorExtractor();
     }
 
     @Override
@@ -82,7 +82,7 @@ public class StringKeywordValidatorBuilder implements KeywordValidatorBuilder {
     }
 
     @Override
-    public Set<ValueType> appliesToTypes() {
+    public Set<ValueType> getApplicableTypes() {
         return Collections.singleton(ValueType.STRING);
     }
 }

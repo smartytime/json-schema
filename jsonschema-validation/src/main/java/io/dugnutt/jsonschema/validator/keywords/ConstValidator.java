@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords;
 
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -23,12 +23,12 @@ public class ConstValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         if (!constValue.equals(subject)) {
-            return report.addError(buildKeywordFailure(subject, schema, CONST)
+            report.addError(buildKeywordFailure(subject, schema, CONST)
                     .message("%s does not match the const value", subject)
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

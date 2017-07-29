@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 
 import javax.json.JsonValue;
@@ -9,18 +9,22 @@ import java.util.Optional;
 @FunctionalInterface
 public interface SchemaValidator {
 
-    boolean validate(PathAwareJsonValue subject, ValidationReport report);
+    boolean validate(JsonValueWithLocation subject, ValidationReport report);
 
+    /**
+     * @deprecated Use validateWithReport
+     */
+    @Deprecated
     default Optional<ValidationError> validate(JsonValue subject) {
-        PathAwareJsonValue pathAwareSubject = new PathAwareJsonValue(subject, getSchema().getLocation().getJsonPath());
-        return validate(pathAwareSubject);
+        JsonValueWithLocation pathAwareSubject = JsonValueWithLocation.fromJsonValue(subject, getSchema().getLocation());
+        ValidationReport report = validate(pathAwareSubject);
+        return ValidationError.collectErrors(getSchema(), pathAwareSubject.getPath(), report.getErrors());
     }
 
-    @Deprecated
-    default Optional<ValidationError> validate(PathAwareJsonValue subject) {
+    default ValidationReport validate(JsonValueWithLocation subject) {
         ValidationReport report = new ValidationReport();
         validate(subject, report);
-        return ValidationError.collectErrors(getSchema(), subject.getPath(), report.getErrors());
+        return report;
     }
 
 

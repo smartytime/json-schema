@@ -1,29 +1,36 @@
 package io.dugnutt.jsonschema.validator;
 
-import com.google.common.collect.ImmutableListMultimap;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 
-import java.util.HashMap;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.dugnutt.jsonschema.validator.ValidationError.collectErrors;
 
 public class ValidationReport {
 
-    ImmutableListMultimap.Builder<String, ValidationError> allErrors = ImmutableListMultimap.builder();
+    private final List<ValidationError> errors = new ArrayList<>();
+    private boolean foundError;
 
-    public boolean addError(ValidationError validationError) {
-        String key = validationError.getPointerToViolation();
-        allErrors.put(key, validationError);
-        return false;
+    public List<ValidationError> getErrors() {
+        return Collections.unmodifiableList(errors);
     }
 
-    public boolean addReport(Schema schema, PathAwareJsonValue subject, JsonSchemaKeyword keyword, String message, ValidationReport report) {
+    public void addError(ValidationError validationError) {
+        errors.add(validationError);
+        foundError = true;
+    }
+
+    public boolean addReport(Schema schema, JsonValueWithLocation subject, JsonSchemaKeyword keyword, String message, ValidationReport report) {
         final List<ValidationError> errors = report.getErrors();
         if (errors.size() > 0) {
             addError(ValidationError.validationBuilder()
@@ -40,21 +47,49 @@ public class ValidationReport {
         return true;
     }
 
-    public boolean addReport(Schema schema, PathAwareJsonValue subject, ValidationReport report) {
+    public boolean addReport(Schema schema, JsonValueWithLocation subject, ValidationReport report) {
         Optional<ValidationError> error = collectErrors(schema, subject.getPath(), report.getErrors());
         error.ifPresent(this::addError);
         return !error.isPresent();
     }
 
-    public List<ValidationError> getErrors() {
-        return allErrors.build().values().asList();
+    public ValidationReport createChildReport() {
+        return new ValidationReport();
     }
 
-    public void log(SchemaValidator validator) {
-        String key = validator.toString();
-        counts.putIfAbsent(key, new AtomicInteger(0));
-        counts.get(key).getAndIncrement();
+    public boolean isValid() {
+        return !foundError;
     }
 
-    public static final Map<String, AtomicInteger> counts = new HashMap<>();
+    public String toString() {
+        StringWriter string = new StringWriter();
+        writeTo(string);
+        return string.toString();
+    }
+
+    public void writeTo(OutputStream writer) {
+        writeTo(new OutputStreamWriter(writer));
+    }
+
+    public void writeTo(Writer writer) {
+        PrintWriter printer = new PrintWriter(writer);
+        if (errors.size() > 0) {
+            printer.println("###############################################");
+            printer.println("####              ERRORS                   ####");
+            printer.println("###############################################");
+        }
+        errors.forEach(e -> this.toStringErrors(e, printer));
+    }
+
+    private void toStringErrors(ValidationError error, PrintWriter printer) {
+        if (error.getCauses().size() > 0) {
+            error.getCauses().forEach(e -> toStringErrors(e, printer));
+        }
+        printer.println(error.getPointerToViolation());
+        String keywordValue = error.getKeyword() == null ? "Unknown" : error.getKeyword().key();
+        printer.println("\tKeyword: " + keywordValue);
+        printer.println("\tMessage: " + error.getMessage());
+        printer.println("\tSchema : " + error.getSchemaLocation());
+        printer.println("");
+    }
 }

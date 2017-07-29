@@ -1,8 +1,8 @@
-package io.dugnutt.jsonschema.validator.builders;
+package io.dugnutt.jsonschema.validator.extractors;
 
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
-import io.dugnutt.jsonschema.validator.builders.KeywordValidators.KeywordValidatorsBuilder;
+import io.dugnutt.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.dugnutt.jsonschema.validator.keywords.number.NumberExclusiveMaximumValidator;
 import io.dugnutt.jsonschema.validator.keywords.number.NumberExclusiveMinimumValidator;
 import io.dugnutt.jsonschema.validator.keywords.number.NumberMaximumValidator;
@@ -14,10 +14,10 @@ import java.util.Set;
 
 import static javax.json.JsonValue.ValueType;
 
-public class NumberKeywordValidatorBuilder implements KeywordValidatorBuilder {
+public class NumberKeywordValidatorExtractor implements KeywordValidatorExtractor {
 
-    public static NumberKeywordValidatorBuilder numberKeywordsValidator() {
-        return new NumberKeywordValidatorBuilder();
+    public static NumberKeywordValidatorExtractor numberKeywordsValidator() {
+        return new NumberKeywordValidatorExtractor();
     }
 
     @Override
@@ -26,7 +26,7 @@ public class NumberKeywordValidatorBuilder implements KeywordValidatorBuilder {
     }
 
     @Override
-    public Set<ValueType> appliesToTypes() {
+    public Set<ValueType> getApplicableTypes() {
         return Collections.singleton(ValueType.NUMBER);
     }
 

@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords.array;
 
 import com.google.common.collect.ImmutableList;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -30,7 +30,7 @@ public class ArrayPerItemValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         AtomicBoolean success = new AtomicBoolean(true);
         final int indexedValidatorCount = indexedValidators.size();
         subject.forEachIndex((idx, item) -> {

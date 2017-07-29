@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 
@@ -22,36 +22,39 @@ import static javax.json.JsonValue.ValueType.OBJECT;
  *
  * @author erosb
  */
-class ObjectKeywordsFactoryHelper {
+class ObjectKeywordsLoader implements KeywordsLoader {
 
-    public static void appendObjectKeywords(PathAwareJsonValue schemaJson, Schema.JsonSchemaBuilder schemaBuilder,
-                                            JsonSchemaFactory schemaFactory) {
+    private ObjectKeywordsLoader() {
+
+    }
+
+    @Override
+    public void appendKeywords(JsonValueWithLocation schemaJson, Schema.JsonSchemaBuilder schemaBuilder, JsonSchemaFactory schemaFactory) {
 
         schemaJson.findInt(MIN_PROPERTIES).ifPresent(schemaBuilder::minProperties);
         schemaJson.findInt(MAX_PROPERTIES).ifPresent(schemaBuilder::maxProperties);
 
-        schemaJson.findPathAware(PROPERTIES).ifPresent(jsonObject -> {
+        schemaJson.findPathAwareObject(PROPERTIES).ifPresent(jsonObject -> {
             jsonObject.forEachKey((property, propSchema) -> {
                 schemaBuilder.propertySchema(property, schemaFactory.createSchemaBuilder(propSchema));
             });
         });
 
-        schemaJson.findPathAware(ADDITIONAL_PROPERTIES)
+        schemaJson.findPathAwareObject(ADDITIONAL_PROPERTIES)
                 .map(schemaFactory::createSchemaBuilder)
                 .ifPresent(schemaBuilder::schemaOfAdditionalProperties);
 
         schemaJson.streamPathAwareArrayItems(REQUIRED)
-                .map(PathAwareJsonValue::asString)
+                .map(JsonValueWithLocation::asString)
                 .forEach(schemaBuilder::requiredProperty);
 
-        schemaJson.findPathAware(PATTERN_PROPERTIES).ifPresent(jsonObject -> {
+        schemaJson.findPathAwareObject(PATTERN_PROPERTIES).ifPresent(jsonObject -> {
             jsonObject.forEachKey((pattern, patternSchema) -> {
                 schemaBuilder.patternProperty(Pattern.compile(pattern), schemaFactory.createSchemaBuilder(patternSchema));
             });
         });
 
         /*
-
             "dependencies": {
               "d": {
                 "type": "object",
@@ -65,7 +68,7 @@ class ObjectKeywordsFactoryHelper {
 
          */
 
-        schemaJson.findPathAware(DEPENDENCIES).ifPresent(dependencyObject ->
+        schemaJson.findPathAwareObject(DEPENDENCIES).ifPresent(dependencyObject ->
                 dependencyObject.forEachKey((dependencyKey, dependencyStructure) -> {
                     switch (dependencyStructure.getValueType()) {
                         case OBJECT:
@@ -81,5 +84,9 @@ class ObjectKeywordsFactoryHelper {
                             throw new UnexpectedValueException(schemaJson.getPath(), dependencyStructure, OBJECT, ARRAY);
                     }
                 }));
+    }
+
+    public static ObjectKeywordsLoader objectKeywordsLoader() {
+        return new ObjectKeywordsLoader();
     }
 }

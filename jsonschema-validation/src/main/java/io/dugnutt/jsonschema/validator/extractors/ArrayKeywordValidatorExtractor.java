@@ -1,9 +1,9 @@
-package io.dugnutt.jsonschema.validator.builders;
+package io.dugnutt.jsonschema.validator.extractors;
 
 import io.dugnutt.jsonschema.six.ArrayKeywords;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.StreamUtils;
-import io.dugnutt.jsonschema.validator.builders.KeywordValidators.KeywordValidatorsBuilder;
+import io.dugnutt.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import io.dugnutt.jsonschema.validator.keywords.array.ArrayContainsValidator;
@@ -19,13 +19,13 @@ import java.util.Set;
 
 import static javax.json.JsonValue.ValueType;
 
-public class ArrayKeywordValidatorBuilder implements KeywordValidatorBuilder {
+public class ArrayKeywordValidatorExtractor implements KeywordValidatorExtractor {
 
-    private ArrayKeywordValidatorBuilder() {
+    private ArrayKeywordValidatorExtractor() {
     }
 
-    public static ArrayKeywordValidatorBuilder arrayKeywordsValidator() {
-        return new ArrayKeywordValidatorBuilder();
+    public static ArrayKeywordValidatorExtractor arrayKeywordsValidator() {
+        return new ArrayKeywordValidatorExtractor();
     }
 
     @Override
@@ -34,7 +34,7 @@ public class ArrayKeywordValidatorBuilder implements KeywordValidatorBuilder {
     }
 
     @Override
-    public Set<ValueType> appliesToTypes() {
+    public Set<ValueType> getApplicableTypes() {
         return Collections.singleton(ValueType.ARRAY);
     }
 

@@ -3,8 +3,8 @@ package io.dugnutt.jsonschema.validator;
 import com.google.common.base.Strings;
 import io.dugnutt.jsonschema.six.FormatType;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.validator.builders.BaseKeywordValidatorBuilder;
-import io.dugnutt.jsonschema.validator.builders.KeywordValidatorBuilder;
+import io.dugnutt.jsonschema.validator.extractors.BaseKeywordValidatorExtractor;
+import io.dugnutt.jsonschema.validator.extractors.KeywordValidatorExtractor;
 import io.dugnutt.jsonschema.validator.keywords.string.formatValidators.FormatValidator;
 import lombok.Builder;
 import lombok.NonNull;
@@ -21,10 +21,10 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.validator.builders.ArrayKeywordValidatorBuilder.arrayKeywordsValidator;
-import static io.dugnutt.jsonschema.validator.builders.NumberKeywordValidatorBuilder.numberKeywordsValidator;
-import static io.dugnutt.jsonschema.validator.builders.ObjectKeywordValidatorBuilder.objectKeywordsValidator;
-import static io.dugnutt.jsonschema.validator.builders.StringKeywordValidatorBuilder.stringKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.extractors.ArrayKeywordValidatorExtractor.arrayKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.extractors.NumberKeywordValidatorExtractor.numberKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.extractors.ObjectKeywordValidatorExtractor.objectKeywordsValidator;
+import static io.dugnutt.jsonschema.validator.extractors.StringKeywordValidatorExtractor.stringKeywordsValidator;
 
 @Builder(builderClassName = "Builder", toBuilder = true)
 public class SchemaValidatorFactory {
@@ -33,27 +33,25 @@ public class SchemaValidatorFactory {
 
     private final Map<URI, SchemaValidator> validatorCache = new HashMap<>();
 
-    private final Map<PartialValidatorKey, KeywordValidatorBuilder> partialValidatorCache = new HashMap<>();
+    private final Map<PartialValidatorKey, KeywordValidatorExtractor> partialValidatorCache = new HashMap<>();
 
     @NonNull
     private final Map<String, FormatValidator> customFormatValidators;
 
     @NonNull
     @Singular
-    private final List<KeywordValidatorBuilder> validators;
+    private final List<KeywordValidatorExtractor> validators;
 
     private final JsonProvider provider;
-
-    public void cacheSchema(URI absoluteURI, JsonSchemaValidator validator) {
-        validatorCache.putIfAbsent(absoluteURI, validator);
-    }
 
     public static SchemaValidator createValidatorForSchema(Schema schema) {
         return DEFAULT_VALIDATOR_FACTORY.createValidator(schema);
     }
 
     void cacheValidator(URI schemaURI, SchemaValidator validator) {
-        validatorCache.putIfAbsent(schemaURI, validator);
+        if (schemaURI.isAbsolute()) {
+            validatorCache.putIfAbsent(schemaURI, validator);
+        }
     }
 
     public SchemaValidator createValidator(Schema schema) {
@@ -87,7 +85,7 @@ public class SchemaValidatorFactory {
 
     @FunctionalInterface
     interface Factory {
-        KeywordValidatorBuilder createValidator(Schema schema, SchemaValidatorFactory factory);
+        KeywordValidatorExtractor createValidator(Schema schema, SchemaValidatorFactory factory);
     }
 
     public static class Builder {
@@ -110,7 +108,7 @@ public class SchemaValidatorFactory {
             // ##########################################
             // BASE VALIDATOR
             // ##########################################
-            validator(BaseKeywordValidatorBuilder.baseSchemaValidator());
+            validator(BaseKeywordValidatorExtractor.baseSchemaValidator());
 
             // ##########################################
             // KEYWORD VALIDATORS

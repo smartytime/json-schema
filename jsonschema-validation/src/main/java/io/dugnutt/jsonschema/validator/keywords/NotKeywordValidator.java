@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator.keywords;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationReport;
@@ -20,13 +20,13 @@ public class NotKeywordValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
-        final ValidationReport trap = new ValidationReport();
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
+        final ValidationReport trap = report.createChildReport();
         if (notValidator.validate(subject, trap)) {
-            return report.addError(buildKeywordFailure(subject, schema, NOT)
+            report.addError(buildKeywordFailure(subject, schema, NOT)
                     .message("subject must not be valid against schema", notSchema.getPointerFragmentURI())
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

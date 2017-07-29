@@ -2,7 +2,7 @@ package io.dugnutt.jsonschema.validator.keywords.string;
 
 import com.google.common.base.MoreObjects;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -23,14 +23,14 @@ public class StringMaxLengthValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         String string = MoreObjects.firstNonNull(subject.asString(), "");
         int actualLength = string.codePointCount(0, string.length());
         if (actualLength > maxLength) {
-            return report.addError(buildKeywordFailure(subject, schema, MAX_LENGTH)
+            report.addError(buildKeywordFailure(subject, schema, MAX_LENGTH)
                     .message("expected maxLength: %d, actual: %d", maxLength, actualLength)
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

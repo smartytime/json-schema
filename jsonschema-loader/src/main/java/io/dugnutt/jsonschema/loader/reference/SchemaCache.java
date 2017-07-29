@@ -45,11 +45,10 @@ public class SchemaCache {
     @lombok.Builder.Default
     private final Map<URI, JsonObject> absoluteDocumentCache = new HashMap<>();
 
-    // @NonNull
-    // private final Map<URI, Supplier<Schema>> loadingStack;
-
     public void cacheSchema(URI schemaURI, Schema schema) {
-        absoluteSchemaCache.put(normalizeURI(schemaURI), schema);
+        if (schemaURI.isAbsolute()) {
+            absoluteSchemaCache.put(normalizeURI(schemaURI), schema);
+        }
     }
 
     public void cacheDocument(URI documentURI, JsonObject document) {
@@ -63,21 +62,6 @@ public class SchemaCache {
         return Optional.ofNullable(absoluteDocumentCache.get(normalizeURI(documentURI)));
     }
 
-    /**
-     * Retrieves a reference or pointer schema for the given loader model.
-     *
-     * @param location Represents the location in the schema that we're trying to load a reference for
-     * @return
-     */
-    // @Override
-    // public ReferenceSchema.Builder createReferenceSchemaBuilder(SchemaLoaderModel forModel) {
-    //     try {
-    //         checkArgument(forModel.has(JsonSchemaKeyword.$REF));
-    //         return this.referenceSchemaCacheByAbsUrl.get(forModel);
-    //     } catch (ExecutionException e) {
-    //         throw forModel.createSchemaException(e.getMessage());
-    //     }
-    // }
     public void cacheSchema(SchemaLocation location, Schema schema) {
         URI absoluteLocation = location.getAbsoluteURI();
         URI jsonPointerLocation = location.getAbsoluteJsonPointerURI();

@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords.number;
 
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -20,14 +20,14 @@ public class NumberMinimumValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         final double subjectNumber = subject.asJsonNumber().doubleValue();
 
         if (!(subjectNumber >= minimum)) {
-            return report.addError(buildKeywordFailure(subject, schema, MINIMUM)
+            report.addError(buildKeywordFailure(subject, schema, MINIMUM)
                     .message("Value is not higher or equal to %s", minimum)
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

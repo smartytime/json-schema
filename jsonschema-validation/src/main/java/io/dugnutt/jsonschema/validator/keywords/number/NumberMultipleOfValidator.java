@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords.number;
 
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -27,15 +27,15 @@ public class NumberMultipleOfValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
 
         final BigDecimal subjectDecimal = subject.asJsonNumber().bigDecimalValue();
         BigDecimal remainder = subjectDecimal.remainder(multipleOf);
         if (remainder.compareTo(BigDecimal.ZERO) != 0) {
-            return report.addError(buildKeywordFailure(subject, schema, MULTIPLE_OF)
+            report.addError(buildKeywordFailure(subject, schema, MULTIPLE_OF)
                     .message("Value is not a multiple of %s", multipleOf)
                     .build());
         }
-        return true;
+        return report.isValid();
     }
 }

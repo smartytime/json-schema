@@ -19,7 +19,7 @@ import io.dugnutt.jsonschema.six.JsonPath;
 import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
-import io.dugnutt.jsonschema.validator.builders.ArrayKeywordValidatorBuilder;
+import io.dugnutt.jsonschema.validator.extractors.ArrayKeywordValidatorExtractor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Singular;
@@ -212,7 +212,7 @@ public class ValidationError {
 
     /**
      * Sort of static factory method. It is used by {@link io.dugnutt.jsonschema.six.ObjectKeywords} and
-     * {@link ArrayKeywordValidatorBuilder} to create {@code ValidationException}s, handling the case of multiple violations
+     * {@link ArrayKeywordValidatorExtractor} to create {@code ValidationException}s, handling the case of multiple violations
      * occuring during validation.
      * <p>
      * <ul>

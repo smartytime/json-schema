@@ -43,7 +43,7 @@ public abstract class BaseJsonProvider extends JsonProvider {
      * unsupported configuration properties specified in the map.
      *
      * @param config a map of provider specific properties to configure the
-     *               JSON builders. The map may be empty or null
+     *               JSON extractors. The map may be empty or null
      * @return a JSON builder factory
      */
     @Override

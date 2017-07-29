@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator.keywords.string;
 
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
@@ -25,15 +25,15 @@ public class StringPatternValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         String stringSubject = subject.asString();
         if (!patternMatches(pattern, stringSubject)) {
-            return report.addError(
+            report.addError(
                     buildKeywordFailure(subject, schema, PATTERN)
                             .message("string [%s] does not match pattern %s", stringSubject, pattern.pattern())
                             .build());
         }
-        return true;
+        return report.isValid();
     }
 
     private boolean patternMatches(Pattern pattern, final String string) {

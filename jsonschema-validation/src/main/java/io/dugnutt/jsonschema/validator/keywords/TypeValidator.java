@@ -2,7 +2,7 @@ package io.dugnutt.jsonschema.validator.keywords;
 
 import com.google.common.collect.ImmutableSet;
 import io.dugnutt.jsonschema.six.JsonSchemaType;
-import io.dugnutt.jsonschema.six.PathAwareJsonValue;
+import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import io.dugnutt.jsonschema.validator.ValidationReport;
@@ -32,7 +32,7 @@ public class TypeValidator extends KeywordValidator {
     }
 
     @Override
-    public boolean validate(PathAwareJsonValue subject, ValidationReport report) {
+    public boolean validate(JsonValueWithLocation subject, ValidationReport report) {
         final JsonValue.ValueType valueType = subject.getValueType();
         final JsonSchemaType schemaType;
         if (valueType == JsonValue.ValueType.NUMBER && requiresInteger) {
@@ -41,8 +41,8 @@ public class TypeValidator extends KeywordValidator {
             schemaType = JsonUtils.schemaTypeFor(subject);
         }
         if (!requiredTypes.contains(schemaType)) {
-            return report.addError(buildTypeMismatchError(subject, schema, schema.getTypes()).build());
+            report.addError(buildTypeMismatchError(subject, schema, schema.getTypes()).build());
         }
-        return true;
+        return report.isValid();
     }
 }
