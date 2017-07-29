@@ -44,7 +44,6 @@ public class PerfBenchmark {
     }
 
     public static ValidationReport doValidations(List<JsonValueWithLocation> testSubjects, SchemaValidator validator) {
-
         ValidationReport report = new ValidationReport();
 
         long startAt = System.currentTimeMillis();

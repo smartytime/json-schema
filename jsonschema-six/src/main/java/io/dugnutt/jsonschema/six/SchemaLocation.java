@@ -1,17 +1,15 @@
 package io.dugnutt.jsonschema.six;
 
+import com.google.common.base.MoreObjects;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Builder(toBuilder = true, builderMethodName = "locationBuilder")
-@Getter
 @EqualsAndHashCode
 public class SchemaLocation {
 
@@ -19,18 +17,60 @@ public class SchemaLocation {
     public static final URI ROOT_URI = URI.create("#");
     public static final String DUGNUTT_UUID_SCHEME = "dugnutt";
 
-    private final URI absoluteURI;
+    private URI absoluteURI;
+
+    @Getter
     private final URI documentURI;
 
     /**
      * Path within the containing document
      */
+    @Getter
     private final JsonPath jsonPath;
 
     /**
      * Resolution scope for this location
      */
+    @Getter
     private final URI resolutionScope;
+
+    private final boolean hasId;
+
+    @Builder(builderMethodName = "locationBuilder")
+    private SchemaLocation(URI id, URI documentURI, URI resolutionScope, JsonPath jsonPath) {
+        if (id != null) {
+            if (jsonPath == null && SchemaUtils.isJsonPointer(id)) {
+                this.jsonPath = JsonPath.parseFromURIFragment(id);
+            } else if(jsonPath != null) {
+                this.jsonPath = jsonPath;
+            } else {
+                this.jsonPath = ROOT_PATH;
+            }
+            this.documentURI = MoreObjects.firstNonNull(documentURI, id);
+            if (resolutionScope == null) {
+                this.resolutionScope = id;
+            } else {
+                this.resolutionScope = resolutionScope.resolve(id);
+            }
+            this.hasId = true;
+        } else {
+            this.hasId = false;
+            this.documentURI = MoreObjects.firstNonNull(documentURI, ROOT_URI);
+            this.jsonPath = MoreObjects.firstNonNull(jsonPath, ROOT_PATH);
+            this.resolutionScope = MoreObjects.firstNonNull(resolutionScope, ROOT_URI);
+        }
+    }
+
+    public URI getAbsoluteURI() {
+        if (absoluteURI == null) {
+            if (hasId) {
+                this.absoluteURI = resolutionScope;
+            } else {
+                this.absoluteURI= resolutionScope.resolve(jsonPath.toURIFragment());
+            }
+        }
+        return absoluteURI;
+    }
 
     // private SchemaLocation(URI absoluteURI, URI documentURI, JsonPath jsonPath, URI resolutionScope) {
     //     checkNotNull(absoluteURI, "absoluteURI must not be null");
@@ -48,16 +88,12 @@ public class SchemaLocation {
         return this.documentURI.resolve(getJsonPointerFragment());
     }
 
-    public List<String> getJsonPathTokens() {
-        return jsonPath.toStringPath();
-    }
-
     public URI getJsonPointerFragment() {
         return jsonPath.toURIFragment();
     }
 
     public boolean isAutoAssign() {
-        return DUGNUTT_UUID_SCHEME.equals(absoluteURI.getScheme());
+        return DUGNUTT_UUID_SCHEME.equals(getAbsoluteURI().getScheme());
     }
 
     public SchemaLocation withChildPath(String... jsonPath) {
@@ -66,10 +102,19 @@ public class SchemaLocation {
                 .build();
     }
 
+
     public SchemaLocation withChildPath(String key1, int key2) {
         return toBuilder()
                 .jsonPath(getJsonPath().child(key1).child(key2))
                 .build();
+    }
+
+    public SchemaLocationBuilder toBuilder() {
+        return new SchemaLocationBuilder()
+                .jsonPath(jsonPath)
+                .resolutionScope(resolutionScope)
+                .documentURI(documentURI);
+
     }
 
     public SchemaLocation withChildPath(int key2) {
@@ -137,42 +182,6 @@ public class SchemaLocation {
     }
 
     public static class SchemaLocationBuilder {
-
-        private URI id;
-
-        public SchemaLocationBuilder() {
-            jsonPath(ROOT_PATH);
-            resolutionScope(ROOT_URI);
-            documentURI(ROOT_URI);
-        }
-
-        public SchemaLocationBuilder absoluteURI(URI uri) {
-            //Noop
-            return this;
-        }
-
-        public SchemaLocation build() {
-            if (id != null) {
-                if (jsonPath == ROOT_PATH && SchemaUtils.isJsonPointer(id)) {
-                    jsonPath(JsonPath.parseFromURIFragment(id));
-                }
-                if (documentURI == ROOT_URI) {
-                    documentURI(id);
-                }
-                if (resolutionScope == ROOT_URI) {
-                    resolutionScope(id);
-                } else {
-                    resolutionScope = resolutionScope.resolve(id);
-                }
-                this.absoluteURI = this.resolutionScope;
-            } else {
-                final URI jsonPathFragment = this.jsonPath.toURIFragment();
-                this.absoluteURI = resolutionScope.resolve(jsonPathFragment);
-            }
-
-            return new SchemaLocation(this.absoluteURI, this.documentURI, this.jsonPath,
-                    this.resolutionScope);
-        }
 
         public SchemaLocationBuilder id(String uri) {
             this.id = URI.create(uri);

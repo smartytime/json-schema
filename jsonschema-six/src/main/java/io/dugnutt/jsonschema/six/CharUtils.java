@@ -24,7 +24,7 @@ public class CharUtils {
             .addUnescape("\\\\", "\\")
             .build();
 
-    private static final Splitter FORWARD_SLASH_SEPARATOR = Splitter.on('/').omitEmptyStrings().trimResults();
+    private static final Splitter FORWARD_SLASH_SEPARATOR = Splitter.on('/');
 
     private static final Unescaper URL_SEGMENT_UNESCAPER = new Unescaper() {
         @Override

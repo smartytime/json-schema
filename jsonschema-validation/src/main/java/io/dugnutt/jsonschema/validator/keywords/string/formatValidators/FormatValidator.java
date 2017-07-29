@@ -34,6 +34,32 @@ public interface FormatValidator {
     FormatValidator NONE = subject -> Optional.empty();
 
     /**
+     * Provides the name of this format.
+     * <p>
+     * Unless specified otherwise we use name to recognize string schemas using this format.
+     * <p>
+     * The default implementation of this method returns {@code "unnamed-format"}. It is strongly
+     * recommended for implementations to give a more meaningful name by overriding this method.
+     *
+     * @return the format name.
+     */
+    default String formatName() {
+        return "unnamed-format";
+    }
+
+    /**
+     * Implementation-specific validation of {@code subject}. If a validation error occurs then
+     * implementations should return a programmer-friendly error message as a String wrapped in an
+     * Optional. If the validation succeeded then {@link Optional#empty() an empty optional} should be
+     * returned.
+     *
+     * @param subject the string to be validated
+     * @return an {@code Optional} wrapping the error message if a validation error occured, otherwise
+     * {@link Optional#empty() an empty optional}.
+     */
+    Optional<String> validate(String subject);
+
+    /**
      * Static factory method for {@code FormatValidator} implementations supporting the
      * {@code formatName}s mandated by the json schema spec.
      * <p>
@@ -65,35 +91,14 @@ public interface FormatValidator {
                 return new IPV4Validator();
             case "ipv6":
                 return new IPV6Validator();
+            case "json-pointer":
+                return new JsonPointerValidator();
+            case "uri-template":
+                return new URITemplateFormatValidator();
+            case "uri-reference":
+                return new URIReferenceFormatValidator();
             default:
                 throw new IllegalArgumentException("unsupported format: " + formatName);
         }
     }
-
-    /**
-     * Provides the name of this format.
-     * <p>
-     * Unless specified otherwise the {@link SchemaLoader} will use this
-     * name to recognize string schemas using this format.
-     * <p>
-     * The default implementation of this method returns {@code "unnamed-format"}. It is strongly
-     * recommended for implementations to give a more meaningful name by overriding this method.
-     *
-     * @return the format name.
-     */
-    default String formatName() {
-        return "unnamed-format";
-    }
-
-    /**
-     * Implementation-specific validation of {@code subject}. If a validation error occurs then
-     * implementations should return a programmer-friendly error message as a String wrapped in an
-     * Optional. If the validation succeeded then {@link Optional#empty() an empty optional} should be
-     * returned.
-     *
-     * @param subject the string to be validated
-     * @return an {@code Optional} wrapping the error message if a validation error occured, otherwise
-     * {@link Optional#empty() an empty optional}.
-     */
-    Optional<String> validate(String subject);
 }

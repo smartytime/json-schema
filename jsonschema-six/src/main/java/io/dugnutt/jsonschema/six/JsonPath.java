@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.six;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 import lombok.Getter;
 import lombok.NonNull;
@@ -10,8 +11,10 @@ import lombok.Value;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -44,29 +47,35 @@ public class JsonPath {
      */
     JsonPath(String input, Unescaper... unescapers) {
         checkNotNull(input, "input must not be null");
-        checkArgument(input.isEmpty() || input.startsWith("/"));
+        checkArgument(input.isEmpty() || input.startsWith("/"), "invalid json-pointer syntax.  Must either be blank or start with a /");
 
         StringBuilder fragmentURI = new StringBuilder("#");
         StringBuilder jsonPointer = new StringBuilder("");
 
-        this.path = forwardSlashSeparator().splitToList(input).stream()
-                .map(rawPart -> {
-                    String toUnescape = rawPart;
-                    for (Unescaper unescaper : unescapers) {
-                        toUnescape = unescaper.unescape(toUnescape);
-                    }
+        List<PathPart> parts = new ArrayList<>();
+        for (String rawPart : forwardSlashSeparator().split(input)) {
+            if (Strings.isNullOrEmpty(rawPart) && !parts.isEmpty()) {
+                throw new IllegalArgumentException("invalid blank segment in json-pointer");
+            } else if (Strings.isNullOrEmpty(rawPart)) {
+                continue;
+            }
 
-                    final String pathPart = jsonPointerSegmentUnescaper().unescape(toUnescape);
+            String toUnescape = rawPart;
+            for (Unescaper unescaper : unescapers) {
+                toUnescape = unescaper.unescape(toUnescape);
+            }
 
-                    //Re-escape, because we can't rely on what was escaped coming in.
-                    String pointerEscaped = jsonPointerSegmentEscaper().escape(pathPart);
+            final String pathPart = jsonPointerSegmentUnescaper().unescape(toUnescape);
 
-                    jsonPointer.append("/").append(pointerEscaped);
-                    fragmentURI.append("/").append(urlPathSegmentEscaper().escape(pointerEscaped));
+            //Re-escape, because we can't rely on what was escaped coming in.
+            String pointerEscaped = jsonPointerSegmentEscaper().escape(pathPart);
 
-                    return new PathPart(pathPart);
-                }).collect(StreamUtils.toImmutableList());
+            jsonPointer.append("/").append(pointerEscaped);
+            fragmentURI.append("/").append(urlPathSegmentEscaper().escape(pointerEscaped));
 
+            parts.add(new PathPart(pathPart));
+        }
+        this.path = Collections.unmodifiableList(parts);
         this.uriFragment = URI.create(fragmentURI.toString());
         this.jsonPointerString = jsonPointer.toString();
     }
