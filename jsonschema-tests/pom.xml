@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+    Copyright (C) 2017 SBSP (http://sbsp.io)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.dugnutt.jsonschema</groupId>
+        <groupId>io.sbsp.jsonschema</groupId>
         <artifactId>jsonschema-parent</artifactId>
         <version>1.6.0-SNAPSHOT</version>
     </parent>
@@ -54,14 +54,20 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.everit.jsonschema</groupId>
+            <groupId>io.sbsp.jsonschema</groupId>
             <artifactId>jsonschema-loader</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.dugnutt.jsonschema</groupId>
+            <groupId>io.sbsp.jsonschema</groupId>
             <artifactId>jsonschema-validation</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-mapper</artifactId>
+            <version>1.1.1</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

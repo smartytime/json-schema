@@ -1,4 +1,4 @@
-Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+Copyright (C) 2017 SBSP (http://sbsp.io)
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

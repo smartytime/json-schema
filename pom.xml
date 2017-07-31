@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+    Copyright (C) 2017 SBSP (http://sbsp.io)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,20 +21,13 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!--<parent>-->
-        <!--<groupId>org.everit.config</groupId>-->
-        <!--<artifactId>org.everit.config.oss</artifactId>-->
-        <!--<version>7.2.0</version>-->
-    <!--</parent>-->
-
-    <groupId>io.dugnutt.jsonschema</groupId>
+    <groupId>io.sbsp.jsonschema</groupId>
     <artifactId>jsonschema-parent</artifactId>
     <version>1.6.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
     <modules>
-        <!--<module>jsonschema-stuff</module>-->
         <module>jsonschema-six</module>
         <module>jsonschema-loader</module>
         <module>jsonschema-validation</module>
