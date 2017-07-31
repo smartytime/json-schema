@@ -22,7 +22,7 @@ public class StringKeywordsLoaderTest extends BaseLoaderTest {
         Schema actual = getSchemaForKey("patternSchema");
         assertSoftly(a -> {
             a.assertThat(actual.hasStringKeywords()).isTrue();
-            a.assertThat(actual.getStringKeywords().get().getPattern()).isNotNull();
+            a.assertThat(actual.getStringKeywords().getPattern()).isNotNull();
         });
     }
 }

@@ -396,7 +396,7 @@ public class ObjectKeywordsValidatorTest {
         builder.propertyDependency("c", "a");
         builder.schemaDependency("b", mockBooleanSchema());
         builder.patternProperty("bbb", mockBooleanSchema());
-        final ObjectKeywords keywords = schema.getObjectKeywords().get();
+        final ObjectKeywords keywords = schema.getObjectKeywords();
         assertEquals(1, keywords.getPropertyDependencies().size());
         assertEquals(1, keywords.getSchemaDependencies().size());
         assertEquals(1, keywords.getPatternProperties().size());

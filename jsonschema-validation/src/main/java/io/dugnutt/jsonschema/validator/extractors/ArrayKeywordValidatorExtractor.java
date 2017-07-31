@@ -30,7 +30,7 @@ public class ArrayKeywordValidatorExtractor implements KeywordValidatorExtractor
 
     @Override
     public boolean appliesToSchema(Schema schema) {
-        return schema.getArrayKeywords().isPresent();
+        return schema.hasArrayKeywords();
     }
 
     @Override
@@ -44,8 +44,8 @@ public class ArrayKeywordValidatorExtractor implements KeywordValidatorExtractor
                 .schema(schema)
                 .validatorFactory(factory);
 
-        if (schema.getArrayKeywords().isPresent()) {
-            ArrayKeywords keywords = schema.getArrayKeywords().get();
+        if (schema.hasArrayKeywords()) {
+            ArrayKeywords keywords = schema.getArrayKeywords();
             // ########################################
             // MIN ITEMS
             // ########################################

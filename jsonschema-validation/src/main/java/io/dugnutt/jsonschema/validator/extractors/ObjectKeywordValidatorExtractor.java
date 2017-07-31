@@ -48,8 +48,8 @@ public class ObjectKeywordValidatorExtractor implements KeywordValidatorExtracto
                 .schema(schema)
                 .validatorFactory(factory);
 
-        if (schema.getObjectKeywords().isPresent()) {
-            ObjectKeywords keywords = schema.getObjectKeywords().get();
+        if (schema.hasObjectKeywords()) {
+            ObjectKeywords keywords = schema.getObjectKeywords();
 
             // ########################################
             // PROPERTIES

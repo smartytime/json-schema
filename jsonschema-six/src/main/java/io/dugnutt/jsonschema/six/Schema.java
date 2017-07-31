@@ -16,6 +16,7 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
+import javax.json.stream.JsonGenerator;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.net.URI;
@@ -52,13 +53,13 @@ import static io.dugnutt.jsonschema.utils.StreamUtils.supplyIfNull;
 public interface Schema {
     SchemaLocation getLocation();
 
-    Optional<ArrayKeywords> getArrayKeywords();
+    ArrayKeywords getArrayKeywords();
 
     Optional<Schema> getNotSchema();
 
     Optional<javax.json.JsonValue> getConstValue();
 
-    Optional<NumberKeywords> getNumberKeywords();
+    NumberKeywords getNumberKeywords();
 
     URI getId();
 
@@ -76,9 +77,9 @@ public interface Schema {
 
     Optional<javax.json.JsonArray> getEnumValues();
 
-    Optional<ObjectKeywords> getObjectKeywords();
+    ObjectKeywords getObjectKeywords();
 
-    Optional<StringKeywords> getStringKeywords();
+    StringKeywords getStringKeywords();
 
     Optional<JsonValue> getDefaultValue();
 
@@ -91,6 +92,10 @@ public interface Schema {
     boolean hasNumberKeywords();
 
     JsonSchemaGenerator toJson(final JsonSchemaGenerator writer);
+
+    default void toJson(final JsonGenerator writer) {
+        this.toJson(new JsonSchemaGenerator(writer));
+    }
 
     default URI getAbsoluteURI() {
         return getLocation().getUniqueURI();
@@ -652,7 +657,7 @@ public interface Schema {
             }
             AtomicInteger idx = new AtomicInteger(0);
 
-            return Optional.of(safeTransform(builders, builder -> {
+            return Optional.ofNullable(safeTransform(builders, builder -> {
                 final SchemaLocation idxInfo = parentSchema.child(keyword.key(), idx.getAndIncrement());
                 return findCachedOrBuild(idxInfo, builder);
             }));

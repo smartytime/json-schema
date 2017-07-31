@@ -66,4 +66,10 @@ public class StringKeywords implements SchemaKeywords {
 
     public static class StringKeywordsBuilder {
     }
+
+    private static final StringKeywords BLANK_STRING_KEYWORDS = builder().build();
+
+    public static final StringKeywords blankStringKeywords() {
+        return BLANK_STRING_KEYWORDS;
+    }
 }

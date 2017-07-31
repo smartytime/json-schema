@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 @Builder
 @AllArgsConstructor
 @Getter
@@ -127,20 +129,20 @@ public class JsonSchemaDetails {
         return Optional.ofNullable(constValue);
     }
 
-    public Optional<StringKeywords> getStringKeywords() {
-        return Optional.ofNullable(stringKeywords);
+    public StringKeywords getStringKeywords() {
+        return firstNonNull(stringKeywords, StringKeywords.blankStringKeywords());
     }
 
-    public Optional<NumberKeywords> getNumberKeywords() {
-        return Optional.ofNullable(numberKeywords);
+    public NumberKeywords getNumberKeywords() {
+        return firstNonNull(numberKeywords, NumberKeywords.blankNumberKeywords());
     }
 
-    public Optional<ObjectKeywords> getObjectKeywords() {
-        return Optional.ofNullable(objectKeywords);
+    public ObjectKeywords getObjectKeywords() {
+        return firstNonNull(objectKeywords, ObjectKeywords.getBlankObjectKeywords());
     }
 
-    public Optional<ArrayKeywords> getArrayKeywords() {
-        return Optional.ofNullable(arrayKeywords);
+    public ArrayKeywords getArrayKeywords() {
+        return firstNonNull(arrayKeywords, ArrayKeywords.getBlankArrayKeywords());
     }
 
 }

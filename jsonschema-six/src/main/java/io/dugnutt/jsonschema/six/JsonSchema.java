@@ -66,10 +66,19 @@ public class JsonSchema implements Schema {
         writer.writeSchemas(ANY_OF, getAnyOfSchemas());
         writer.writeSchemas(ONE_OF, getOneOfSchemas());
 
-        getObjectKeywords().ifPresent(writer::write);
-        getStringKeywords().ifPresent(writer::write);
-        getArrayKeywords().ifPresent(writer::write);
-        getNumberKeywords().ifPresent(writer::write);
+        if (hasObjectKeywords()) {
+            writer.write(getObjectKeywords());
+        }
+        if (hasNumberKeywords()) {
+            writer.write(getNumberKeywords());
+        }
+        if (hasStringKeywords()) {
+            writer.write(getStringKeywords());
+        }
+        if (hasArrayKeywords()) {
+            writer.write(getArrayKeywords());
+        }
+
         writer.endObject();
         return writer;
     }

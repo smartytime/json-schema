@@ -98,4 +98,10 @@ public class ArrayKeywords implements SchemaKeywords {
     public static class ArrayKeywordsBuilder {
         private List<Schema> itemSchemas = new ArrayList<>();
     }
+
+    private static final ArrayKeywords BLANK_ARRAY_KEYWORDS = builder().build();
+
+    public static ArrayKeywords getBlankArrayKeywords() {
+        return BLANK_ARRAY_KEYWORDS;
+    }
 }

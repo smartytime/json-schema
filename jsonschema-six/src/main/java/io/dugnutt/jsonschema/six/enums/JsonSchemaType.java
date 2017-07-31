@@ -2,6 +2,9 @@ package io.dugnutt.jsonschema.six.enums;
 
 import io.dugnutt.jsonschema.six.SchemaException;
 
+/**
+ * Represents the valid json-schema types.
+ */
 public enum JsonSchemaType {
     STRING,
     BOOLEAN,

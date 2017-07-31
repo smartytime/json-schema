@@ -11,7 +11,6 @@ import static com.google.common.base.Preconditions.checkState;
 public class URIUtils {
 
     public static final String SCHEME_AUTOASSIGN = "dugg";
-    public static final String SSP_AUTOASSIGN = "autoassign";
 
     public static URI withNewFragment(URI existing, URI newFragment) {
         checkState(isFragmentOnly(newFragment), "Must only be a fragment");

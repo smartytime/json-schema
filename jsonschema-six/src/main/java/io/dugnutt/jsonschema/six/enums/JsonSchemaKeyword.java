@@ -2,6 +2,9 @@ package io.dugnutt.jsonschema.six.enums;
 
 import com.google.common.base.CaseFormat;
 
+/**
+ * Represents each valid keyword in the json-schema specification.
+ */
 public enum JsonSchemaKeyword {
     $SCHEMA,
     $REF,

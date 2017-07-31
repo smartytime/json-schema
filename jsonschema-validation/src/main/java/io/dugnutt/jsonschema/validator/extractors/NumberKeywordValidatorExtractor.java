@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator.extractors;
 
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.keywords.NumberKeywords;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import io.dugnutt.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.dugnutt.jsonschema.validator.keywords.number.NumberExclusiveMaximumValidator;
@@ -22,7 +23,7 @@ public class NumberKeywordValidatorExtractor implements KeywordValidatorExtracto
 
     @Override
     public boolean appliesToSchema(Schema schema) {
-        return schema.getNumberKeywords().isPresent();
+        return schema.hasNumberKeywords();
     }
 
     @Override
@@ -35,7 +36,8 @@ public class NumberKeywordValidatorExtractor implements KeywordValidatorExtracto
         final KeywordValidatorsBuilder validators = KeywordValidators.builder()
                 .schema(schema)
                 .validatorFactory(factory);
-        schema.getNumberKeywords().ifPresent(keywords->{
+        if (schema.hasNumberKeywords()) {
+            final NumberKeywords keywords = schema.getNumberKeywords();
 
             if (keywords.getMinimum() != null) {
                 validators.addValidator(NumberMinimumValidator.builder()
@@ -70,7 +72,7 @@ public class NumberKeywordValidatorExtractor implements KeywordValidatorExtracto
                         .multipleOf(keywords.getMultipleOf())
                         .build());
             }
-        });
+        }
 
         return validators.build();
     }

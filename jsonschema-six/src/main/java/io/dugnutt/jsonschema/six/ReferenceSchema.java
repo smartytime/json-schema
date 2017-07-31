@@ -118,7 +118,7 @@ public final class ReferenceSchema implements Schema {
     }
 
     @Override
-    public Optional<ArrayKeywords> getArrayKeywords() {
+    public ArrayKeywords getArrayKeywords() {
         return requireRefSchema().getArrayKeywords();
     }
 
@@ -133,7 +133,7 @@ public final class ReferenceSchema implements Schema {
     }
 
     @Override
-    public Optional<NumberKeywords> getNumberKeywords() {
+    public NumberKeywords getNumberKeywords() {
         return requireRefSchema().getNumberKeywords();
     }
 
@@ -178,12 +178,12 @@ public final class ReferenceSchema implements Schema {
     }
 
     @Override
-    public Optional<ObjectKeywords> getObjectKeywords() {
+    public ObjectKeywords getObjectKeywords() {
         return requireRefSchema().getObjectKeywords();
     }
 
     @Override
-    public Optional<StringKeywords> getStringKeywords() {
+    public StringKeywords getStringKeywords() {
         return requireRefSchema().getStringKeywords();
     }
 

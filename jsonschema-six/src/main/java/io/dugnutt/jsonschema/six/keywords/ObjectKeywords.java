@@ -120,4 +120,10 @@ public class ObjectKeywords implements SchemaKeywords {
             return this;
         }
     }
+
+    private static final ObjectKeywords BLANK_OBJECT_KEYWORDS = builder().build();
+
+    public static final ObjectKeywords getBlankObjectKeywords() {
+        return BLANK_OBJECT_KEYWORDS;
+    }
 }

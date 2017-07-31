@@ -1,6 +1,7 @@
 package io.dugnutt.jsonschema.validator.extractors;
 
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.keywords.StringKeywords;
 import io.dugnutt.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import io.dugnutt.jsonschema.validator.keywords.string.StringFormatValidator;
@@ -28,11 +29,13 @@ public class StringKeywordValidatorExtractor implements KeywordValidatorExtracto
 
     @Override
     public KeywordValidators getKeywordValidators(Schema schema, SchemaValidatorFactory factory) {
-
         KeywordValidatorsBuilder validators = KeywordValidators.builder()
                 .schema(schema)
                 .validatorFactory(factory);
-        schema.getStringKeywords().ifPresent(keywords -> {
+        if (schema.hasStringKeywords()) {
+            final StringKeywords keywords = schema.getStringKeywords();
+
+
 
             // ########################################
             // MAX_LENGTH
@@ -77,7 +80,7 @@ public class StringKeywordValidatorExtractor implements KeywordValidatorExtracto
                         .formatValidator(formatValidator)
                         .build());
             });
-        });
+        }
         return validators.build();
     }
 

@@ -197,7 +197,7 @@ public class ArraySchemaValidatorTest {
         // itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
         // return this;
         Schema subject = jsonSchemaBuilder().itemSchema(mockBooleanSchema()).build();
-        final Schema expectedSchema = subject.getArrayKeywords().get().getItemSchemas().get(0);
+        final Schema expectedSchema = subject.getArrayKeywords().getItemSchemas().get(0);
 
         failureOf(subject)
                 .expectedViolatedSchema(expectedSchema)

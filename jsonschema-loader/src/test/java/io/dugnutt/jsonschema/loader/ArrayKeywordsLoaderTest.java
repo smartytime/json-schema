@@ -61,8 +61,8 @@ public class ArrayKeywordsLoaderTest extends BaseLoaderTest {
 
     private ArrayKeywords arrayKeywords(Schema schema) {
         assertThat(schema).isNotNull();
-        assertThat(schema.getArrayKeywords()).isPresent();
-        return schema.getArrayKeywords().get();
+        assertThat(schema.hasArrayKeywords()).isTrue();
+        return schema.getArrayKeywords();
     }
 
     @Test

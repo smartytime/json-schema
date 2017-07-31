@@ -51,6 +51,7 @@ public class JsonValueWithLocation implements PartialJsonObject {
 
     public JsonObject asJsonObject() {
         if (jsonObject == null) {
+            verifyType(ValueType.OBJECT);
             jsonObject = wrapped.asJsonObject();
         }
         return jsonObject;
@@ -65,10 +66,12 @@ public class JsonValueWithLocation implements PartialJsonObject {
     }
 
     public int arraySize() {
+        verifyType(ValueType.ARRAY);
         return wrapped.asJsonArray().size();
     }
 
     public JsonNumber asJsonNumber() {
+        verifyType(ValueType.NUMBER);
         return (JsonNumber) wrapped;
     }
 
@@ -77,8 +80,18 @@ public class JsonValueWithLocation implements PartialJsonObject {
         if (is(ValueType.NULL)) {
             return null;
         } else {
+            verifyType(ValueType.STRING);
             return ((JsonString) wrapped).getString();
         }
+    }
+
+    private void verifyType(ValueType... expected) {
+        for (ValueType valueType : expected) {
+            if (getValueType() == valueType) {
+                return;
+            }
+        }
+        throw new UnexpectedValueException(location, wrapped, expected);
     }
 
     public JsonPath getPath() {

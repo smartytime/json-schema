@@ -31,8 +31,8 @@ public class ObjectKeywordsLoaderTest extends BaseLoaderTest {
     @Test
     public void objectSchema() {
         Schema actual =  getSchemaForKey("objectSchema");
-        assertThat(actual.getObjectKeywords()).isPresent();
-        final ObjectKeywords keywords = actual.getObjectKeywords().get();
+        assertThat(actual.hasObjectKeywords()).isTrue();
+        final ObjectKeywords keywords = actual.getObjectKeywords();
         final Map<String, Schema> propertySchemas = keywords.getPropertySchemas();
         assertThat(propertySchemas).isNotNull();
         assertThat(propertySchemas).hasSize(2);
@@ -55,15 +55,15 @@ public class ObjectKeywordsLoaderTest extends BaseLoaderTest {
     @Test
     public void objectWithAdditionalPropSchema() {
         Schema actual = getSchemaForKey("objectWithAdditionalPropSchema");
-        assertThat(actual.getObjectKeywords()).isPresent();
-        assertThat(actual.getObjectKeywords().get().getSchemaOfAdditionalProperties())
+        assertThat(actual.hasObjectKeywords());
+        assertThat(actual.getObjectKeywords().getSchemaOfAdditionalProperties())
                 .isPresent()
                 .hasValue(BOOLEAN_SCHEMA);
     }
 
     private ObjectKeywords assertObjectKeywords(Schema actual) {
-        assertThat(actual.getObjectKeywords()).isPresent();
-        return actual.getObjectKeywords().get();
+        assertThat(actual.hasObjectKeywords()).isTrue();
+        return actual.getObjectKeywords();
     }
 
     @Test

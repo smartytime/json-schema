@@ -19,8 +19,6 @@ import java.util.Set;
 @EqualsAndHashCode
 public class NumberKeywords implements SchemaKeywords {
 
-    private final boolean requiresNumber;
-    private final boolean requiresInteger;
     private final Number minimum;
     private final Number maximum;
     @Min(1)
@@ -43,5 +41,11 @@ public class NumberKeywords implements SchemaKeywords {
     }
 
     public static class NumberKeywordsBuilder {
+    }
+
+    private static final NumberKeywords BLANK_NUMBER_KEYWORDS = builder().build();
+
+    public static NumberKeywords blankNumberKeywords() {
+        return BLANK_NUMBER_KEYWORDS;
     }
 }
