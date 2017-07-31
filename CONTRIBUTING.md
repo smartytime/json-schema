@@ -76,7 +76,7 @@ The last one should contain a JSON description of the expected exception. Such a
 
 Prerequisities: the following tools have to be installed:
 * jdk1.8.0_45 (earlier versions of javac cannot compile the project due to a type inference issue)
-* maven 3.x
+* maven 3.input
 
 
 Steps for building the project:

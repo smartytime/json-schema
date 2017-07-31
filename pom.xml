@@ -21,26 +21,24 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.everit.config</groupId>
-        <artifactId>org.everit.config.oss</artifactId>
-        <version>7.2.0</version>
-    </parent>
+    <!--<parent>-->
+        <!--<groupId>org.everit.config</groupId>-->
+        <!--<artifactId>org.everit.config.oss</artifactId>-->
+        <!--<version>7.2.0</version>-->
+    <!--</parent>-->
 
-    <groupId>org.everit.jsonschema</groupId>
-    <artifactId>org.everit.jsonschema.parent</artifactId>
+    <groupId>io.dugnutt.jsonschema</groupId>
+    <artifactId>jsonschema-parent</artifactId>
     <version>1.6.0-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
     <modules>
-        <module>api</module>
-        <module>loader</module>
-        <module>validation</module>
-        <module>core</module>
-        <module>tests</module>
-        <module>jsoniter-jsr353</module>
-        <module>jsr353-helpers</module>
+        <!--<module>jsonschema-stuff</module>-->
+        <module>jsonschema-six</module>
+        <module>jsonschema-loader</module>
+        <module>jsonschema-validation</module>
+        <module>jsonschema-tests</module>
     </modules>
 
 </project>
