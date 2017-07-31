@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class PerfBenchmark {
 
@@ -37,7 +36,6 @@ public class PerfBenchmark {
         long endAt = System.currentTimeMillis();
         long execTime = endAt - startAt;
         System.out.println("total time: " + execTime + " ms");
-        assertThat(execTime).isLessThan(1200);
     }
 
     public static ValidationReport doValidations(List<JsonValueWithLocation> testSubjects, SchemaValidator validator) {
