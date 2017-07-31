@@ -1,13 +1,13 @@
 package io.dugnutt.jsonschema.validator;
 
 import com.google.common.base.Joiner;
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
 import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.validator.ValidationError.ValidationErrorBuilder;
 
 import java.util.Collection;
-import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -16,7 +16,7 @@ public class ValidationErrorHelper {
     public static final String TYPE_MISMATCH_ERROR_MESSAGE = "expected type: %s, found: %s";
     public static final String VALIDATION_KEYWORD_PREFIX = "validation.keyword.";
 
-    public static ValidationError.ValidationErrorBuilder buildKeywordFailure(JsonValueWithLocation subject, Schema schema, JsonSchemaKeyword keyword) {
+    public static ValidationErrorBuilder buildKeywordFailure(JsonValueWithLocation subject, Schema schema, JsonSchemaKeyword keyword) {
         checkNotNull(keyword, "keyword must not be null");
         checkNotNull(subject, "subject must not be null");
 
@@ -25,7 +25,7 @@ public class ValidationErrorHelper {
                 .code(VALIDATION_KEYWORD_PREFIX + keyword);
     }
 
-    public static ValidationError.ValidationErrorBuilder buildTypeMismatchError(JsonValueWithLocation subject, Schema schema, Collection<JsonSchemaType> expectedTypes) {
+    public static ValidationErrorBuilder buildTypeMismatchError(JsonValueWithLocation subject, Schema schema, Collection<JsonSchemaType> expectedTypes) {
         checkNotNull(expectedTypes, "expectedType must not be null");
         checkNotNull(subject, "subject must not be null");
 
@@ -40,7 +40,7 @@ public class ValidationErrorHelper {
                 .code("validation.typeMismatch");
     }
 
-    public static ValidationError.ValidationErrorBuilder buildTypeMismatchError(JsonValueWithLocation subject, Schema schema, JsonSchemaType expectedType) {
+    public static ValidationErrorBuilder buildTypeMismatchError(JsonValueWithLocation subject, Schema schema, JsonSchemaType expectedType) {
         checkNotNull(expectedType, "expectedType must not be null");
         checkNotNull(subject, "subject must not be null");
 
@@ -51,7 +51,7 @@ public class ValidationErrorHelper {
 
     }
 
-    public static ValidationError.ValidationErrorBuilder createBuilder(JsonValueWithLocation subject, Schema schema) {
+    public static ValidationErrorBuilder createBuilder(JsonValueWithLocation subject, Schema schema) {
         return ValidationError.validationBuilder()
                 .violatedSchema(schema)
                 .pointerToViolation(subject.getPath())

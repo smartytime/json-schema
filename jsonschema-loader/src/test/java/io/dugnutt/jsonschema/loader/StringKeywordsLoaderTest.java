@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
 import io.dugnutt.jsonschema.six.Schema;
 import org.junit.Test;
 

@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Rule;
@@ -61,7 +61,7 @@ public class JsonObjectTest extends BaseLoaderTest {
         JsonValueWithLocation schemaJson = JsonValueWithLocation.fromJsonValue(schema);
 
         JsonValueWithLocation grandChild = schemaJson.getPathAwareObject(JsonSchemaKeyword.PROPERTIES).getPathAwareObject("prop");
-        assertEquals("http://x.y/z#zzz", grandChild.getLocation().getAbsoluteURI().toString());
+        assertEquals("http://x.y/z#zzz", grandChild.getLocation().getCanonicalURI().toString());
     }
 
     @Test

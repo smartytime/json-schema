@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ITEMS;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ITEMS;
 
 public class ArrayPerItemValidator extends KeywordValidator {
     @NonNull

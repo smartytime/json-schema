@@ -71,6 +71,8 @@
                             io.dugnutt.jsonschema.six;version=${project.version},
                             io.dugnutt.jsonschema.six.types;version=${project.version},
                             io.dugnutt.jsonschema.six.validation;version=${project.version},
+                            io.dugnutt.jsonschema.six.enums;version=${project.version},
+                            io.dugnutt.jsonschema.six.keywords;version=${project.version},
                             io.dugnutt.jsonschema.utils;version=${project.version},
                         </Export-Package>
                     </instructions>
@@ -173,12 +175,25 @@
             <version>1.1.1</version>
             <scope>compile</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.16</version>
         </dependency>
+
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>

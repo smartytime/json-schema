@@ -16,8 +16,9 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.keywords.ObjectKeywords;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import io.dugnutt.jsonschema.validator.extractors.ArrayKeywordValidatorExtractor;
 import lombok.AllArgsConstructor;
@@ -158,7 +159,7 @@ public class ValidationError {
      * {@link #getPointerToViolation()}</li>
      * <li>{@code "causes"}: is a (possibly empty) array of violations which caused this
      * exception. See {@link #getCauses()}</li>
-     * <li>{@code "schemaLocation"}: a string denoting the path to the violated schema keyword in the schema
+     * <li>{@code "documentRoot"}: a string denoting the path to the violated schema keyword in the schema
      * JSON (since version 1.6.0)</li>
      * </ul>
      *
@@ -211,7 +212,7 @@ public class ValidationError {
     }
 
     /**
-     * Sort of static factory method. It is used by {@link io.dugnutt.jsonschema.six.ObjectKeywords} and
+     * Sort of static factory method. It is used by {@link ObjectKeywords} and
      * {@link ArrayKeywordValidatorExtractor} to create {@code ValidationException}s, handling the case of multiple violations
      * occuring during validation.
      * <p>

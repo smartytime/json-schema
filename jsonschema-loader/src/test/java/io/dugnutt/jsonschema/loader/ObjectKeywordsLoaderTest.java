@@ -1,11 +1,10 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.JsonSchemaType;
-import io.dugnutt.jsonschema.six.ObjectKeywords;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
+import io.dugnutt.jsonschema.six.keywords.ObjectKeywords;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

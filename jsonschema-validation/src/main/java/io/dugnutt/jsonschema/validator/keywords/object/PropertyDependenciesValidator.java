@@ -11,7 +11,7 @@ import lombok.NonNull;
 
 import java.util.Map;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DEPENDENCIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.DEPENDENCIES;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class PropertyDependenciesValidator extends KeywordValidator {

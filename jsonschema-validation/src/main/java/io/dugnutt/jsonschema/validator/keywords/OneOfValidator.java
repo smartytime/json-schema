@@ -11,7 +11,7 @@ import lombok.Singular;
 
 import java.util.List;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ONE_OF;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class OneOfValidator extends KeywordValidator {

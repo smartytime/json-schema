@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PATTERN_PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.PATTERN_PROPERTIES;
 
 public class PatternPropertyValidator extends KeywordValidator {
 

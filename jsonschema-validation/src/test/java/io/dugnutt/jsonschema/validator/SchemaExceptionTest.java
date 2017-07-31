@@ -5,9 +5,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaType.NULL;
-import static io.dugnutt.jsonschema.six.JsonSchemaType.NUMBER;
-import static io.dugnutt.jsonschema.six.JsonSchemaType.STRING;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaType.NULL;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaType.NUMBER;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaType.STRING;
 import static io.dugnutt.jsonschema.validator.TestErrorHelper.failure;
 import static org.junit.Assert.assertEquals;
 

@@ -2,6 +2,7 @@ package io.dugnutt.jsonschema.six;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.primitives.Ints;
+import io.dugnutt.jsonschema.utils.CharUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 

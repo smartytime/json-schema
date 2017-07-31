@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
-import io.dugnutt.jsonschema.six.ArrayKeywords;
-import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.keywords.ArrayKeywords;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.UnexpectedValueException;
 import org.junit.Assert;

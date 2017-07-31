@@ -7,13 +7,13 @@ import io.dugnutt.jsonschema.six.UnexpectedValueException;
 import javax.json.JsonString;
 import java.util.regex.Pattern;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DEPENDENCIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAX_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PATTERN_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.REQUIRED;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.DEPENDENCIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MAX_PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MIN_PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.PATTERN_PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.REQUIRED;
 import static javax.json.JsonValue.ValueType.ARRAY;
 import static javax.json.JsonValue.ValueType.OBJECT;
 

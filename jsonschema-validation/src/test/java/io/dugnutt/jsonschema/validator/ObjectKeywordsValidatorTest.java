@@ -15,8 +15,8 @@
  */
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.ObjectKeywords;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.keywords.ObjectKeywords;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import lombok.experimental.var;
@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
-import static io.dugnutt.jsonschema.six.JsonSchemaType.BOOLEAN;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaType.BOOLEAN;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.blankJsonObject;
@@ -318,7 +318,6 @@ public class ObjectKeywordsValidatorTest {
         final JsonSchemaBuilder propertyNameSchema = mockStringSchema().pattern("^[a-z_]{3,8}$");
         Schema subject = mockObjectSchema()
                 .propertyNameSchema(propertyNameSchema)
-                .id("#")
                 .build();
         failureOf(subject)
                 .input(OBJECTS.getJsonObject("propertyNameSchemaViolation"))
@@ -377,8 +376,7 @@ public class ObjectKeywordsValidatorTest {
 
     @Test
     public void schemaPointerIsPassedToValidationError() {
-        Schema subject = mockObjectSchema()
-                .id("#/dependencies/a")
+        Schema subject = mockObjectSchema("#/dependencies/a")
                 .minProperties(1)
                 .build();
         ValidationError e = verifyFailure(() -> {

@@ -1,13 +1,13 @@
 package io.dugnutt.jsonschema.validator.keywords.number;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAXIMUM;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MAXIMUM;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class NumberMaximumValidator extends KeywordValidator {

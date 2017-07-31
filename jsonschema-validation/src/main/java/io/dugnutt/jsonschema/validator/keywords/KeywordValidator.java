@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator.keywords;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import lombok.Getter;
@@ -16,5 +16,4 @@ public abstract class KeywordValidator implements SchemaValidator {
         this.keyword = checkNotNull(keyword);
         this.schema = checkNotNull(schema);
     }
-
 }

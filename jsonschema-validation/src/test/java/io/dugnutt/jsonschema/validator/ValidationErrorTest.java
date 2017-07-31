@@ -28,7 +28,7 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockBooleanSchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockNullSchema;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;

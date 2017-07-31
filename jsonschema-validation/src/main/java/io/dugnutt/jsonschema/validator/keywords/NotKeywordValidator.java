@@ -6,7 +6,7 @@ import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.ValidationReport;
 import lombok.Builder;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.NOT;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class NotKeywordValidator extends KeywordValidator {

@@ -1,28 +1,24 @@
 package io.dugnutt.jsonschema;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr353.JSR353Module;
-import io.dugnutt.jsonschema.six.JsonPath;
 import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaLocation;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
 import io.dugnutt.jsonschema.validator.ValidationReport;
+import org.junit.Test;
 
 import javax.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class PerfBenchmark {
 
-    public static void main(String[] args) {
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JSR353Module());
-
+    @Test
+    public void testPerformance() {
         final JsonObject draft6 = ResourceLoader.DEFAULT.readObj("json-schema-draft-06.json");
         final Schema draft6Schema = schemaFactory()
                 .load(draft6);
@@ -36,11 +32,12 @@ public class PerfBenchmark {
 
         long startAt = System.currentTimeMillis();
         ValidationReport report = doValidations(testSubjects, validator);
+        System.out.println(report.toString());
 
-        report.writeTo(System.out);
         long endAt = System.currentTimeMillis();
         long execTime = endAt - startAt;
         System.out.println("total time: " + execTime + " ms");
+        assertThat(execTime).isLessThan(1200);
     }
 
     public static ValidationReport doValidations(List<JsonValueWithLocation> testSubjects, SchemaValidator validator) {

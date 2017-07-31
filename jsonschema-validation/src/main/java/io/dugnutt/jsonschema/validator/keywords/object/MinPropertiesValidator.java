@@ -7,7 +7,7 @@ import io.dugnutt.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MIN_PROPERTIES;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class MinPropertiesValidator extends KeywordValidator {

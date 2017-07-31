@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator;
 
 import com.google.common.base.Strings;
-import io.dugnutt.jsonschema.six.FormatType;
+import io.dugnutt.jsonschema.six.enums.FormatType;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.extractors.BaseKeywordValidatorExtractor;
 import io.dugnutt.jsonschema.validator.extractors.KeywordValidatorExtractor;
@@ -9,7 +9,6 @@ import io.dugnutt.jsonschema.validator.keywords.string.formatValidators.FormatVa
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.Value;
 
 import javax.json.spi.JsonProvider;
 import java.net.URI;
@@ -33,8 +32,6 @@ public class SchemaValidatorFactory {
 
     private final Map<URI, SchemaValidator> validatorCache = new HashMap<>();
 
-    private final Map<PartialValidatorKey, KeywordValidatorExtractor> partialValidatorCache = new HashMap<>();
-
     @NonNull
     private final Map<String, FormatValidator> customFormatValidators;
 
@@ -56,7 +53,7 @@ public class SchemaValidatorFactory {
 
     public SchemaValidator createValidator(Schema schema) {
         checkNotNull(schema, "schema must not be null when creating validator");
-        final URI schemaURI = schema.getLocation().getAbsoluteURI();
+        final URI schemaURI = schema.getLocation().getUniqueURI();
         final SchemaValidator cachedValue = validatorCache.get(schemaURI);
         if (cachedValue != null) {
             return cachedValue;
@@ -81,11 +78,6 @@ public class SchemaValidatorFactory {
 
     public JsonProvider getProvider() {
         return provider;
-    }
-
-    @FunctionalInterface
-    interface Factory {
-        KeywordValidatorExtractor createValidator(Schema schema, SchemaValidatorFactory factory);
     }
 
     public static class Builder {
@@ -124,11 +116,5 @@ public class SchemaValidatorFactory {
                 customFormatValidators.put(formatType.toString(), FormatValidator.forFormat(formatType));
             }
         }
-    }
-
-    @Value
-    static class PartialValidatorKey {
-        URI uri;
-        String partialValidatorType;
     }
 }

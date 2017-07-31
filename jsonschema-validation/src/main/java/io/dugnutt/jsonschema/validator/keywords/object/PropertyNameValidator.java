@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.keywords.object;
 
 import com.google.common.base.MoreObjects;
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationError;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PROPERTY_NAMES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.PROPERTY_NAMES;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class PropertyNameValidator extends KeywordValidator {

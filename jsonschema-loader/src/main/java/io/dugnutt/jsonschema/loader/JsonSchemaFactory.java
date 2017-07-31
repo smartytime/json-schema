@@ -12,9 +12,7 @@ import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.six.SchemaFactory;
 import io.dugnutt.jsonschema.six.SchemaLocation;
-import io.dugnutt.jsonschema.six.SchemaUtils;
-import io.dugnutt.jsonschema.six.URIUtils;
-import io.dugnutt.jsonschema.utils.JsonUtils;
+import io.dugnutt.jsonschema.utils.URIUtils;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -32,19 +30,19 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.loader.ArrayKeywordsLoader.arrayKeywordsLoader;
 import static io.dugnutt.jsonschema.loader.NumberKeywordsLoader.numberKeywordsLoader;
 import static io.dugnutt.jsonschema.loader.ObjectKeywordsLoader.objectKeywordsLoader;
 import static io.dugnutt.jsonschema.loader.SharedKeywordsLoader.sharedKeywordsLoader;
 import static io.dugnutt.jsonschema.loader.StringKeywordsLoader.stringKeywordsLoader;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.dugnutt.jsonschema.six.SchemaLocation.DUGNUTT_UUID_SCHEME;
+import static io.dugnutt.jsonschema.six.SchemaLocation.BLANK_URI;
+import static io.dugnutt.jsonschema.six.SchemaLocation.ROOT_URI;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.$ID;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.$REF;
+import static io.dugnutt.jsonschema.utils.JsonUtils.extract$IdFromObject;
 
 /**
  * Schema factories are responsible for extracting values from a json-object to produce an immutable {@link Schema}
@@ -101,7 +99,6 @@ public class JsonSchemaFactory implements SchemaFactory {
 
     public JsonSchemaBuilder createSchemaBuilder(SchemaLocation location, JsonObject schemaJson, JsonObject rootSchemaJson) {
         return createSchemaBuilder(schemaJson, location)
-                .location(location)
                 .currentDocument(rootSchemaJson)
                 .schemaFactory(this);
     }
@@ -114,7 +111,6 @@ public class JsonSchemaFactory implements SchemaFactory {
     }
 
     public JsonSchemaBuilder createSchemaBuilder(JsonValueWithLocation schemaJson) {
-
         // ##########################
         // $ref: Overrides everything
         // ##########################
@@ -126,8 +122,8 @@ public class JsonSchemaFactory implements SchemaFactory {
         }
 
         final JsonSchemaBuilder schemaBuilder = schemaJson.findString($ID)
-                .map(Schema::jsonSchemaBuilderWithId)
-                .orElse(Schema.jsonSchemaBuilder());
+                .map($id -> Schema.jsonSchemaBuilderWithId(schemaJson.getLocation(), $id))
+                .orElse(Schema.jsonSchemaBuilder(schemaJson.getLocation()));
 
         for (KeywordsLoader keywordLoader : keywordLoaders) {
             keywordLoader.appendKeywords(schemaJson, schemaBuilder, this);
@@ -140,7 +136,7 @@ public class JsonSchemaFactory implements SchemaFactory {
     public Schema loadRefSchema(Schema referencedFrom, URI refURI, @Nullable JsonObject currentDocument) {
         // Cache ahead to deal with any infinite recursion.
         final SchemaLocation currentLocation = referencedFrom.getLocation();
-        schemaCache.cacheSchema(currentLocation.getAbsoluteURI(), referencedFrom);
+        schemaCache.cacheSchema(currentLocation, referencedFrom);
 
         // Make sure we're dealing with an absolute URI
         final URI absoluteReferenceURI = currentLocation.getResolutionScope().resolve(refURI);
@@ -155,7 +151,7 @@ public class JsonSchemaFactory implements SchemaFactory {
         final JsonSchemaBuilder schemaBuilder = findRefInDocument(documentURI, absoluteReferenceURI, currentDocument)
                 .orElseGet(() -> findRefInRemoteDocument(absoluteReferenceURI));
         final Schema refSchema = schemaBuilder.build();
-        schemaCache.cacheSchema(absoluteReferenceURI, refSchema);
+        schemaCache.cacheSchema(refSchema.getLocation(), refSchema);
         return refSchema;
     }
 
@@ -169,12 +165,12 @@ public class JsonSchemaFactory implements SchemaFactory {
         final SchemaLocation schemaLocation;
         if (schemaJson.containsKey($ID.key())) {
             String $id = schemaJson.getString($ID.key());
-            schemaLocation = SchemaLocation.schemaLocation($id);
+            schemaLocation = SchemaLocation.documentRoot($id);
         } else {
             schemaLocation = SchemaLocation.anonymousRoot();
         }
 
-        schemaCache.cacheDocument(schemaLocation.getAbsoluteURI(), schemaJson);
+        schemaCache.cacheDocument(schemaLocation.getUniqueURI(), schemaJson);
         return createSchema(schemaLocation, schemaJson);
     }
 
@@ -196,34 +192,29 @@ public class JsonSchemaFactory implements SchemaFactory {
         return this;
     }
 
-    JsonObject loadDocument(URI absoluteReferenceURI) {
-        final URI remoteDocumentURI = URIUtils.withoutFragment(absoluteReferenceURI);
+    JsonObject loadDocument(URI referenceURI) {
+        final URI remoteDocumentURI = URIUtils.withoutFragment(referenceURI);
         final JsonObject targetDocument;
 
         targetDocument = schemaCache.lookupDocument(remoteDocumentURI)
                 .orElseGet(() -> {
-                    String scheme = absoluteReferenceURI.getScheme().toLowerCase();
-
-                    if (!scheme.toLowerCase().startsWith("http")) {
-                        if (DUGNUTT_UUID_SCHEME.equals(scheme)) {
-                            String fragment = "#" + firstNonNull(absoluteReferenceURI.getFragment(), "");
-                            throw new SchemaException(URI.create("#"), "Unable to find ref '%s' within document", fragment);
-                        }
-                        throw new SchemaException(absoluteReferenceURI, "Couldn't resolve ref within document, but can't load non-http scheme");
+                    String scheme = Strings.nullToEmpty(referenceURI.getScheme()).toLowerCase();
+                    if (!scheme.startsWith("http")) {
+                        throw new SchemaException(referenceURI, "Couldn't resolve ref within document, but can't load non-http scheme: %s", scheme);
                     }
 
-                    //If that doesn't work, look up schema using client
+                    // Load document remotely
                     try (InputStream inputStream = httpClient.fetchSchema(remoteDocumentURI)) {
                         final JsonObject jsonObject = provider.createReader(inputStream).readObject();
                         schemaCache.cacheDocument(remoteDocumentURI, jsonObject);
                         return jsonObject;
                     } catch (IOException e) {
-                        throw new SchemaException(absoluteReferenceURI, "Error while fetching document '" + absoluteReferenceURI + "'");
+                        throw new SchemaException(referenceURI, "Error while fetching document '" + referenceURI + "'");
                     }
                 });
 
         if (targetDocument == null) {
-            throw new SchemaException(absoluteReferenceURI, "Unable to get document: " + absoluteReferenceURI);
+            throw new SchemaException(referenceURI, "Unable to get document: " + referenceURI);
         }
 
         return targetDocument;
@@ -234,12 +225,10 @@ public class JsonSchemaFactory implements SchemaFactory {
         URI remoteDocumentURI = referenceURI.resolve("#");
         final JsonObject remoteDocument = loadDocument(remoteDocumentURI);
         return findRefInDocument(remoteDocumentURI, referenceURI, remoteDocument)
-                .orElseThrow(() -> new SchemaException(referenceURI, "Error loading fragment '#%s' from document '%s'", referenceURI.getFragment(), remoteDocument));
+                .orElseThrow(() -> new SchemaException(referenceURI, "Unable to locate fragment: \n\tFragment: '#%s' in document\n\tDocument:'%s'", referenceURI.getFragment(), remoteDocument));
     }
 
     Optional<JsonSchemaBuilder> findRefInDocument(URI documentURI, URI referenceURI, JsonObject parentDocument) {
-        checkArgument(referenceURI.isAbsolute(), "Reference URI must be absolute");
-        checkArgument(documentURI.isAbsolute(), "Document URI must be absolute");
         if (parentDocument == null) {
             parentDocument = loadDocument(referenceURI);
         }
@@ -249,13 +238,13 @@ public class JsonSchemaFactory implements SchemaFactory {
 
         // Relativizing strips the path down to only the difference between the documentURI and referenceURI.
         // This will tell us whether the referenceURI is naturally scoped within the parentDocument.
-        String relativeURL = documentURI.relativize(referenceURI).toString();
+        URI relativeURL = documentURI.relativize(referenceURI);
 
         final JsonPath pathWithinDocument;
-        if (Strings.isNullOrEmpty(relativeURL) || "#".equals(relativeURL)) {
+        if (relativeURL.equals(ROOT_URI) || relativeURL.equals(BLANK_URI)) {
             // The parentDocument is the target
             pathWithinDocument = JsonPath.rootPath();
-        } else if (SchemaUtils.isJsonPointer(relativeURL)) {
+        } else if (URIUtils.isJsonPointer(relativeURL)) {
             //This is a json fragment
             pathWithinDocument = JsonPath.parseFromURIFragment(relativeURL);
         } else {
@@ -272,13 +261,8 @@ public class JsonSchemaFactory implements SchemaFactory {
                 schemaObject = pointer.getValue(parentDocument).asJsonObject();
             }
 
-            SchemaLocation fetchedDocumentLocation = SchemaLocation.locationBuilder()
-                    .id(JsonUtils.extract$IdFromObject(schemaObject))
-                    .documentURI(documentURI)
-                    .resolutionScope(documentURI)
-                    .jsonPath(pathWithinDocument)
-                    .build();
-
+            final URI found$ID = extract$IdFromObject(schemaObject);
+            SchemaLocation fetchedDocumentLocation = SchemaLocation.refLocation(documentURI, found$ID, pathWithinDocument);
             return Optional.of(this.createSchemaBuilder(fetchedDocumentLocation, schemaObject, parentDocument));
         }
         return Optional.empty();

@@ -10,7 +10,7 @@ import lombok.NonNull;
 
 import java.util.Set;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.*;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.*;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class RequiredPropertyValidator extends KeywordValidator {

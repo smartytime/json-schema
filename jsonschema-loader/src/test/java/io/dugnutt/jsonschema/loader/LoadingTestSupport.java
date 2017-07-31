@@ -68,7 +68,7 @@ public class LoadingTestSupport {
                 } else {
                     SchemaException schemaException = (SchemaException) e;
                     final String schemaLocation = schemaException.getSchemaLocation();
-                    Assert.assertEquals("Error schemaLocation incorrect", pointer, schemaLocation);
+                    Assert.assertEquals("Error documentRoot incorrect", pointer, schemaLocation);
                 }
             });
             return (E) e;

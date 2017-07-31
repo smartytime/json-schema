@@ -1,7 +1,9 @@
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.utils.JsonUtils;
 import lombok.Getter;
 
+import javax.json.JsonValue;
 import java.net.URI;
 
 /**
@@ -21,7 +23,18 @@ public class SchemaException extends RuntimeException {
     }
 
     public SchemaException(URI schemaLocation, String message, Object... params) {
-        this(schemaLocation.toString(), String.format(message, params));
+        this(schemaLocation.toString(), String.format(message, withPrettyPrint(params)));
+    }
+
+    private static Object[] withPrettyPrint(Object... args) {
+        int i = 0;
+        for (Object arg : args) {
+            if (arg instanceof JsonValue) {
+                args[i] = JsonUtils.toPrettyString((JsonValue) arg, true);
+            }
+            i++;
+        }
+        return args;
     }
     
     public SchemaException(String schemaLocation, String message) {

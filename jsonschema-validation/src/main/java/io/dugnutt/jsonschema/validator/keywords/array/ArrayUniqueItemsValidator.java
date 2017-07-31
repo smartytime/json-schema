@@ -12,7 +12,7 @@ import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.UNIQUE_ITEMS;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.UNIQUE_ITEMS;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class ArrayUniqueItemsValidator extends KeywordValidator {

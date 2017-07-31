@@ -1,6 +1,6 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
@@ -13,9 +13,7 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
@@ -91,7 +89,7 @@ public class BaseSchemaValidatorEnumTest {
         JsonObject actual = JsonUtils.readJsonObject(toString);
         Assert.assertEquals(1, actual.keySet().size());
         JsonArray pv = jsonArray(true, "foo");
-        Assert.assertEquals(asSet(pv), asSet(actual.getJsonArray("enum")));
+        Assert.assertEquals(pv, actual.getJsonArray("enum"));
     }
 
     @Test
@@ -171,9 +169,5 @@ public class BaseSchemaValidatorEnumTest {
 
     private JsonSchemaBuilder subject() {
         return jsonSchemaBuilder().enumValues(possibleValues.build());
-    }
-
-    private Set<Object> asSet(final JsonArray array) {
-        return new HashSet<>(JsonUtils.extractArray(array));
     }
 }

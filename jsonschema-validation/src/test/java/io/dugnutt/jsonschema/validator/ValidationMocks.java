@@ -1,14 +1,13 @@
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.JsonSchemaType;
-import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
 
-import javax.json.JsonValue;
+import java.net.URI;
 
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilderWithId;
 
 public class ValidationMocks {
 
@@ -28,6 +27,14 @@ public class ValidationMocks {
         return jsonSchemaBuilder().type(JsonSchemaType.BOOLEAN);
     }
 
+    public static JsonSchemaBuilder mockBooleanSchema(URI id) {
+        return jsonSchemaBuilderWithId(id).type(JsonSchemaType.BOOLEAN);
+    }
+
+    public static JsonSchemaBuilder mockBooleanSchema(String id) {
+        return jsonSchemaBuilderWithId(id).type(JsonSchemaType.BOOLEAN);
+    }
+
     public static JsonSchemaBuilder mockIntegerSchema() {
         return jsonSchemaBuilder().type(JsonSchemaType.INTEGER);
     }
@@ -42,6 +49,14 @@ public class ValidationMocks {
 
     public static JsonSchemaBuilder mockObjectSchema() {
         return jsonSchemaBuilder().type(JsonSchemaType.OBJECT);
+    }
+
+    public static JsonSchemaBuilder mockObjectSchema(String id) {
+        return jsonSchemaBuilderWithId(id).type(JsonSchemaType.OBJECT);
+    }
+    
+    public static JsonSchemaBuilder mockObjectSchema(URI id) {
+        return jsonSchemaBuilderWithId(id).type(JsonSchemaType.OBJECT);
     }
 
     public static JsonSchemaBuilder mockSchema() {

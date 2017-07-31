@@ -1,5 +1,7 @@
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import lombok.Getter;
 import lombok.NonNull;
@@ -11,6 +13,8 @@ import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import java.net.URI;
+import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,19 +23,21 @@ import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.$ID;
 
 /**
  * This class is used for convenience in accessing data within a JsonObject.  It wraps the JSR353 {@link JsonObject}
  * and adds some extra methods that allow more fluent usage.
  */
-@Getter
 public class JsonValueWithLocation implements PartialJsonObject {
 
     @NonNull
+    @Getter
     private final JsonValue wrapped;
+    private JsonObject jsonObject;
 
     @NonNull
+    @Getter
     private final SchemaLocation location;
 
     private JsonValueWithLocation(JsonValue wrapped, SchemaLocation location) {
@@ -44,7 +50,10 @@ public class JsonValueWithLocation implements PartialJsonObject {
     }
 
     public JsonObject asJsonObject() {
-        return wrapped.asJsonObject();
+        if (jsonObject == null) {
+            jsonObject = wrapped.asJsonObject();
+        }
+        return jsonObject;
     }
 
     public JsonArray asJsonArray() {
@@ -77,7 +86,7 @@ public class JsonValueWithLocation implements PartialJsonObject {
     }
 
     public boolean containsKey(String key) {
-        return wrapped.asJsonObject().containsKey(key);
+        return asJsonObject().containsKey(key);
     }
 
     public JsonArray expectArray(JsonSchemaKeyword property) {
@@ -94,7 +103,7 @@ public class JsonValueWithLocation implements PartialJsonObject {
         checkNotNull(property, "property must not be null");
 
         JsonObject jsonObject = asJsonObject();
-        if (jsonObject.containsKey(property.key()) && !jsonObject.isNull(property.key())) {
+        if (asJsonObject().containsKey(property.key()) && !jsonObject.isNull(property.key())) {
             try {
                 return Optional.of(jsonObject.getBoolean(property.key()));
             } catch (ClassCastException e) {
@@ -105,9 +114,8 @@ public class JsonValueWithLocation implements PartialJsonObject {
     }
 
     public Optional<JsonValue> findByKey(JsonSchemaKeyword prop) {
-        JsonObject jsonObject = asJsonObject();
-        if (jsonObject.containsKey(prop.key())) {
-            return Optional.of(jsonObject.get(prop.key()));
+        if (asJsonObject().containsKey(prop.key())) {
+            return Optional.of(asJsonObject().get(prop.key()));
         }
         return Optional.empty();
     }
@@ -145,7 +153,7 @@ public class JsonValueWithLocation implements PartialJsonObject {
 
     public Optional<JsonValueWithLocation> findPathAwareObject(String childKey) {
         checkNotNull(childKey, "childKey must not be null");
-        return findObject(childKey).map(json -> fromJsonValue(json, location.withChildPath(childKey)));
+        return findObject(childKey).map(json -> fromJsonValue(json, location.child(childKey)));
     }
 
     public JsonValueWithLocation getPathAwareObject(JsonSchemaKeyword keyword) {
@@ -162,28 +170,25 @@ public class JsonValueWithLocation implements PartialJsonObject {
         AtomicInteger i = new AtomicInteger(0);
         wrapped.asJsonArray().forEach((v) -> {
             int idx = i.getAndIncrement();
-            action.accept(idx, new JsonValueWithLocation(v, location.withChildPath(idx)));
+            action.accept(idx, new JsonValueWithLocation(v, location.child(idx)));
         });
     }
 
     public void forEachKey(BiConsumer<? super String, ? super JsonValueWithLocation> action) {
         wrapped.asJsonObject().forEach((k, v) -> {
-            action.accept(k, fromJsonValue(v, location.withChildPath(k)));
+            action.accept(k, fromJsonValue(v, location.child(k)));
         });
     }
 
     @Override
     @Deprecated
     public JsonValue get(Object key) {
-        if (!(key instanceof String)) {
-            throw new IllegalStateException("Only string keys are allowed");
-        }
         return asJsonObject().get(key);
     }
 
     public JsonValueWithLocation getItem(int idx) {
         JsonValue jsonValue = wrapped.asJsonArray().get(idx);
-        return fromJsonValue(jsonValue, location.withChildPath(idx));
+        return fromJsonValue(jsonValue, location.child(idx));
     }
 
     @Override
@@ -243,7 +248,7 @@ public class JsonValueWithLocation implements PartialJsonObject {
 
     public JsonValueWithLocation getPathAwareObject(String childKey) {
         checkNotNull(childKey, "childKey must not be null");
-        return fromJsonValue(wrapped.asJsonObject().get(childKey), location.withChildPath(childKey));
+        return fromJsonValue(asJsonObject().get(childKey), location.child(childKey));
     }
 
     public String getString(JsonSchemaKeyword property) {
@@ -263,11 +268,12 @@ public class JsonValueWithLocation implements PartialJsonObject {
     }
 
     public boolean has(JsonSchemaKeyword property, ValueType... ofType) {
-        final JsonValue jsonValue = asJsonObject().get(property.key());
-        if (jsonValue == null) {
+        final Map<String, JsonValue> jsonObject = asJsonObject();
+        if (!jsonObject.containsKey(property.key())) {
             return false;
         }
         if (ofType != null && ofType.length > 0) {
+            final JsonValue jsonValue = jsonObject.get(property.key());
             for (ValueType valueType : ofType) {
                 if (jsonValue.getValueType() == valueType) {
                     return true;
@@ -310,20 +316,13 @@ public class JsonValueWithLocation implements PartialJsonObject {
     }
 
     public int numberOfProperties() {
-        return wrapped.asJsonObject().keySet().size();
+        return asJsonObject().keySet().size();
     }
 
     public Set<String> propertyNames() {
-        return wrapped.asJsonObject().keySet();
+        return asJsonObject().keySet();
     }
 
-    /**
-     * Returns the number of key-value mappings in this map.  If the
-     * map contains more than <tt>Integer.MAX_VALUE</tt> elements, returns
-     * <tt>Integer.MAX_VALUE</tt>.
-     *
-     * @return the number of key-value mappings in this map
-     */
     @Override
     public int size() {
         return asJsonObject().size();
@@ -331,6 +330,21 @@ public class JsonValueWithLocation implements PartialJsonObject {
 
     public boolean isEmpty() {
         return asJsonObject().isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        return asJsonObject().containsKey(key);
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return asJsonObject().keySet();
+    }
+
+    @Override
+    public Collection<JsonValue> values() {
+        return asJsonObject().values();
     }
 
     @Override
@@ -345,7 +359,7 @@ public class JsonValueWithLocation implements PartialJsonObject {
         } else {
             return expectArray(keyword)
                     .stream()
-                    .map(jsonValue -> fromJsonValue(jsonValue, location.withChildPath(i.incrementAndGet())));
+                    .map(jsonValue -> fromJsonValue(jsonValue, location.child(i.incrementAndGet())));
         }
     }
 
@@ -364,7 +378,7 @@ public class JsonValueWithLocation implements PartialJsonObject {
             JsonValue jsonValue = asJsonObject().get(property);
             if (!expected.isAssignableFrom(jsonValue.getClass())) {
                 final ValueType valueType = JsonUtils.jsonTypeForClass(expected);
-                throw new UnexpectedValueException(location.withChildPath(property), jsonValue, valueType);
+                throw new UnexpectedValueException(location.child(property), jsonValue, valueType);
             }
             return Optional.of(expected.cast(jsonValue));
         }
@@ -373,23 +387,25 @@ public class JsonValueWithLocation implements PartialJsonObject {
 
     public static JsonValueWithLocation fromJsonValue(JsonValue jsonObject, SchemaLocation parentLocation) {
         final URI uri;
+        SchemaLocation location = parentLocation;
         if (jsonObject.getValueType() == ValueType.OBJECT) {
-            uri = JsonUtils.extract$IdFromObject(jsonObject.asJsonObject());
-        } else {
-            uri = null;
+            final JsonObject asJsonObject = jsonObject.asJsonObject();
+            if (asJsonObject.keySet().contains($ID.key())) {
+                final JsonValue $id = asJsonObject.get($ID.key());
+                if ($id.getValueType() == ValueType.STRING) {
+                    uri = URI.create(((JsonString) $id).getString());
+                    location = location.withId(uri);
+                }
+            }
         }
-        if (uri != null) {
-            return new JsonValueWithLocation(jsonObject, parentLocation.withId(uri));
-        } else {
-            return new JsonValueWithLocation(jsonObject, parentLocation);
-        }
+        return new JsonValueWithLocation(jsonObject, location);
     }
 
     public static JsonValueWithLocation fromJsonValue(JsonObject jsonObject) {
         final SchemaLocation rootSchemaLocation;
         if (jsonObject.containsKey($ID.key())) {
             String $id = jsonObject.getString($ID.key());
-            rootSchemaLocation = SchemaLocation.schemaLocation($id);
+            rootSchemaLocation = SchemaLocation.documentRoot($id);
         } else {
             rootSchemaLocation = SchemaLocation.anonymousRoot();
         }

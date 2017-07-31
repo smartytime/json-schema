@@ -8,11 +8,13 @@ import io.dugnutt.jsonschema.validator.ValidationReport;
 import lombok.Builder;
 import lombok.NonNull;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
 
 public class AdditionalPropertiesValidator extends KeywordValidator {
 
@@ -29,13 +31,14 @@ public class AdditionalPropertiesValidator extends KeywordValidator {
     public AdditionalPropertiesValidator(Schema schema, SchemaValidator additionalPropertiesValidator, Set<String> propertySchemaKeys, Set<Pattern> patternProperties) {
         super(ADDITIONAL_PROPERTIES, schema);
         this.additionalPropertiesValidator = checkNotNull(additionalPropertiesValidator);
-        this.propertySchemaKeys = ImmutableSet.copyOf(propertySchemaKeys);
+        this.propertySchemaKeys = Collections.unmodifiableSet(new HashSet<>(propertySchemaKeys));
         this.patternProperties = ImmutableSet.copyOf(patternProperties);
     }
 
     @Override
     public boolean validate(JsonValueWithLocation subject, ValidationReport parentReport) {
         ValidationReport report = parentReport.createChildReport();
+
         prop: for (String propName : subject.propertyNames()) {
             for (Pattern pattern : patternProperties) {
                 if(pattern.matcher(propName).find()) {

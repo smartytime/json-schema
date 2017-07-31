@@ -1,6 +1,8 @@
 package io.dugnutt.jsonschema.six;
 
 import com.google.common.math.DoubleMath;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.keywords.SchemaKeywords;
 
 import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
@@ -49,13 +51,6 @@ public class JsonSchemaGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword name, URI value) {
-        if (value != null) {
-            wrapped.write(name.key(), value.toString());
-        }
-        return this;
-    }
-
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword name, Integer value) {
         if (value != null) {
             wrapped.write(name.key(), value);
@@ -66,6 +61,13 @@ public class JsonSchemaGenerator {
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword name, String value) {
         if (value != null) {
             wrapped.write(name.key(), value);
+        }
+        return this;
+    }
+
+    public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword name, URI value) {
+        if (value != null) {
+            wrapped.write(name.key(), value.toString());
         }
         return this;
     }
@@ -135,13 +137,6 @@ public class JsonSchemaGenerator {
     public JsonSchemaGenerator optionalWrite(JsonSchemaKeyword keyword, JsonValue value) {
         if (value != null) {
             wrapped.write(keyword.key(), value);
-        }
-        return this;
-    }
-
-    public JsonSchemaGenerator optionalWrite(SchemaKeywords typeSpecificSchemaKeywords) {
-        if (typeSpecificSchemaKeywords != null) {
-            typeSpecificSchemaKeywords.toJson(this);
         }
         return this;
     }
@@ -226,13 +221,6 @@ public class JsonSchemaGenerator {
                 schema.toJson(this);
             }
             endArray();
-        }
-        return this;
-    }
-
-    public JsonSchemaGenerator writeType(JsonSchemaType type, boolean required) {
-        if (required) {
-            wrapped.write(JsonSchemaKeyword.TYPE.key(), type.toString());
         }
         return this;
     }

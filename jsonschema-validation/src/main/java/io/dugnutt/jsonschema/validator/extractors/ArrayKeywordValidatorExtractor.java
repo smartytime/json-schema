@@ -1,8 +1,8 @@
 package io.dugnutt.jsonschema.validator.extractors;
 
-import io.dugnutt.jsonschema.six.ArrayKeywords;
+import io.dugnutt.jsonschema.six.keywords.ArrayKeywords;
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.StreamUtils;
+import io.dugnutt.jsonschema.utils.StreamUtils;
 import io.dugnutt.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;

@@ -1,8 +1,8 @@
 package io.dugnutt.jsonschema.validator;
 
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
-import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -11,7 +11,7 @@ public class TestErrorHelper {
         checkNotNull(schema, "schema" +
                 " must not be null");
         return ValidationError.validationBuilder()
-                .schemaLocation(schema.getLocation().getAbsoluteURI())
+                .schemaLocation(schema.getLocation().getUniqueURI())
                 .message(ValidationErrorHelper.TYPE_MISMATCH_ERROR_MESSAGE, desired, found)
                 .keyword(JsonSchemaKeyword.TYPE)
                 .pointerToViolation(schema.getLocation().getJsonPath())

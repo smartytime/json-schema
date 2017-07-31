@@ -15,7 +15,7 @@
  */
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
 import io.dugnutt.jsonschema.utils.JsonUtils;
@@ -30,15 +30,15 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
-import static io.dugnutt.jsonschema.six.JsonSchemaType.NULL;
+import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilderWithId;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ENUM;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaType.NULL;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;
 import static io.dugnutt.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.dugnutt.jsonschema.validator.ResourceLoader.DEFAULT;
-import static io.dugnutt.jsonschema.validator.SchemaValidatorFactory.DEFAULT_VALIDATOR_FACTORY;
 import static io.dugnutt.jsonschema.validator.ValidationErrorTest.loader;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockArraySchema;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.mockBooleanSchema;
@@ -71,11 +71,11 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void additionalItemsSchemaFailure() {
-        JsonSchemaBuilder nullSchema = jsonSchemaBuilder().type(NULL).id("#nulls");
+        JsonSchemaBuilder nullSchema = jsonSchemaBuilderWithId("nulls").type(NULL);
 
         Schema subject =
                 jsonSchemaBuilder()
-                        .itemSchemas(Collections.singletonList(mockBooleanSchema().id("#booleans")))
+                        .itemSchemas(Collections.singletonList(mockBooleanSchema("#booleans")))
                         .schemaOfAdditionalItems(nullSchema)
                         .build();
 

@@ -4,11 +4,11 @@ import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.EXCLUSIVE_MAXIMUM;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.EXCLUSIVE_MINIMUM;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAXIMUM;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MINIMUM;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MULTIPLE_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.EXCLUSIVE_MAXIMUM;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.EXCLUSIVE_MINIMUM;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MAXIMUM;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MINIMUM;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MULTIPLE_OF;
 
 public class NumberKeywordsLoader implements KeywordsLoader {
 

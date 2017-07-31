@@ -10,7 +10,7 @@ import lombok.NonNull;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PATTERN;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.PATTERN;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class StringPatternValidator extends KeywordValidator {

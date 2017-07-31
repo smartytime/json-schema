@@ -3,12 +3,12 @@ package io.dugnutt.jsonschema.loader;
 import com.google.common.collect.ImmutableSet;
 import io.dugnutt.jsonschema.loader.reference.DefaultSchemaClient;
 import io.dugnutt.jsonschema.loader.reference.SchemaClient;
-import io.dugnutt.jsonschema.six.JsonSchemaType;
-import io.dugnutt.jsonschema.six.NumberKeywords;
-import io.dugnutt.jsonschema.six.ObjectKeywords;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
+import io.dugnutt.jsonschema.six.keywords.NumberKeywords;
+import io.dugnutt.jsonschema.six.keywords.ObjectKeywords;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
-import io.dugnutt.jsonschema.six.StringKeywords;
+import io.dugnutt.jsonschema.six.keywords.StringKeywords;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class JsonSchemaFactoryTest extends BaseLoaderTest {
         final Schema emptySchema = getSchemaForKey("emptySchema");
         assertSoftly(a -> {
             a.assertThat(emptySchema).isNotNull();
-            a.assertThat(emptySchema.toString()).isEqualTo("{}");
+            a.assertThat(emptySchema.toString()).isEqualToIgnoringWhitespace("{}");
         });
     }
 

@@ -1,5 +1,10 @@
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
+import io.dugnutt.jsonschema.six.keywords.ArrayKeywords;
+import io.dugnutt.jsonschema.six.keywords.NumberKeywords;
+import io.dugnutt.jsonschema.six.keywords.ObjectKeywords;
+import io.dugnutt.jsonschema.six.keywords.StringKeywords;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -7,13 +12,17 @@ import lombok.NonNull;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+import javax.json.spi.JsonProvider;
+import javax.json.stream.JsonGenerator;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$REF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.$REF;
+import static io.dugnutt.jsonschema.utils.JsonUtils.prettyPrintGeneratorFactory;
 
 /**
  * This class is used to resolve JSON pointers.
@@ -40,7 +49,6 @@ public final class ReferenceSchema implements Schema {
         this.location = location;
         this.refURI = refURI;
 
-
         int infiniteLoopPrevention = 0;
         if (factory != null) {
             Schema schema = this;
@@ -54,7 +62,6 @@ public final class ReferenceSchema implements Schema {
         } else {
             this.refSchema = null;
         }
-
 
     }
 
@@ -80,6 +87,24 @@ public final class ReferenceSchema implements Schema {
         return writer.object()
                 .write($REF, refURI)
                 .endObject();
+    }
+
+    @Override
+    public String toString() {
+        return toString(false);
+    }
+
+    public String toString(boolean pretty) {
+        final StringWriter stringWriter = new StringWriter();
+        final JsonGenerator generator;
+        if (pretty) {
+            generator = prettyPrintGeneratorFactory().createGenerator(stringWriter);
+        } else {
+            generator = JsonProvider.provider().createGenerator(stringWriter);
+        }
+        this.toJson(new JsonSchemaGenerator(generator));
+        generator.flush();
+        return stringWriter.toString();
     }
 
     @Override
@@ -113,7 +138,7 @@ public final class ReferenceSchema implements Schema {
     }
 
     @Override
-    public String getId() {
+    public URI getId() {
         return requireRefSchema().getId();
     }
 

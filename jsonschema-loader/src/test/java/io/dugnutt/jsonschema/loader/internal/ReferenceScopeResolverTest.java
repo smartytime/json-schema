@@ -22,12 +22,10 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class ReferenceScopeResolverTest {
@@ -66,8 +64,8 @@ public class ReferenceScopeResolverTest {
 
     @Test
     public void test() {
-        SchemaLocation parentLocation = SchemaLocation.schemaLocation(parentScope);
-        SchemaLocation childLocation = parentLocation.withChildPath(encounteredSegment);
-        assertEquals(expectedOutput, childLocation.getAbsoluteURI());
+        SchemaLocation parentLocation = SchemaLocation.documentRoot(parentScope);
+        SchemaLocation childLocation = parentLocation.child(encounteredSegment);
+        assertEquals(expectedOutput, childLocation.getUniqueURI());
     }
 }

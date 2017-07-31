@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.extractors;
 
 import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.StreamUtils;
+import io.dugnutt.jsonschema.utils.StreamUtils;
 import io.dugnutt.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.dugnutt.jsonschema.validator.SchemaValidator;
 import io.dugnutt.jsonschema.validator.SchemaValidatorFactory;
@@ -13,9 +13,6 @@ import io.dugnutt.jsonschema.validator.keywords.NotKeywordValidator;
 import io.dugnutt.jsonschema.validator.keywords.OneOfValidator;
 
 import java.util.List;
-
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
 
 public class BaseKeywordValidatorExtractor implements KeywordValidatorExtractor {
 

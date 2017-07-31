@@ -15,7 +15,7 @@
  */
 package io.dugnutt.jsonschema.validator;
 
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
 
@@ -42,11 +42,7 @@ import static org.junit.Assert.fail;
 public class ValidationTestSupport {
 
     public static Schema buildWithLocation(JsonSchemaBuilder builder) {
-        return builder.id("#").build();
-    }
-
-    public static SchemaValidator buildValidatorWithLocation(JsonSchemaBuilder builder) {
-        return ValidationMocks.createTestValidator(builder.id("#").build());
+        return builder.build();
     }
 
     public static long countCauseByJsonPointer(final ValidationError root, final String pointer) {

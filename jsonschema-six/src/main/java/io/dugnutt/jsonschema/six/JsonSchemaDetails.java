@@ -1,5 +1,10 @@
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
+import io.dugnutt.jsonschema.six.keywords.ArrayKeywords;
+import io.dugnutt.jsonschema.six.keywords.NumberKeywords;
+import io.dugnutt.jsonschema.six.keywords.ObjectKeywords;
+import io.dugnutt.jsonschema.six.keywords.StringKeywords;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -10,6 +15,7 @@ import javax.annotation.Nullable;
 import javax.json.JsonArray;
 import javax.json.JsonValue;
 import javax.validation.constraints.NotNull;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -20,10 +26,8 @@ import java.util.Set;
 @EqualsAndHashCode
 public class JsonSchemaDetails {
 
-    // public static final JsonSchemaDetails BLANK_DETAILS = JsonSchemaDetails.builder().build();
-
     @Nullable
-    private final String id;
+    private final URI id;
 
     /**
      * {@see TITLE}

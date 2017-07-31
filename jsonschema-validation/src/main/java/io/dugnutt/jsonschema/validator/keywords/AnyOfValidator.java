@@ -12,7 +12,7 @@ import lombok.ToString;
 
 import java.util.List;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ANY_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ANY_OF;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 @EqualsAndHashCode(callSuper = true)

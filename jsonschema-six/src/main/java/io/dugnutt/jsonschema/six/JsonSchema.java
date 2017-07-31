@@ -9,14 +9,18 @@ import javax.json.stream.JsonGenerator;
 import java.io.StringWriter;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ANY_OF;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.CONST;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DEFAULT;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.$ID;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ALL_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ANY_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.CONST;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.DEFAULT;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.DESCRIPTION;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ENUM;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.NOT;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ONE_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.TITLE;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.utils.JsonUtils.prettyPrintGeneratorFactory;
 
 @EqualsAndHashCode(of = "details")
 public class JsonSchema implements Schema {
@@ -41,12 +45,10 @@ public class JsonSchema implements Schema {
     @Override
     public JsonSchemaGenerator toJson(final JsonSchemaGenerator writer) {
         writer.object();
-        if (!"#".equals(location.getAbsoluteURI().toString())) {
-            writer.optionalWrite(JsonSchemaKeyword.$ID, getId());
-        }
+        writer.optionalWrite($ID, getId());
 
-        writer.optionalWrite(JsonSchemaKeyword.TITLE, getTitle());
-        writer.optionalWrite(JsonSchemaKeyword.DESCRIPTION, getDescription());
+        writer.optionalWrite(TITLE, getTitle());
+        writer.optionalWrite(DESCRIPTION, getDescription());
         getDefaultValue().ifPresent(defValue -> writer.write(DEFAULT, defValue));
         getEnumValues().ifPresent(writer.jsonValueWriter(ENUM));
         getConstValue().ifPresent(writer.jsonValueWriter(CONST));
@@ -74,13 +76,20 @@ public class JsonSchema implements Schema {
 
     @Override
     public String toString() {
-        final JsonProvider provider = JsonProvider.provider();
+        return toString(false);
+    }
+
+    public String toString(boolean pretty) {
         final StringWriter stringWriter = new StringWriter();
-        final JsonGenerator generator = provider.createGenerator(stringWriter);
-        toJson(new JsonSchemaGenerator(generator));
+        final JsonGenerator generator;
+        if (pretty) {
+            generator = prettyPrintGeneratorFactory().createGenerator(stringWriter);
+        } else {
+            generator = JsonProvider.provider().createGenerator(stringWriter);
+        }
+        this.toJson(new JsonSchemaGenerator(generator));
         generator.flush();
         return stringWriter.toString();
     }
-
 
 }

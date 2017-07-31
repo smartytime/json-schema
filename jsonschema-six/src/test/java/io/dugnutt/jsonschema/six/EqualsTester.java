@@ -1,5 +1,10 @@
 package io.dugnutt.jsonschema.six;
 
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
+import io.dugnutt.jsonschema.six.keywords.ArrayKeywords;
+import io.dugnutt.jsonschema.six.keywords.NumberKeywords;
+import io.dugnutt.jsonschema.six.keywords.ObjectKeywords;
+import io.dugnutt.jsonschema.six.keywords.StringKeywords;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;

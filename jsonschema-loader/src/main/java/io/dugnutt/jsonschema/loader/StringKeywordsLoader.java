@@ -1,15 +1,13 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.JsonValueWithLocation;
-import io.dugnutt.jsonschema.six.Schema;
-import io.dugnutt.jsonschema.six.StringKeywords;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.dugnutt.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.FORMAT;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAX_LENGTH;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_LENGTH;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.PATTERN;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.FORMAT;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MAX_LENGTH;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MIN_LENGTH;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.PATTERN;
 
 public class StringKeywordsLoader implements KeywordsLoader {
 

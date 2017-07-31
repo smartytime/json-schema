@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.validator.extractors;
 
 import com.google.common.collect.ImmutableMap;
-import io.dugnutt.jsonschema.six.ObjectKeywords;
+import io.dugnutt.jsonschema.six.keywords.ObjectKeywords;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.dugnutt.jsonschema.validator.SchemaValidator;

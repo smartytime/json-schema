@@ -9,9 +9,6 @@ import java.util.Objects;
  */
 public final class ObjectComparator {
 
-    private ObjectComparator() {
-    }
-
     /**
      * Checks that elements are lexically equivalent.  This is to handle the case that enum values that contain
      * numbers should not be considered equal if their lexical representation is different, eg:

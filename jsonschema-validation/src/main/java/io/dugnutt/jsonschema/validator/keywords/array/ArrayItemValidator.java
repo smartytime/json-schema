@@ -11,7 +11,7 @@ import lombok.NonNull;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ITEMS;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ITEMS;
 
 public class ArrayItemValidator extends KeywordValidator {
     @NonNull

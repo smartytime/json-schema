@@ -1,7 +1,7 @@
 package io.dugnutt.jsonschema.loader;
 
 import io.dugnutt.jsonschema.six.JsonPath;
-import io.dugnutt.jsonschema.six.JsonSchemaType;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaType;
 import io.dugnutt.jsonschema.six.JsonValueWithLocation;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaException;
@@ -11,16 +11,16 @@ import javax.json.JsonString;
 import javax.json.JsonValue.ValueType;
 import java.util.Arrays;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ALL_OF;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ANY_OF;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.CONST;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DEFAULT;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.DESCRIPTION;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ENUM;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.NOT;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ONE_OF;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TITLE;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.TYPE;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ALL_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ANY_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.CONST;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.DEFAULT;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.DESCRIPTION;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ENUM;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.NOT;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ONE_OF;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.TITLE;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
 
 public class SharedKeywordsLoader implements KeywordsLoader {
     private SharedKeywordsLoader() {

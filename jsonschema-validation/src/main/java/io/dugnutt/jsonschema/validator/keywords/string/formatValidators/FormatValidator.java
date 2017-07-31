@@ -15,7 +15,7 @@
  */
 package io.dugnutt.jsonschema.validator.keywords.string.formatValidators;
 
-import io.dugnutt.jsonschema.six.FormatType;
+import io.dugnutt.jsonschema.six.enums.FormatType;
 
 import java.util.Optional;
 

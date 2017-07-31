@@ -1,24 +1,17 @@
 package io.dugnutt.jsonschema;
 
-import com.google.common.base.Stopwatch;
-import io.dugnutt.jsonschema.loader.JsonSchemaFactory;
-import io.dugnutt.jsonschema.six.JsonSchemaKeyword;
+import io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.validator.ValidationError;
 import org.junit.Test;
 
 import javax.json.JsonObject;
-import javax.json.spi.JsonProvider;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static io.dugnutt.jsonschema.ValidationMocks.createTestValidator;
 import static io.dugnutt.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 

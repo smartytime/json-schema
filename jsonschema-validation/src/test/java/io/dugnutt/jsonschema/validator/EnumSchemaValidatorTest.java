@@ -15,7 +15,7 @@
  */
 package io.dugnutt.jsonschema.validator;
 
-import static io.dugnutt.jsonschema.six.SchemaLocation.schemaLocation;
+import static io.dugnutt.jsonschema.six.SchemaLocation.documentRoot;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.failureOf;
 import static io.dugnutt.jsonschema.utils.JsonUtils.jsonArray;

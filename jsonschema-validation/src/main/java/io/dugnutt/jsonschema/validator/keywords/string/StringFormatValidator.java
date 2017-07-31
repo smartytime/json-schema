@@ -11,7 +11,7 @@ import lombok.NonNull;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.FORMAT;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.FORMAT;
 import static io.dugnutt.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class StringFormatValidator extends KeywordValidator {

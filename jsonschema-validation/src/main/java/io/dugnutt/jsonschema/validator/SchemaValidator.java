@@ -6,15 +6,10 @@ import io.dugnutt.jsonschema.six.Schema;
 import javax.json.JsonValue;
 import java.util.Optional;
 
-@FunctionalInterface
 public interface SchemaValidator {
 
     boolean validate(JsonValueWithLocation subject, ValidationReport report);
 
-    /**
-     * @deprecated Use validateWithReport
-     */
-    @Deprecated
     default Optional<ValidationError> validate(JsonValue subject) {
         JsonValueWithLocation pathAwareSubject = JsonValueWithLocation.fromJsonValue(subject, getSchema().getLocation());
         ValidationReport report = validate(pathAwareSubject);
@@ -28,7 +23,5 @@ public interface SchemaValidator {
     }
 
 
-    default Schema getSchema() {
-        throw new UnsupportedOperationException();
-    }
+    Schema getSchema();
 }

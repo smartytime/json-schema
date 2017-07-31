@@ -7,11 +7,11 @@ import io.dugnutt.jsonschema.six.UnexpectedValueException;
 
 import javax.json.JsonValue;
 
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ADDITIONAL_ITEMS;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.ITEMS;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MAX_ITEMS;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.MIN_ITEMS;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.UNIQUE_ITEMS;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_ITEMS;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.ITEMS;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MAX_ITEMS;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.MIN_ITEMS;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.UNIQUE_ITEMS;
 import static javax.json.JsonValue.ValueType;
 
 /**
@@ -33,7 +33,7 @@ class ArrayKeywordsLoader implements KeywordsLoader {
                 .ifPresent(schemaBuilder::schemaOfAdditionalItems);
 
         schemaJson.findByKey(ITEMS).ifPresent(itemsValue -> {
-            final SchemaLocation itemsPath = schemaJson.getLocation().withChildPath(ITEMS);
+            final SchemaLocation itemsPath = schemaJson.getLocation().child(ITEMS);
             switch (itemsValue.getValueType()) {
                 case OBJECT:
                     schemaBuilder.allItemSchema(
@@ -43,7 +43,7 @@ class ArrayKeywordsLoader implements KeywordsLoader {
                 case ARRAY:
                     int idx = 0;
                     for (JsonValue jsonValue : itemsValue.asJsonArray()) {
-                        final SchemaLocation idxPath = itemsPath.withChildPath(idx++);
+                        final SchemaLocation idxPath = itemsPath.child(idx++);
                         if (jsonValue.getValueType() != ValueType.OBJECT) {
                             throw new UnexpectedValueException(idxPath, itemsValue, ValueType.OBJECT);
                         }

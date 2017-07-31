@@ -2,13 +2,14 @@ package io.dugnutt.jsonschema.loader.reference;
 
 import io.dugnutt.jsonschema.six.JsonPath;
 import io.dugnutt.jsonschema.six.JsonSchemaDetails;
-import io.dugnutt.jsonschema.six.RecursiveJsonIterator;
 import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.six.SchemaLocation;
-import io.dugnutt.jsonschema.six.URIUtils;
+import io.dugnutt.jsonschema.utils.RecursiveJsonIterator;
+import io.dugnutt.jsonschema.utils.URIUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.json.JsonObject;
 import javax.json.JsonString;
@@ -17,16 +18,17 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
+import static com.google.common.base.Preconditions.checkState;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.$ID;
 
 /**
  * @author erosb
  */
-@Builder(builderClassName = "Builder", builderMethodName = "schemaCacheBuilder")
+@Builder(builderMethodName = "schemaCacheBuilder")
 @AllArgsConstructor
+@Slf4j(topic = "schemaCache")
 public class SchemaCache {
 
     @NonNull
@@ -46,15 +48,17 @@ public class SchemaCache {
     private final Map<URI, JsonObject> absoluteDocumentCache = new HashMap<>();
 
     public void cacheSchema(URI schemaURI, Schema schema) {
-        if (schemaURI.isAbsolute()) {
-            absoluteSchemaCache.put(normalizeURI(schemaURI), schema);
-        }
+        checkState(schemaURI.isAbsolute(), "Must be an absolute URI");
+        absoluteSchemaCache.put(normalizeURI(schemaURI), schema);
     }
 
     public void cacheDocument(URI documentURI, JsonObject document) {
         checkNotNull(documentURI, "documentURI must not be null");
         checkNotNull(document, "document must not be null");
-        absoluteDocumentCache.put(normalizeURI(documentURI), document);
+
+        if (documentURI.isAbsolute()) {
+            absoluteDocumentCache.put(normalizeURI(documentURI), document);
+        }
     }
 
     public Optional<JsonObject> lookupDocument(URI documentURI) {
@@ -63,7 +67,7 @@ public class SchemaCache {
     }
 
     public void cacheSchema(SchemaLocation location, Schema schema) {
-        URI absoluteLocation = location.getAbsoluteURI();
+        URI absoluteLocation = location.getUniqueURI();
         URI jsonPointerLocation = location.getAbsoluteJsonPointerURI();
         this.cacheSchema(absoluteLocation, schema);
         this.cacheSchema(jsonPointerLocation, schema);
@@ -71,21 +75,20 @@ public class SchemaCache {
 
     public Optional<Schema> getSchema(SchemaLocation schemaLocation) {
         //A schema can be cached in two places
-        return getSchema(schemaLocation.getAbsoluteURI(), schemaLocation.getAbsoluteJsonPointerURI());
+        return getSchema(schemaLocation.getUniqueURI(), schemaLocation.getCanonicalURI());
     }
 
-    public Optional<Schema> getSchema(URI... possibilities) {
-        //A schema can be cached a bunch of places.
-        return Stream.of(possibilities)
-                .map(this::normalizeURI)
-                .filter(absoluteSchemaCache::containsKey)
-                .map(absoluteSchemaCache::get)
-                .findAny();
-    }
-
-    public Optional<Schema> getSchema(URI schemaURI) {
-        final Schema cacheHit = absoluteSchemaCache.get(normalizeURI(schemaURI));
-        return Optional.ofNullable(cacheHit);
+    public Optional<Schema> getSchema(URI... schemaURI) {
+        for (URI uri : schemaURI) {
+            if (uri.isAbsolute()) {
+                final URI key = normalizeURI(uri);
+                final Schema hit = absoluteSchemaCache.get(key);
+                if (hit != null) {
+                    return Optional.of(hit);
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     public Optional<JsonPath> resolveURIToDocumentUsingLocalIdentifiers(URI documentURI, URI absoluteURI, JsonObject document) {
@@ -115,15 +118,7 @@ public class SchemaCache {
     }
 
     private URI normalizeURI(URI key) {
-        return URIUtils.withoutFragment(key);
+        return URIUtils.trimEmptyFragment(key);
     }
 
-    public static class Builder {
-        public Builder cacheSchema(URI key, Schema toCache) {
-            checkNotNull(key, "key must not be null");
-            checkNotNull(toCache, "toCache must not be null");
-            this.cacheSchema(key, toCache);
-            return this;
-        }
-    }
 }

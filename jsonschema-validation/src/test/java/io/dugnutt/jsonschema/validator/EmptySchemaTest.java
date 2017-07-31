@@ -15,6 +15,8 @@
  */
 package io.dugnutt.jsonschema.validator;
 
+import com.google.common.base.Strings;
+import io.dugnutt.jsonschema.six.Schema;
 import io.dugnutt.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,7 +24,8 @@ import org.junit.Test;
 import javax.json.JsonObject;
 
 import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.dugnutt.jsonschema.six.JsonSchemaKeyword.$ID;
+import static io.dugnutt.jsonschema.six.Schema.jsonSchemaBuilderWithId;
+import static io.dugnutt.jsonschema.six.enums.JsonSchemaKeyword.$ID;
 import static io.dugnutt.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.dugnutt.jsonschema.validator.ValidationTestSupport.expectSuccess;
 
@@ -71,11 +74,17 @@ public class EmptySchemaTest {
     }
 
     private JsonObject json(final String title, final String description, final String id) {
-        String jsonFromString = jsonSchemaBuilder()
-                .id(id)
+        final Schema.JsonSchemaBuilder builder;
+        if (!Strings.isNullOrEmpty(id)) {
+            builder = jsonSchemaBuilderWithId(id);
+        } else {
+            builder = jsonSchemaBuilder();
+        }
+        String jsonFromString = builder
                 .title(title)
                 .description(description)
-                .build().toString();
+                .build()
+                .toString();
         return JsonUtils.readJsonObject(jsonFromString);
     }
 }
