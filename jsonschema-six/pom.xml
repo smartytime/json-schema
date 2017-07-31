@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
+    Copyright (C) 2017 SBSP (http://sbsp.io)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>io.dugnutt.jsonschema</groupId>
+    <groupId>io.sbsp.jsonschema</groupId>
     <artifactId>jsonschema-six</artifactId>
     <version>1.6.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
@@ -32,8 +32,8 @@
         <jacoco.version>0.7.9</jacoco.version>
     </properties>
     <name>jsonschema-six</name>
-    <url>https://github.com/everit-org/json-schema</url>
-    <description>Implementation of the JSON Schema Core Draft v4 specification built with the org.json API</description>
+    <url>https://github.com/smartytime/json-schema</url>
+    <description>Implementation of the JSON Schema Core Draft v6 specification built with the javax.json API</description>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -68,12 +68,12 @@
                         <Import-Package>*
                         </Import-Package>
                         <Export-Package>
-                            io.dugnutt.jsonschema.six;version=${project.version},
-                            io.dugnutt.jsonschema.six.types;version=${project.version},
-                            io.dugnutt.jsonschema.six.validation;version=${project.version},
-                            io.dugnutt.jsonschema.six.enums;version=${project.version},
-                            io.dugnutt.jsonschema.six.keywords;version=${project.version},
-                            io.dugnutt.jsonschema.utils;version=${project.version},
+                            io.sbsp.jsonschema.six;version=${project.version},
+                            io.sbsp.jsonschema.six.types;version=${project.version},
+                            io.sbsp.jsonschema.six.validation;version=${project.version},
+                            io.sbsp.jsonschema.six.enums;version=${project.version},
+                            io.sbsp.jsonschema.six.keywords;version=${project.version},
+                            io.sbsp.jsonschema.utils;version=${project.version},
                         </Export-Package>
                     </instructions>
                 </configuration>

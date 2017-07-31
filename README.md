@@ -31,27 +31,15 @@ a better choice, since it seems to be [twice faster](https://github.com/erosb/js
 
 ## Maven installation
 
-[![Maven Central](https://img.shields.io/maven-central/v/org.everit.json/org.everit.json.schema.svg?maxAge=2592000)]()
+[![Maven Central](https://img.shields.io/maven-central/v/io.sbsp.jsonschema/jsonschema-validation.svg?maxAge=2592000)]()
 
 Add the following to your `pom.xml`:
 
 ```xml
 <dependency>
-    <groupId>org.everit.json</groupId>
-    <artifactId>org.everit.json.schema</artifactId>
-    <version>1.5.1</version>
-</dependency>
-```
-
-### Java7 version
-
-If you are looking for a version which works on Java7, then you can use this artifact, kindly backported by [Doctusoft](https://doctusoft.com/):
-
-```xml
-<dependency>
-    <groupId>com.doctusoft</groupId>
-    <artifactId>json-schema-java7</artifactId>
-    <version>1.4.1</version>
+    <groupId>io.sbsp.json-schema</groupId>
+    <artifactId>jsonschema-validation</artifactId>
+    <version>1.6.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -59,15 +47,18 @@ If you are looking for a version which works on Java7, then you can use this art
 
 
 ```java
-import org.everit.json.schema.Schema;
-import org.everit.json.schema.loader.SchemaLoader;
+import jsonschema-validation;
+import jsonschema-validation.loader.SchemaLoader;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 // ...
 try (InputStream inputStream = getClass().getResourceAsStream("/path/to/your/schema.json")) {
-  JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
-  Schema schema = SchemaLoader.load(rawSchema);
-  schema.validate(new JSONObject("{\"hello\" : \"world\"}")); // throws a ValidationException if this object is invalid
+    Schema schema = JsonSchemaFactory.schemaFactory().load(inputStream);
+    SchemaValidator validator = SchemaValidatorFactory.createValidatorForSchema(schema);
+    JsonObject subject = JsonProvider.provider().createObjectBuilder()
+        .add("hello", "world")
+        .build();
+    Optional<ValidationError> error = schema.validate(subject));
 }
 ```
 
@@ -188,8 +179,8 @@ Starting from version `1.2.0` the library supports the [`"format"` keyword][draf
 
 The library also supports adding custom format validators. To use a custom validator basically you have to
 
- * create your own validation in a class implementing the `org.everit.json.schema.FormatValidator` interface
- * bind your validator to a name in a `org.everit.json.schema.loader.SchemaLoader.SchemaLoaderBuilder` instance before loading the actual schema
+ * create your own validation in a class implementing the `jsonschema-validation.FormatValidator` interface
+ * bind your validator to a name in a `jsonschema-validation.loader.SchemaLoader.SchemaLoaderBuilder` instance before loading the actual schema
 
 ### Example
 
@@ -244,7 +235,7 @@ SchemaLoader schemaLoader = SchemaLoader.builder()
 
 [ASL 2.0 badge]: https://img.shields.io/:license-Apache%202.0-blue.svg
 [ASL 2.0]: https://www.apache.org/licenses/LICENSE-2.0
-[Travis badge master]: https://travis-ci.org/everit-org/json-schema.svg?branch=master
+[Travis badge master]: https://travis-ci.org/smartytime/json-schema.svg?branch=master
 [Travis]: https://travis-ci.org/everit-org/json-schema
 [Coveralls.io badge master]: https://coveralls.io/repos/github/everit-org/json-schema/badge.svg?branch=master
 [Coveralls.io]: https://coveralls.io/github/everit-org/json-schema?branch=master
