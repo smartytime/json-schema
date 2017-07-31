@@ -43,17 +43,17 @@
     </licenses>
     <developers>
         <developer>
-            <name>Martysoft Team (original contributions from Everit Kft)</name>
+            <name>SBSP Team (original contributions from Everit Kft)</name>
         </developer>
     </developers>
     <organization>
-        <name>Everit Kft.</name>
-        <url>http://www.everit.org</url>
+        <name>SBSP Inc.</name>
+        <url>http://sbsp.io</url>
     </organization>
     <scm>
-        <connection>scm:git:git://github.com/everit-org/${projectpath}.git</connection>
-        <developerConnection>scm:git:https://github.com/everit-org/${projectpath}.git</developerConnection>
-        <url>https://github.com/everit-org/${projectpath}</url>
+        <connection>scm:git:git://github.com/smartytime/${projectpath}.git</connection>
+        <developerConnection>scm:git:https://github.com/smartytime/${projectpath}.git</developerConnection>
+        <url>https://github.com/smartytime/${projectpath}</url>
     </scm>
     <build>
         <plugins>

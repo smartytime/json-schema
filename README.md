@@ -236,9 +236,10 @@ SchemaLoader schemaLoader = SchemaLoader.builder()
 [ASL 2.0 badge]: https://img.shields.io/:license-Apache%202.0-blue.svg
 [ASL 2.0]: https://www.apache.org/licenses/LICENSE-2.0
 [Travis badge master]: https://travis-ci.org/smartytime/json-schema.svg?branch=master
-[Travis]: https://travis-ci.org/everit-org/json-schema
-[Coveralls.io badge master]: https://coveralls.io/repos/github/everit-org/json-schema/badge.svg?branch=master
-[Coveralls.io]: https://coveralls.io/github/everit-org/json-schema?branch=master
+[Travis]: https://travis-ci.org/smartytime/json-schema
+[Coveralls.io badge master]: https://coveralls.io/repos/github/smartytime/json-schema/badge.svg?branch=master
+[Coveralls.io]: https://coveralls.io/github/smartytime/json-schema?branch=master
+[everit-org/json-schema]: https://github.com/everit-org/json-schema
 [daveclayton/json-schema-validator]: https://github.com/daveclayton/json-schema-validator
 [draft-zyp-json-schema-04]: https://tools.ietf.org/html/draft-zyp-json-schema-04
 [draft-fge-json-schema-validation-00 format]: https://tools.ietf.org/html/draft-fge-json-schema-validation-00#section-7

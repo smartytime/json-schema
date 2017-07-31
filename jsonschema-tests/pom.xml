@@ -54,7 +54,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.everit.jsonschema</groupId>
+            <groupId>io.sbsp.jsonschema</groupId>
             <artifactId>jsonschema-loader</artifactId>
             <version>${project.version}</version>
         </dependency>
