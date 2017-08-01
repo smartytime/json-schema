@@ -1,9 +1,9 @@
 package io.sbsp.jsonschema.six.keywords;
 
+import com.google.common.base.Objects;
 import io.sbsp.jsonschema.six.JsonSchemaGenerator;
 import io.sbsp.jsonschema.six.enums.JsonSchemaType;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
@@ -20,9 +20,8 @@ import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MIN_LENGTH;
 /**
  * {@code String} schema validator.
  */
-@Builder(builderClassName = "StringKeywordsBuilder")
+@Builder
 @Getter
-@EqualsAndHashCode(doNotUseGetters = true)
 public class StringKeywords implements SchemaKeywords {
 
     @Min(0)
@@ -60,11 +59,59 @@ public class StringKeywords implements SchemaKeywords {
         return pattern;
     }
 
+    private String getPatternString() {
+        return pattern != null ? pattern.pattern() : null;
+    }
+
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || !(o instanceof StringKeywords)) {
+            return false;
+        }
+        final StringKeywords that = (StringKeywords) o;
+        return Objects.equal(minLength, that.minLength) &&
+                Objects.equal(maxLength, that.maxLength) &&
+                Objects.equal(getPatternString(), that.getPatternString()) &&
+                Objects.equal(format, that.format);
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hashCode(minLength, maxLength, getPatternString(), format);
+    }
+
     public Optional<Pattern> findPattern() {
         return Optional.ofNullable(pattern);
     }
 
     public static class StringKeywordsBuilder {
+        private String getPatternString() {
+            return pattern != null ? pattern.pattern() : null;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || !(o instanceof StringKeywordsBuilder)) {
+                return false;
+            }
+            final StringKeywordsBuilder that = (StringKeywordsBuilder) o;
+            return Objects.equal(minLength, that.minLength) &&
+                    Objects.equal(maxLength, that.maxLength) &&
+                    Objects.equal(getPatternString(), that.getPatternString()) &&
+                    Objects.equal(format, that.format);
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hashCode(minLength, maxLength, getPatternString(), format);
+        }
     }
 
     private static final StringKeywords BLANK_STRING_KEYWORDS = builder().build();

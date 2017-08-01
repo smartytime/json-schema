@@ -1,7 +1,12 @@
 package io.sbsp.jsonschema.utils;
 
+import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.six.enums.JsonSchemaType;
 import org.junit.Test;
 
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.spi.JsonProvider;
 import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,7 +17,6 @@ public class URIUtilsTest {
         final URI uriToTest = URI.create("http://www.coolsite.com/items?foo=bob#/some/pointer");
         assertThat(URIUtils.withoutFragment(uriToTest))
                 .isEqualTo(URI.create("http://www.coolsite.com/items?foo=bob"));
-
     }
 
     @Test
@@ -20,7 +24,6 @@ public class URIUtilsTest {
         final URI uriToTest = URI.create("http://www.coolsite.com/items?foo=bob#");
         assertThat(URIUtils.withoutFragment(uriToTest))
                 .isEqualTo(URI.create("http://www.coolsite.com/items?foo=bob"));
-
     }
 
     @Test
@@ -94,8 +97,53 @@ public class URIUtilsTest {
 
     @Test
     public void generateAbsoluteURI() {
-        final URI uri = URIUtils.generateUniqueURI();
+        final JsonProvider provider = JsonProvider.provider();
+        final JsonObject object = provider.createObjectBuilder()
+                .add("bob", "jones")
+                .add("age", 34)
+                .add("sub", provider.createArrayBuilder()
+                        .add(3).add(6).add(67))
+                .build();
+
+        final URI uri = URIUtils.generateUniqueURI(object);
         final URI resolve = uri.resolve("#/foofy");
         assertThat(resolve.toString()).isEqualTo(uri.toString() + "#/foofy");
+    }
+
+    @Test
+    public void generateUniqueURI_ForSameRootObject_ReturnsSameURI() {
+        final JsonProvider provider = JsonProvider.provider();
+        final JsonObject object = provider.createObjectBuilder()
+                .add("bob", "jones")
+                .add("age", 34)
+                .add("sub", provider.createArrayBuilder()
+                        .add(3).add(6).add(67))
+                .build();
+
+        final URI uri = URIUtils.generateUniqueURI(object);
+        final JsonObject fromString = JsonUtils.readJsonObject(object.toString());
+        assertThat(uri).isEqualTo(URIUtils.generateUniqueURI(fromString));
+    }
+
+    @Test
+    public void generateUniqueURI_ForSameBuilder_ReturnsSameURI() {
+        final Schema.JsonSchemaBuilder aBuilder = Schema.jsonSchemaBuilder()
+                .constValue(JsonValue.TRUE)
+                .pattern("bob")
+                .type(JsonSchemaType.STRING)
+                .type(JsonSchemaType.NUMBER)
+                .enumValues(JsonUtils.jsonArray("one", 2, "three"));
+
+        final Schema.JsonSchemaBuilder bBuilder = Schema.jsonSchemaBuilder()
+                .constValue(JsonValue.TRUE)
+                .pattern("bob")
+                .type(JsonSchemaType.STRING)
+                .type(JsonSchemaType.NUMBER)
+                .enumValues(JsonUtils.jsonArray("one", 2, "three"));
+
+        final URI uniqueA = URIUtils.generateUniqueURI(aBuilder);
+        final URI uniqueB = URIUtils.generateUniqueURI(bBuilder);
+
+        assertThat(uniqueA).isEqualTo(uniqueB);
     }
 }

@@ -1,16 +1,16 @@
 package io.sbsp.jsonschema.utils;
 
+import com.google.common.hash.HashCode;
 import lombok.SneakyThrows;
 
 import java.net.URI;
-import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public class URIUtils {
 
-    public static final String SCHEME_AUTOASSIGN = "dugg";
+    public static final String SCHEME_AUTOASSIGN = "sbsp";
 
     public static URI withNewFragment(URI existing, URI newFragment) {
         checkState(isFragmentOnly(newFragment), "Must only be a fragment");
@@ -57,9 +57,23 @@ public class URIUtils {
         return withFragment(uri, null);
     }
 
+    public static URI resolve(URI base, URI against) {
+        if (base.isOpaque() && URIUtils.isFragmentOnly(against)) {
+            return URIUtils.withNewFragment(base, against);
+        } else {
+            return base.resolve(against);
+        }
+    }
+
     @SneakyThrows
-    public static URI generateUniqueURI() {
-        return new URI(SCHEME_AUTOASSIGN, "//" + UUID.randomUUID().toString() + "/schema", null);
+    public static URI generateUniqueURI(Object forInstance) {
+        checkNotNull(forInstance, "forInstance must not be null");
+        final StringBuilder hashed = new StringBuilder();
+        hashed.append(HashCode.fromLong(forInstance.hashCode()));
+        hashed.append("-");
+        hashed.append(forInstance.toString().length());
+
+        return new URI(SCHEME_AUTOASSIGN, "//" + hashed + "/schema", null);
     }
 
     @SneakyThrows

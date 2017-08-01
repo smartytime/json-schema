@@ -414,15 +414,21 @@ public class JsonValueWithLocation implements PartialJsonObject {
         return new JsonValueWithLocation(jsonObject, location);
     }
 
-    public static JsonValueWithLocation fromJsonValue(JsonObject jsonObject) {
+    public static JsonValueWithLocation fromJsonValue(JsonValue jsonObject) {
+        checkNotNull(jsonObject, "jsonObject must not be null");
         final SchemaLocation rootSchemaLocation;
-        if (jsonObject.containsKey($ID.key())) {
-            String $id = jsonObject.getString($ID.key());
-            rootSchemaLocation = SchemaLocation.documentRoot($id);
-        } else {
-            rootSchemaLocation = SchemaLocation.anonymousRoot();
+        if (jsonObject.getValueType() == ValueType.OBJECT) {
+            final JsonObject asObject = jsonObject.asJsonObject();
+            if (asObject.containsKey($ID.key())) {
+                URI $id = URI.create(asObject.getString($ID.key()));
+                if ($id.isAbsolute()) {
+                    return new JsonValueWithLocation(jsonObject, SchemaLocation.documentRoot($id));
+                } else {
+                    return new JsonValueWithLocation(jsonObject, SchemaLocation.hashedRoot(jsonObject, $id));
+                }
+            }
         }
 
-        return  new JsonValueWithLocation(jsonObject, rootSchemaLocation);
+        return  new JsonValueWithLocation(jsonObject, SchemaLocation.hashedRoot(jsonObject));
     }
 }

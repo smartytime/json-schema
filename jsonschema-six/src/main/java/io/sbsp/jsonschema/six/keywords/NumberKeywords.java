@@ -1,5 +1,6 @@
 package io.sbsp.jsonschema.six.keywords;
 
+import com.google.common.base.Objects;
 import io.sbsp.jsonschema.six.JsonSchemaGenerator;
 import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
 import io.sbsp.jsonschema.six.enums.JsonSchemaType;
@@ -16,9 +17,10 @@ import java.util.Set;
  */
 @Getter
 @Builder(toBuilder = true, builderClassName = "NumberKeywordsBuilder")
-@EqualsAndHashCode
+@EqualsAndHashCode(doNotUseGetters = true)
 public class NumberKeywords implements SchemaKeywords {
 
+    private static final NumberKeywords BLANK_NUMBER_KEYWORDS = builder().build();
     private final Number minimum;
     private final Number maximum;
     @Min(1)
@@ -40,12 +42,30 @@ public class NumberKeywords implements SchemaKeywords {
                 .optionalWrite(JsonSchemaKeyword.EXCLUSIVE_MAXIMUM, exclusiveMaximum);
     }
 
-    public static class NumberKeywordsBuilder {
-    }
-
-    private static final NumberKeywords BLANK_NUMBER_KEYWORDS = builder().build();
-
     public static NumberKeywords blankNumberKeywords() {
         return BLANK_NUMBER_KEYWORDS;
+    }
+
+    public static class NumberKeywordsBuilder {
+        @Override
+        public final int hashCode() {
+            return Objects.hashCode(minimum, maximum, multipleOf, exclusiveMinimum, exclusiveMaximum);
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof NumberKeywordsBuilder)) {
+                return false;
+            }
+            final NumberKeywordsBuilder that = (NumberKeywordsBuilder) o;
+            return Objects.equal(minimum, that.minimum) &&
+                    Objects.equal(maximum, that.maximum) &&
+                    Objects.equal(multipleOf, that.multipleOf) &&
+                    Objects.equal(exclusiveMinimum, that.exclusiveMinimum) &&
+                    Objects.equal(exclusiveMaximum, that.exclusiveMaximum);
+        }
     }
 }

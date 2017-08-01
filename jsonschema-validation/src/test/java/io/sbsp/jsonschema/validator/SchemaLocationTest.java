@@ -1,6 +1,8 @@
 package io.sbsp.jsonschema.validator;
 
 import io.sbsp.jsonschema.six.SchemaLocation;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 import java.net.URI;
@@ -21,6 +23,14 @@ public class SchemaLocationTest {
         assertEquals("Child Canonical URL", "http://mywebsite.com/schemas/core/entities#platformIdentifier", childLocation.getUniqueURI().toString());
         assertEquals("Child Resolution Scope", "http://mywebsite.com/schemas/core/entities#platformIdentifier", childLocation.getResolutionScope().toString());
         assertEquals("Child Relative URL", "#/definitions/core/platformEntity/properties/id", childLocation.getJsonPointerFragment().toString());
+    }
+
+    @Test
+    public void testEquals() {
+        EqualsVerifier.forClass(SchemaLocation.class)
+                .withOnlyTheseFields("documentURI", "jsonPath", "resolutionScope")
+                .suppress(Warning.STRICT_INHERITANCE)
+                .verify();
     }
 
 }

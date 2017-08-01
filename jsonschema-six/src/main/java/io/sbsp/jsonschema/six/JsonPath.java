@@ -1,5 +1,6 @@
 package io.sbsp.jsonschema.six;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import io.sbsp.jsonschema.utils.CharUtils;
 import io.sbsp.jsonschema.utils.Unescaper;
@@ -10,6 +11,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -98,6 +100,24 @@ public class JsonPath {
         this.segments[parts.length] = toBeAppended;
     }
 
+    public String getLastPath() {
+        final int length = this.segments.length;
+        if (length > 0) {
+            return this.segments[length - 1];
+        } else {
+            return null;
+        }
+    }
+
+    public String getFirstPath() {
+        final int length = this.segments.length;
+        if (length > 0) {
+            return this.segments[0];
+        } else {
+            return null;
+        }
+    }
+
     public JsonPath child(String unescapedPath) {
         checkNotNull(unescapedPath, "unescapedPath must not be null");
         return new JsonPath(this.segments, unescapedPath);
@@ -141,6 +161,16 @@ public class JsonPath {
             this.uriFragment = URI.create(uriFragment.toString());
         }
         return this.uriFragment;
+    }
+
+    public String toString(Joiner joiner) {
+        return joiner.join(segments);
+    }
+
+    public void forEach(Consumer<String> consumer) {
+        for (String segment : segments) {
+            consumer.accept(segment);
+        }
     }
 
     public static JsonPath parseFromURIFragment(URI uriFragment) {

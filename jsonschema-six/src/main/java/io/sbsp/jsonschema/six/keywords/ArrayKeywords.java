@@ -15,6 +15,7 @@
  */
 package io.sbsp.jsonschema.six.keywords;
 
+import com.google.common.base.Objects;
 import io.sbsp.jsonschema.six.JsonSchemaGenerator;
 import io.sbsp.jsonschema.six.Schema;
 import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
@@ -97,6 +98,30 @@ public class ArrayKeywords implements SchemaKeywords {
 
     public static class ArrayKeywordsBuilder {
         private List<Schema> itemSchemas = new ArrayList<>();
+
+        @Override
+        public final boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ArrayKeywordsBuilder)) {
+                return false;
+            }
+            final ArrayKeywordsBuilder that = (ArrayKeywordsBuilder) o;
+            return needsUniqueItems == that.needsUniqueItems &&
+                    Objects.equal(itemSchemas, that.itemSchemas) &&
+                    Objects.equal(minItems, that.minItems) &&
+                    Objects.equal(maxItems, that.maxItems) &&
+                    Objects.equal(allItemSchema, that.allItemSchema) &&
+                    Objects.equal(containsSchema, that.containsSchema) &&
+                    Objects.equal(schemaOfAdditionalItems, that.schemaOfAdditionalItems);
+        }
+
+        @Override
+        public final int hashCode() {
+            return Objects.hashCode(itemSchemas, minItems, maxItems, needsUniqueItems, allItemSchema, containsSchema,
+                    schemaOfAdditionalItems);
+        }
     }
 
     private static final ArrayKeywords BLANK_ARRAY_KEYWORDS = builder().build();

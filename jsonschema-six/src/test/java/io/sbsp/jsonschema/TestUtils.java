@@ -1,7 +1,6 @@
 package io.sbsp.jsonschema;
 
 import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.SchemaLocation;
 
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
@@ -13,24 +12,24 @@ import javax.json.spi.JsonProvider;
 public class TestUtils {
 
     public static JsonValueWithLocation createValue(JsonValue value) {
-        return JsonValueWithLocation.fromJsonValue(value, SchemaLocation.anonymousRoot());
+        return JsonValueWithLocation.fromJsonValue(value);
     }
 
     public static JsonValueWithLocation createJsonObjectWithLocation() {
         final JsonObject jsonValue = JsonProvider.provider().createObjectBuilder()
                 .add("foo", "bar")
                 .add("num", 3).build();
-        return JsonValueWithLocation.fromJsonValue(jsonValue, SchemaLocation.anonymousRoot());
+        return JsonValueWithLocation.fromJsonValue(jsonValue);
     }
 
     public static JsonValueWithLocation createJsonNumberWithLocation(Number number) {
         final JsonNumber jsonValue = JsonProvider.provider().createValue(number.doubleValue());
-        return JsonValueWithLocation.fromJsonValue(jsonValue, SchemaLocation.anonymousRoot());
+        return JsonValueWithLocation.fromJsonValue(jsonValue);
     }
 
     public static JsonValueWithLocation createJsonStringWithLocation(String string) {
         final JsonString jsonValue = JsonProvider.provider().createValue(string);
-        return JsonValueWithLocation.fromJsonValue(jsonValue, SchemaLocation.anonymousRoot());
+        return JsonValueWithLocation.fromJsonValue(jsonValue);
     }
 
     public static JsonValueWithLocation createJsonArrayWithLocation() {
@@ -42,7 +41,7 @@ public class TestUtils {
                 .add(JsonValue.NULL)
                 .build();
 
-        return JsonValueWithLocation.fromJsonValue(jsonValue, SchemaLocation.anonymousRoot());
+        return JsonValueWithLocation.fromJsonValue(jsonValue);
     }
 
     public static JsonString jsonString(String input) {

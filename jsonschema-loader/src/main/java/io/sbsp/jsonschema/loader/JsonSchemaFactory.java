@@ -165,9 +165,15 @@ public class JsonSchemaFactory implements SchemaFactory {
         final SchemaLocation schemaLocation;
         if (schemaJson.containsKey($ID.key())) {
             String $id = schemaJson.getString($ID.key());
-            schemaLocation = SchemaLocation.documentRoot($id);
+            final URI $idURI = URI.create($id);
+            if (!$idURI.isAbsolute()) {
+                schemaLocation = SchemaLocation.hashedRoot(schemaJson, $idURI);
+            } else {
+                schemaLocation = SchemaLocation.documentRoot($id);
+            }
+
         } else {
-            schemaLocation = SchemaLocation.anonymousRoot();
+            schemaLocation = SchemaLocation.hashedRoot(schemaJson);
         }
 
         schemaCache.cacheDocument(schemaLocation.getUniqueURI(), schemaJson);

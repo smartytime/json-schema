@@ -1,6 +1,7 @@
 package io.sbsp.jsonschema.six;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import io.sbsp.jsonschema.six.JsonSchemaDetails.JsonSchemaDetailsBuilder;
@@ -10,6 +11,7 @@ import io.sbsp.jsonschema.six.keywords.ArrayKeywords;
 import io.sbsp.jsonschema.six.keywords.NumberKeywords;
 import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
 import io.sbsp.jsonschema.six.keywords.StringKeywords;
+import lombok.ToString;
 
 import javax.annotation.Nullable;
 import javax.json.JsonArray;
@@ -131,6 +133,7 @@ public interface Schema {
         return new JsonSchemaBuilder(id);
     }
 
+    @ToString
     class JsonSchemaBuilder {
         private JsonObject currentDocument;
         private JsonProvider provider;
@@ -223,11 +226,16 @@ public interface Schema {
         public Schema build() {
             final SchemaLocation location;
             if (this.id == null) {
-                location = supplyIfNull(this.location, SchemaLocation::anonymousRoot);
+                location = supplyIfNull(this.location, () -> SchemaLocation.hashedRoot(this));
             } else if(this.location != null) {
                 location = this.location.withId(this.id);
             } else {
-                location = SchemaLocation.documentRoot(this.id);
+                if (this.id.isAbsolute()) {
+                    location = SchemaLocation.documentRoot(this.id);
+                } else {
+                    location = SchemaLocation.hashedRoot(this, this.id);
+                }
+
             }
             return build(location);
         }
@@ -727,6 +735,44 @@ public interface Schema {
             }
             return numberKeywords;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final JsonSchemaBuilder that = (JsonSchemaBuilder) o;
+            return Objects.equal(ref, that.ref) &&
+                    Objects.equal(detailsBuilder, that.detailsBuilder) &&
+                    Objects.equal(arrayKeywords, that.arrayKeywords) &&
+                    Objects.equal(stringKeywords, that.stringKeywords) &&
+                    Objects.equal(objectKeywords, that.objectKeywords) &&
+                    Objects.equal(numberKeywords, that.numberKeywords) &&
+                    Objects.equal(combinedSchemas, that.combinedSchemas) &&
+                    Objects.equal(notSchema, that.notSchema) &&
+                    Objects.equal(schemaOfAdditionalItems, that.schemaOfAdditionalItems) &&
+                    Objects.equal(itemSchemas, that.itemSchemas) &&
+                    Objects.equal(allItemSchema, that.allItemSchema) &&
+                    Objects.equal(containsSchema, that.containsSchema) &&
+                    Objects.equal(patternProperties, that.patternProperties) &&
+                    Objects.equal(propertySchemas, that.propertySchemas) &&
+                    Objects.equal(schemaDependencies, that.schemaDependencies) &&
+                    Objects.equal(propertyNameSchema, that.propertyNameSchema) &&
+                    Objects.equal(schemaOfAdditionalProperties, that.schemaOfAdditionalProperties);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(ref, detailsBuilder, arrayKeywords, stringKeywords, objectKeywords, numberKeywords,
+                    combinedSchemas, notSchema, schemaOfAdditionalItems, itemSchemas, allItemSchema, containsSchema,
+                    patternProperties, propertySchemas, schemaDependencies, propertyNameSchema, schemaOfAdditionalProperties);
+        }
+
         //@formatter:on
+
+
     }
 }

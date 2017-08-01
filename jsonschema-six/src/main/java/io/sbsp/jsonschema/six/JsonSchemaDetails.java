@@ -1,5 +1,6 @@
 package io.sbsp.jsonschema.six;
 
+import com.google.common.base.Objects;
 import io.sbsp.jsonschema.six.enums.JsonSchemaType;
 import io.sbsp.jsonschema.six.keywords.ArrayKeywords;
 import io.sbsp.jsonschema.six.keywords.NumberKeywords;
@@ -143,6 +144,40 @@ public class JsonSchemaDetails {
 
     public ArrayKeywords getArrayKeywords() {
         return firstNonNull(arrayKeywords, ArrayKeywords.getBlankArrayKeywords());
+    }
+
+    public static class JsonSchemaDetailsBuilder {
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            final JsonSchemaDetailsBuilder that = (JsonSchemaDetailsBuilder) o;
+            return Objects.equal(title, that.title) &&
+                    Objects.equal(description, that.description) &&
+                    Objects.equal(defaultValue, that.defaultValue) &&
+                    Objects.equal(allOfSchemas, that.allOfSchemas) &&
+                    Objects.equal(anyOfSchemas, that.anyOfSchemas) &&
+                    Objects.equal(oneOfSchemas, that.oneOfSchemas) &&
+                    Objects.equal(types, that.types) &&
+                    Objects.equal(notSchema, that.notSchema) &&
+                    Objects.equal(enumValues, that.enumValues) &&
+                    Objects.equal(constValue, that.constValue) &&
+                    Objects.equal(stringKeywords, that.stringKeywords) &&
+                    Objects.equal(numberKeywords, that.numberKeywords) &&
+                    Objects.equal(objectKeywords, that.objectKeywords) &&
+                    Objects.equal(arrayKeywords, that.arrayKeywords);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hashCode(title, description, defaultValue, allOfSchemas, anyOfSchemas, oneOfSchemas, types,
+                    notSchema, enumValues, constValue, stringKeywords, numberKeywords, objectKeywords, arrayKeywords);
+        }
     }
 
 }

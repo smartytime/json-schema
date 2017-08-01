@@ -26,7 +26,7 @@ public class PerfBenchmark {
         final JsonObject jsonObject = ResourceLoader.DEFAULT.readObj("perftest.json");
         final List<JsonValueWithLocation> testSubjects = new ArrayList<>();
         jsonObject.getJsonObject("schemas").forEach((k, v) -> {
-            testSubjects.add(JsonValueWithLocation.fromJsonValue(v, SchemaLocation.anonymousRoot()));
+            testSubjects.add(JsonValueWithLocation.fromJsonValue(v, SchemaLocation.hashedRoot(v)));
         });
 
         long startAt = System.currentTimeMillis();

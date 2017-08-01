@@ -12,8 +12,8 @@ import java.net.URI;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static io.sbsp.jsonschema.six.SchemaLocation.SchemaLocationBuilder.resolve;
 import static io.sbsp.jsonschema.utils.URIUtils.generateUniqueURI;
+import static io.sbsp.jsonschema.utils.URIUtils.resolve;
 
 /**
  * Provides location information for any given schema or validation context, including:
@@ -163,9 +163,21 @@ public class SchemaLocation {
         return new SchemaLocationBuilder(documentURI, resolutionScope, jsonPath);
     }
 
-    public static SchemaLocation anonymousRoot() {
+    public static SchemaLocation hashedRoot(Object builder, URI id) {
+        checkNotNull(id, "id must not be null");
+        final URI uniqueURI = generateUniqueURI(builder);
+        final URI resolvedFromUnique = resolve(uniqueURI, id);
+        final JsonPath path;
+        if (URIUtils.isJsonPointer(id)) {
+            return new SchemaLocation(resolvedFromUnique, resolvedFromUnique, resolvedFromUnique, JsonPath.parseFromURIFragment(id));
+        } else {
+            return new SchemaLocation(resolvedFromUnique, resolvedFromUnique, resolvedFromUnique, ROOT_PATH);
+        }
+    }
+
+    public static SchemaLocation hashedRoot(Object builder) {
         // If there's not ID for a base schema, assign something unique to avoid false-positive cache-hites
-        return new SchemaLocationBuilder(generateUniqueURI()).build();
+        return new SchemaLocationBuilder(generateUniqueURI(builder)).build();
     }
 
     public static SchemaLocation documentRoot(URI $id) {
@@ -219,12 +231,8 @@ public class SchemaLocation {
         public SchemaLocation build() {
             // Initialize everything from the id
             if (this.documentURI == null && this.id != null) {
-                final URI baseURI;
-                if (!id.isAbsolute()) {
-                    baseURI = resolve(generateUniqueURI(), id);
-                } else {
-                    baseURI = id;
-                }
+                checkState(id.isAbsolute(), "ID must be absolute");
+                final URI baseURI = id;
                 return new SchemaLocation(baseURI, baseURI, baseURI, MoreObjects.firstNonNull(jsonPath, ROOT_PATH));
             }
 
@@ -256,14 +264,6 @@ public class SchemaLocation {
         private SchemaLocationBuilder appendJsonPath(String... pathParts) {
             checkNotNull(pathParts, "pathParts must not be null");
             return this.jsonPath(this.jsonPath.child(pathParts));
-        }
-
-        public static URI resolve(URI base, URI against) {
-            if (base.isOpaque() && URIUtils.isFragmentOnly(against)) {
-                return URIUtils.withNewFragment(base, against);
-            } else {
-                return base.resolve(against);
-            }
         }
     }
 }

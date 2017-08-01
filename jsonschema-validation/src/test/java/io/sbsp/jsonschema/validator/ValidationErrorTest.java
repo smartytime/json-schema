@@ -43,69 +43,6 @@ public class ValidationErrorTest {
     public static final ResourceLoader loader = ResourceLoader.DEFAULT;
     private final Schema rootSchema = jsonSchemaBuilder().build();
 
-    // @Test
-    // public void fragmentEscapingBoth() {
-    //     ValidationError subject = createDummyException("#/aaa").prepend("x~y/z");
-    //     Assert.assertEquals("#/x~0y~1z/aaa", subject.getPointerToViolation());
-    // }
-    //
-    // @Test
-    // public void fragmentEscapingSlash() {
-    //     ValidationError subject = createDummyException("#/aaa").prepend("x/y");
-    //     Assert.assertEquals("#/x~1y/aaa", subject.getPointerToViolation());
-    // }
-    //
-    // @Test
-    // public void fragmentEscapingTilde() {
-    //     ValidationError subject = createDummyException("#/aaa").prepend("x~y");
-    //     Assert.assertEquals("#/x~0y/aaa", subject.getPointerToViolation());
-    // }
-    //
-    // @Test
-    // public void getMessageAfterPrepend() {
-    //     ValidationError subject = createDummyException("#/a").prepend("obj");
-    //     Assert.assertEquals("#/obj/a: stuff went wrong", subject.getMessage());
-    // }
-    //
-    // @Test(expected = NullPointerException.class)
-    // public void nullPointerFragmentFailure() {
-    //     createTestValidationError().prepend(null,
-    //             NullSchema.NULL_SCHEMA);
-    // }
-    //
-    // @Test
-    // public void prependNoSchemaChange() {
-    //     ValidationError exc = createTestValidationError();
-    //     ValidationError changedExc = exc.prepend("frag");
-    //     Assert.assertEquals("#/frag", changedExc.getPointerToViolation());
-    //     Assert.assertEquals("type", changedExc.getKeyword());
-    //     Assert.assertEquals(mockBooleanSchema().build(), changedExc.getViolatedSchema());
-    // }
-    //
-    // @Test
-    // public void prependPointer() {
-    //     ValidationError exc = createTestValidationError();
-    //     ValidationError changedExc = exc.prepend("frag", NullSchema.NULL_SCHEMA);
-    //     Assert.assertEquals("#/frag", changedExc.getPointerToViolation());
-    //     Assert.assertEquals("type", changedExc.getKeyword());
-    //     Assert.assertEquals(NullSchema.NULL_SCHEMA, changedExc.getViolatedSchema());
-    // }
-    //
-    // @Test
-    // public void prependWithCausingExceptions() {
-    //     ValidationError cause1 = createDummyException("#/a");
-    //     ValidationError cause2 = createDummyException("#/b");
-    //     final ValidationError e = ValidationError.collectErrors(rootSchema, Arrays.asList(cause1, cause2))
-    //             .orElseThrow(() -> new AssertionError("Should have returned errors"));
-    //
-    //     ValidationError actual = e.prepend("rectangle");
-    //     Assert.assertEquals("#/rectangle", actual.getPointerToViolation());
-    //     ValidationError changedCause1 = actual.getCauses().get(0);
-    //     Assert.assertEquals("#/rectangle/a", changedCause1.getPointerToViolation());
-    //     ValidationError changedCause2 = actual.getCauses().get(1);
-    //     Assert.assertEquals("#/rectangle/b", changedCause2.getPointerToViolation());
-    // }
-
     @Test
     public void testConstructor() {
         ValidationError exc = createTestValidationError();

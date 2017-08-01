@@ -16,17 +16,15 @@
 package io.sbsp.jsonschema.validator;
 
 import io.sbsp.jsonschema.six.JsonPath;
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
 import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
 import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.utils.JsonUtils;
 import io.sbsp.jsonschema.validator.extractors.ArrayKeywordValidatorExtractor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.experimental.var;
 
-import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
@@ -50,6 +48,7 @@ public class ValidationError {
     private static final long serialVersionUID = 6192047123024651924L;
 
     private final transient Schema violatedSchema;
+
     private final JsonPath pointerToViolation;
 
     private final String message;
@@ -60,7 +59,7 @@ public class ValidationError {
     private final URI schemaLocation;
 
     @Singular
-    private final List models;
+    private final List<Object> models;
 
     /**
      * Returns all messages collected from all violations, including nested causing exceptions.
@@ -125,6 +124,10 @@ public class ValidationError {
         return pointerToViolation.toURIFragment().toString();
     }
 
+    public Optional<JsonPath> getPathToViolation() {
+        return Optional.ofNullable(pointerToViolation);
+    }
+
     /**
      * @return a path denoting the location of the violated keyword in the schema
      * @since 1.6.0
@@ -182,8 +185,12 @@ public class ValidationError {
             errorJson.add("code", this.code);
         }
 
-        JsonArray jsonModels = JsonUtils.jsonArray(this.models);
-        errorJson.add("model", jsonModels);
+        final JsonArrayBuilder modelBuilder = JsonProvider.provider().createArrayBuilder();
+        this.models.stream()
+                .map(Object::toString)
+                .forEach(modelBuilder::add);
+
+        errorJson.add("model", modelBuilder.build());
 
         final JsonArrayBuilder arrayBuilder = provider.createArrayBuilder();
         causingExceptions.stream()

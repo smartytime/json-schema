@@ -1,21 +1,22 @@
 package io.sbsp.jsonschema.six;
 
+import com.google.common.collect.ImmutableList;
 import io.sbsp.jsonschema.six.enums.JsonSchemaType;
 import io.sbsp.jsonschema.six.keywords.ArrayKeywords;
+import io.sbsp.jsonschema.six.keywords.ArrayKeywords.ArrayKeywordsBuilder;
 import io.sbsp.jsonschema.six.keywords.NumberKeywords;
+import io.sbsp.jsonschema.six.keywords.NumberKeywords.NumberKeywordsBuilder;
 import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
+import io.sbsp.jsonschema.six.keywords.ObjectKeywords.ObjectKeywordsBuilder;
 import io.sbsp.jsonschema.six.keywords.StringKeywords;
+import io.sbsp.jsonschema.six.keywords.StringKeywords.StringKeywordsBuilder;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@RunWith(Parameterized.class)
 public class EqualsTester {
 
     public static final Schema NUMBER_SCHEMA_A = Schema.jsonSchemaBuilder()
@@ -29,7 +30,6 @@ public class EqualsTester {
             .type(JsonSchemaType.INTEGER)
             .build();
 
-
     public static final Schema STRING_SCHEMA_A = Schema.jsonSchemaBuilder()
             .format("uri")
             .maxLength(32)
@@ -42,62 +42,48 @@ public class EqualsTester {
             .pattern("^[a-z]+$")
             .build();
 
-    // public static final Schema BOOLEAN_SCHEMA_A = Schema.builder()
-    //         .title("Bool A")
-    //         .build();
-    //
-    // public static final Schema BOOLEAN_SCHEMA_B = Schema.builder()
-    //         .title("Bool B")
-    //         .build();
-    //
-    // public static final EmptySchema EMPTY_SCHEMA_A = EmptySchema.builder()
-    //         .title("Empty A")
-    //         .build();
-    //
-    // public static final EmptySchema EMPTY_SCHEMA_B = EmptySchema.builder()
-    //         .title("Empty B")
-    //         .build();
+    @Test
+    public void testEquals() {
 
-    // public static final Schema COMBINED_SCHEMA_A = Schema.builder()
-    //         .subschema(STRING_SCHEMA_A)
-    //         .subschema(NUMBER_SCHEMA_A)
-    //         .JsonSchemaType(JsonSchemaType.ANY_OF).build();
-    //
-    // public static final Schema COMBINED_SCHEMA_B = Schema.builder()
-    //         .subschema(STRING_SCHEMA_B)
-    //         .subschema(NUMBER_SCHEMA_B)
-    //         .JsonSchemaType(JsonSchemaType.ANY_OF).build();
-    private final Class<Schema> testClass;
-
-    public EqualsTester(Class<Schema> testClass) {
-        this.testClass = testClass;
     }
 
-    @Parameters(name = "{0}")
+    @Parameterized.Parameters(name = "{0}")
     public static List<Object[]> params() {
-        return Arrays.asList(
-                new Object[] {JsonSchema.class},
-                new Object[] {StringKeywords.class},
-                new Object[] {NumberKeywords.class},
-                new Object[] {ArrayKeywords.class},
-                new Object[] {ObjectKeywords.class}
-        );
+
+        return ImmutableList.builder()
+                .add(EqualsVerifier
+                        .forClass(SchemaLocation.class)
+                        .withOnlyTheseFields("documentURI", "jsonPath", "resolutionScope"))
+                .add(EqualsVerifier.forClass(StringKeywords.class))
+                .add(EqualsVerifier.forClass(StringKeywordsBuilder.class))
+                .add(EqualsVerifier.forClass(NumberKeywords.class))
+                .add(EqualsVerifier.forClass(NumberKeywordsBuilder.class))
+                .add(EqualsVerifier.forClass(ArrayKeywords.class))
+                .add(EqualsVerifier.forClass(ArrayKeywordsBuilder.class))
+                .add(EqualsVerifier.forClass(ObjectKeywords.class))
+                .add(EqualsVerifier.forClass(ObjectKeywordsBuilder.class))
+                .add(EqualsVerifier.forClass(JsonSchema.class))
+                .add(EqualsVerifier.forClass(Schema.JsonSchemaBuilder.class))
+                .build()
+                .stream()
+                .map(verifier -> new Object[] {verifier})
+                .collect(Collectors.toList());
     }
 
     @Test
     public void equalsVerifier() {
-        final String[] ignores;
-        if (testClass.equals(JsonSchema.class)) {
-            ignores = new String[]{"location"};
-        } else {
-            ignores = new String[0];
-        }
 
-        EqualsVerifier.forClass(testClass)
-                .withRedefinedSuperclass()
-                .withIgnoredFields(ignores)
-                .withPrefabValues(Schema.class, NUMBER_SCHEMA_B, STRING_SCHEMA_A)
-                .suppress(Warning.STRICT_INHERITANCE)
-                .verify();
+        // equalsVerifier
+        //         .withRedefinedSuperclass()
+        //         .verify();
+
+        // final EqualsVerifier<?> verifier = EqualsVerifier.forClass(testClass)
+        //         .withRedefinedSuperclass();
+        // verifier
+        //         .withRedefinedSuperclass()
+        //         .withIgnoredFields(this.ignoredFields)
+        //         .withOnlyTheseFields(this.specificFields)
+        //         .withPrefabValues(Schema.class, NUMBER_SCHEMA_B, STRING_SCHEMA_A)
+        //         .verify();
     }
 }
