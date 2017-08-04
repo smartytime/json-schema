@@ -1,6 +1,6 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import org.junit.Test;
 
 import javax.json.JsonValue;

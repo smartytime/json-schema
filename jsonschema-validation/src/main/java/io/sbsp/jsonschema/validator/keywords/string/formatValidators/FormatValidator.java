@@ -15,7 +15,7 @@
  */
 package io.sbsp.jsonschema.validator.keywords.string.formatValidators;
 
-import io.sbsp.jsonschema.six.enums.FormatType;
+import io.sbsp.jsonschema.enums.FormatType;
 
 import java.util.Optional;
 
@@ -61,7 +61,7 @@ public interface FormatValidator {
 
     /**
      * Static factory method for {@code FormatValidator} implementations supporting the
-     * {@code formatName}s mandated by the json schema spec.
+     * {@code getFormatName}s mandated by the json schema spec.
      * <p>
      * <ul>
      * <li>date-time</li>
@@ -73,7 +73,7 @@ public interface FormatValidator {
      * </ul>
      *
      * @param format one of the 6 built-in formats.
-     * @return a {@code FormatValidator} implementation handling the {@code formatName} format.
+     * @return a {@code FormatValidator} implementation handling the {@code getFormatName} format.
      */
     static FormatValidator forFormat(final FormatType format) {
         requireNonNull(format, "format cannot be null");

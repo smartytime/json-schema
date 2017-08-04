@@ -1,9 +1,9 @@
 package io.sbsp.jsonschema.validator.keywords;
 
 import com.google.common.collect.ImmutableMap;
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -18,7 +18,7 @@ public class SchemaDependenciesValidator extends KeywordValidator {
 
     @Builder
     public SchemaDependenciesValidator(Schema schema, Map<String, SchemaValidator> dependencyValidators) {
-        super(JsonSchemaKeyword.DEPENDENCIES, schema);
+        super(JsonSchemaKeywordType.DEPENDENCIES, schema);
         this.dependencyValidators = ImmutableMap.copyOf(dependencyValidators);
     }
 

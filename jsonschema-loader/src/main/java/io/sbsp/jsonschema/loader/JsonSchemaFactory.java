@@ -6,12 +6,12 @@ import com.google.common.collect.ImmutableSet;
 import io.sbsp.jsonschema.loader.reference.DefaultSchemaClient;
 import io.sbsp.jsonschema.loader.reference.SchemaCache;
 import io.sbsp.jsonschema.loader.reference.SchemaClient;
-import io.sbsp.jsonschema.six.JsonPath;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.SchemaException;
-import io.sbsp.jsonschema.six.SchemaFactory;
-import io.sbsp.jsonschema.six.SchemaLocation;
+import io.sbsp.jsonschema.JsonPath;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaException;
+import io.sbsp.jsonschema.SchemaFactory;
+import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.utils.URIUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,12 +36,12 @@ import static io.sbsp.jsonschema.loader.NumberKeywordsLoader.numberKeywordsLoade
 import static io.sbsp.jsonschema.loader.ObjectKeywordsLoader.objectKeywordsLoader;
 import static io.sbsp.jsonschema.loader.SharedKeywordsLoader.sharedKeywordsLoader;
 import static io.sbsp.jsonschema.loader.StringKeywordsLoader.stringKeywordsLoader;
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.refSchemaBuilder;
-import static io.sbsp.jsonschema.six.SchemaLocation.BLANK_URI;
-import static io.sbsp.jsonschema.six.SchemaLocation.ROOT_URI;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.$ID;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.$REF;
+import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.refSchemaBuilder;
+import static io.sbsp.jsonschema.SchemaLocation.BLANK_URI;
+import static io.sbsp.jsonschema.SchemaLocation.ROOT_URI;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$REF;
 import static io.sbsp.jsonschema.utils.JsonUtils.extract$IdFromObject;
 
 /**

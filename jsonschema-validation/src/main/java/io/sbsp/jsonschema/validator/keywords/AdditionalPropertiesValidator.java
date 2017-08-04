@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator.keywords;
 
 import com.google.common.collect.ImmutableSet;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
 
 public class AdditionalPropertiesValidator extends KeywordValidator {
 

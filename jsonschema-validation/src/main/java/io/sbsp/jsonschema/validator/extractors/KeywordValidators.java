@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.validator.extractors;
 
 import com.google.common.collect.ImmutableList;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;

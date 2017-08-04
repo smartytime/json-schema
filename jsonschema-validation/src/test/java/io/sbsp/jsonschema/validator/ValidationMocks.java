@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 
 import java.net.URI;
 
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilderWithId;
+import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilderWithId;
 
 public class ValidationMocks {
 

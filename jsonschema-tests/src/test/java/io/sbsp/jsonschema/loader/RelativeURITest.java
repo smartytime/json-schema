@@ -16,7 +16,7 @@
 package io.sbsp.jsonschema.loader;
 
 import io.sbsp.jsonschema.ServletSupport;
-import io.sbsp.jsonschema.six.SchemaLocation;
+import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Test;
 

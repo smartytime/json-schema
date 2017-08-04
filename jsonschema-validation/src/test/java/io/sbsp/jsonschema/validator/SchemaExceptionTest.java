@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.NULL;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.NUMBER;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.STRING;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.NULL;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.NUMBER;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.STRING;
 import static io.sbsp.jsonschema.validator.TestErrorHelper.failure;
 import static org.junit.Assert.assertEquals;
 

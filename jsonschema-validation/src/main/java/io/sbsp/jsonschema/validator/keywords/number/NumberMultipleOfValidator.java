@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator.keywords.number;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import lombok.NonNull;
 import java.math.BigDecimal;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MULTIPLE_OF;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MULTIPLE_OF;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class NumberMultipleOfValidator extends KeywordValidator {
@@ -21,7 +21,7 @@ public class NumberMultipleOfValidator extends KeywordValidator {
 
     @Builder
     public NumberMultipleOfValidator(Schema schema, Number multipleOf) {
-        super(JsonSchemaKeyword.MULTIPLE_OF, schema);
+        super(JsonSchemaKeywordType.MULTIPLE_OF, schema);
         checkNotNull(multipleOf, "multipleOf must not be null");
         this.multipleOf = BigDecimal.valueOf(multipleOf.doubleValue());
     }

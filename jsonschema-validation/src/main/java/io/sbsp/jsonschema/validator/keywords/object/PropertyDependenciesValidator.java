@@ -2,8 +2,8 @@ package io.sbsp.jsonschema.validator.keywords.object;
 
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import lombok.NonNull;
 
 import java.util.Map;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.DEPENDENCIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DEPENDENCIES;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class PropertyDependenciesValidator extends KeywordValidator {

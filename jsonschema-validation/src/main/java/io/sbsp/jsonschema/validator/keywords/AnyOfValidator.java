@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.validator.keywords;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import lombok.ToString;
 
 import java.util.List;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ANY_OF;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ANY_OF;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 @EqualsAndHashCode(callSuper = true)

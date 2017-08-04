@@ -15,8 +15,8 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.JsonPath;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonPath;
+import io.sbsp.jsonschema.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,8 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockBooleanSchema;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockNullSchema;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.expectSuccess;

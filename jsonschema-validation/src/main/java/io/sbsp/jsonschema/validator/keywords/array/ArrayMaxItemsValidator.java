@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.validator.keywords.array;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MAX_ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_ITEMS;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class ArrayMaxItemsValidator extends KeywordValidator {

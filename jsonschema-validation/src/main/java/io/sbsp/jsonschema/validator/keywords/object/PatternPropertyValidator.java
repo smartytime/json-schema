@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator.keywords.object;
 
 import com.google.common.collect.ImmutableMap;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import io.sbsp.jsonschema.validator.SchemaValidator;
@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.PATTERN_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN_PROPERTIES;
 
 public class PatternPropertyValidator extends KeywordValidator {
 

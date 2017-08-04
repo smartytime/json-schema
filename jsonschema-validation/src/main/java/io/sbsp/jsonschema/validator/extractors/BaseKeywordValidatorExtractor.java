@@ -1,6 +1,6 @@
 package io.sbsp.jsonschema.validator.extractors;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.utils.StreamUtils;
 import io.sbsp.jsonschema.validator.extractors.KeywordValidators.KeywordValidatorsBuilder;
 import io.sbsp.jsonschema.validator.SchemaValidator;

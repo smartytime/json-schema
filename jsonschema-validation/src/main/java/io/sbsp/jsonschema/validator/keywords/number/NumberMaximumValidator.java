@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.validator.keywords.number;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MAXIMUM;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAXIMUM;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class NumberMaximumValidator extends KeywordValidator {
@@ -15,7 +15,7 @@ public class NumberMaximumValidator extends KeywordValidator {
 
     @Builder
     public NumberMaximumValidator(Schema schema, double maximum) {
-        super(JsonSchemaKeyword.MAXIMUM, schema);
+        super(JsonSchemaKeywordType.MAXIMUM, schema);
         this.maximum = maximum;
     }
 

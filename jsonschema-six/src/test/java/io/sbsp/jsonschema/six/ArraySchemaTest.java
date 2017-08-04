@@ -15,6 +15,8 @@
  */
 package io.sbsp.jsonschema.six;
 
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaException;
 import org.junit.Test;
 
 import static com.google.common.collect.Lists.newArrayList;

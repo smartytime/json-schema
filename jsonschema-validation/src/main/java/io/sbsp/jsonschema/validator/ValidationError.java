@@ -15,10 +15,10 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.JsonPath;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
+import io.sbsp.jsonschema.JsonPath;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.keywords.ObjectKeywords;
 import io.sbsp.jsonschema.validator.extractors.ArrayKeywordValidatorExtractor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,7 +54,7 @@ public class ValidationError {
     private final String message;
     @Singular
     private final List<ValidationError> causingExceptions;
-    private final JsonSchemaKeyword keyword;
+    private final JsonSchemaKeywordType keyword;
     private final String code;
     private final URI schemaLocation;
 
@@ -88,7 +88,7 @@ public class ValidationError {
         return message;
     }
 
-    public JsonSchemaKeyword getKeyword() {
+    public JsonSchemaKeywordType getKeyword() {
         return keyword;
     }
 
@@ -257,7 +257,7 @@ public class ValidationError {
         }
     }
 
-    public ValidationError withKeyword(JsonSchemaKeyword keyword, String message) {
+    public ValidationError withKeyword(JsonSchemaKeywordType keyword, String message) {
         checkNotNull(keyword, "keyword must not be null");
         checkNotNull(message, "message must not be null");
         return toBuilder()

@@ -1,14 +1,14 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.EXCLUSIVE_MAXIMUM;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.EXCLUSIVE_MINIMUM;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MAXIMUM;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MINIMUM;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MULTIPLE_OF;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.EXCLUSIVE_MAXIMUM;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.EXCLUSIVE_MINIMUM;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAXIMUM;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MINIMUM;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MULTIPLE_OF;
 
 public class NumberKeywordsLoader implements KeywordsLoader {
 

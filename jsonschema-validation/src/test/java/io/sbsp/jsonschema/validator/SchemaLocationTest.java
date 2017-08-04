@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.SchemaLocation;
+import io.sbsp.jsonschema.SchemaLocation;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 import java.net.URI;
 
-import static io.sbsp.jsonschema.six.SchemaLocation.documentRoot;
+import static io.sbsp.jsonschema.SchemaLocation.documentRoot;
 import static org.junit.Assert.assertEquals;
 
 public class SchemaLocationTest {

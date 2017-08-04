@@ -16,8 +16,6 @@
 package io.sbsp.jsonschema;
 
 import com.google.common.base.Preconditions;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.SchemaException;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;
 import org.eclipse.jetty.server.Server;

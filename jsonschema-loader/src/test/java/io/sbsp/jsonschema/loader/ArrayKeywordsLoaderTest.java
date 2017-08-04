@@ -1,9 +1,9 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.keywords.ArrayKeywords;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.UnexpectedValueException;
+import io.sbsp.jsonschema.keywords.ArrayKeywords;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.UnexpectedValueException;
 import org.junit.Assert;
 import org.junit.Test;
 

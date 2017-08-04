@@ -1,7 +1,6 @@
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.validator.ValidationError;
 import org.junit.Test;
 
@@ -37,7 +36,7 @@ public class EndToEndTest {
             a.assertThat(e1).isNotNull();
             a.assertThat(e1.getPointerToViolation()).as("secondary color").isEqualTo("#/secondary_color");
             a.assertThat(e1.getCauses()).as("secondary color").isEmpty();
-            a.assertThat(e1.getKeyword()).as("secondary color").isEqualTo(JsonSchemaKeyword.PATTERN);
+            a.assertThat(e1.getKeyword()).as("secondary color").isEqualTo(JsonSchemaKeywordType.PATTERN);
             a.assertThat(e1.getSchemaLocation()).as("secondary color").isEqualTo("#/properties/secondary_color");
             a.assertThat(e1.getCode()).as("secondary color").isEqualTo("validation.keyword.pattern");
             a.assertThat(e1.getModel()).as("secondary color").hasSize(2);
@@ -58,7 +57,7 @@ public class EndToEndTest {
                     .findFirst().orElse(null);
             a.assertThat(e3.getPointerToViolation()).as("required").isEqualTo("#");
             a.assertThat(e3.getCauses()).as("required-errors").isEmpty();
-            a.assertThat(e3.getKeyword()).as("required-errors").isEqualTo(JsonSchemaKeyword.REQUIRED);
+            a.assertThat(e3.getKeyword()).as("required-errors").isEqualTo(JsonSchemaKeywordType.REQUIRED);
             a.assertThat(e3.getSchemaLocation()).as("required-errors").isEqualTo("#");
             a.assertThat(e3.getCode()).as("required-errors").isEqualTo("validation.keyword.required");
             a.assertThat(e3.getModel()).as("required-errors").hasSize(1);

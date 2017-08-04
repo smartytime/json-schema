@@ -2,8 +2,8 @@ package io.sbsp.jsonschema.validator;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.extractors.KeywordValidatorExtractor;
 import io.sbsp.jsonschema.validator.extractors.KeywordValidators;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;

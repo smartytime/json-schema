@@ -1,6 +1,6 @@
 package io.sbsp.jsonschema.utils;
 
-import io.sbsp.jsonschema.six.JsonPath;
+import io.sbsp.jsonschema.JsonPath;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;

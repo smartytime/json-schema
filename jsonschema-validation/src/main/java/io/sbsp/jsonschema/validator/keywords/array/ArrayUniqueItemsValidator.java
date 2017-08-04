@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator.keywords.array;
 
-import io.sbsp.jsonschema.six.ObjectComparator;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.ObjectComparator;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
@@ -12,7 +12,7 @@ import javax.json.JsonValue;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.UNIQUE_ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.UNIQUE_ITEMS;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class ArrayUniqueItemsValidator extends KeywordValidator {

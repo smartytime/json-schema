@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator.keywords.array;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;
 import org.junit.Test;
@@ -12,7 +12,7 @@ import javax.json.spi.JsonProvider;
 
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
 import static io.sbsp.jsonschema.validator.ValidationMocks.createTestValidator;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,7 +37,7 @@ public class ArrayContainsValidatorTest {
         final Optional<ValidationError> validate = testValidator.validate(invalidArray);
         assertThat(validate).isPresent();
         final ValidationError error = validate.get();
-        assertThat(error.getKeyword()).isEqualTo(JsonSchemaKeyword.CONTAINS);
+        assertThat(error.getKeyword()).isEqualTo(JsonSchemaKeywordType.CONTAINS);
     }
 
     @Test

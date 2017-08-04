@@ -1,6 +1,6 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.ObjectComparator;
+import io.sbsp.jsonschema.ObjectComparator;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;

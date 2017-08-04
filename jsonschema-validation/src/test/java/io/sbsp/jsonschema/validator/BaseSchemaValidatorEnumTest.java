@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,8 +15,8 @@ import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
 import static io.sbsp.jsonschema.utils.JsonUtils.blankJsonArray;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonArray;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonObjectBuilder;
@@ -45,7 +45,7 @@ public class BaseSchemaValidatorEnumTest {
     public void failure() {
         failureOf(subject())
                 .expectedPointer("#")
-                .expectedKeyword(JsonSchemaKeyword.ENUM)
+                .expectedKeyword(JsonSchemaKeywordType.ENUM)
                 .input(jsonArray(1))
                 .expect();
     }
@@ -102,7 +102,7 @@ public class BaseSchemaValidatorEnumTest {
         final Optional<ValidationError> validate = createTestValidator(schema).validate(testValNotSame);
 
         assertTrue("Should have an error", validate.isPresent());
-        Assert.assertEquals("Should be for enum keyword", JsonSchemaKeyword.ENUM, validate.get().getKeyword());
+        Assert.assertEquals("Should be for enum keyword", JsonSchemaKeywordType.ENUM, validate.get().getKeyword());
     }
 
     @Test

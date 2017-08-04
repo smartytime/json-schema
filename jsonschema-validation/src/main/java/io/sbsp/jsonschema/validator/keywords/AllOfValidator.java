@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.validator.keywords;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;
 import io.sbsp.jsonschema.validator.ValidationReport;
@@ -11,7 +11,7 @@ import lombok.Singular;
 
 import java.util.List;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ALL_OF;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ALL_OF;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class AllOfValidator extends KeywordValidator {

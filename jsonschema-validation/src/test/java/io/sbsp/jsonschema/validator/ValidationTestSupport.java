@@ -15,9 +15,9 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
 
 import javax.json.JsonValue;
 import java.util.List;
@@ -166,7 +166,7 @@ public class ValidationTestSupport {
             expectFailure(this);
         }
 
-        public Failure expectedKeyword(final JsonSchemaKeyword keyword) {
+        public Failure expectedKeyword(final JsonSchemaKeywordType keyword) {
             this.expectedKeyword = keyword.key();
             return this;
         }

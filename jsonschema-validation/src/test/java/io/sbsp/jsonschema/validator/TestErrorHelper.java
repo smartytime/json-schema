@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -13,7 +13,7 @@ public class TestErrorHelper {
         return ValidationError.validationBuilder()
                 .schemaLocation(schema.getLocation().getUniqueURI())
                 .message(ValidationErrorHelper.TYPE_MISMATCH_ERROR_MESSAGE, desired, found)
-                .keyword(JsonSchemaKeyword.TYPE)
+                .keyword(JsonSchemaKeywordType.TYPE)
                 .pointerToViolation(schema.getLocation().getJsonPath())
                 .build();
     }

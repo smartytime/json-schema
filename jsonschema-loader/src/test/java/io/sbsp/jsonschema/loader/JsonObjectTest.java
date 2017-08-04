@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class JsonObjectTest extends BaseLoaderTest {
         JsonObject schema = getJsonObjectForKey("nestedId");
         JsonValueWithLocation schemaJson = JsonValueWithLocation.fromJsonValue(schema);
 
-        JsonValueWithLocation grandChild = schemaJson.getPathAwareObject(JsonSchemaKeyword.PROPERTIES).getPathAwareObject("prop");
+        JsonValueWithLocation grandChild = schemaJson.getPathAwareObject(JsonSchemaKeywordType.PROPERTIES).getPathAwareObject("prop");
         assertEquals("http://x.y/z#zzz", grandChild.getLocation().getCanonicalURI().toString());
     }
 

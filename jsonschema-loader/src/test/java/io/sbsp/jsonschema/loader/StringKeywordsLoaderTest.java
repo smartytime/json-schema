@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.Schema;
 import org.junit.Test;
 
 import static org.assertj.core.api.SoftAssertions.assertSoftly;

@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator.keywords;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import javax.json.JsonValue;
 import java.util.EnumSet;
 import java.util.Set;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildTypeMismatchError;
 
 public class TypeValidator extends KeywordValidator {

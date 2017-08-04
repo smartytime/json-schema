@@ -15,8 +15,8 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.ReferenceSchema;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.ReferenceSchema;
+import io.sbsp.jsonschema.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;

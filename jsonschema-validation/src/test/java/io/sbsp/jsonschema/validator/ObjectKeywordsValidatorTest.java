@@ -15,9 +15,9 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.keywords.ObjectKeywords;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import lombok.experimental.var;
 import org.junit.Assert;
@@ -30,11 +30,11 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.BOOLEAN;
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.BOOLEAN;
+import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
 import static io.sbsp.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonObjectBuilder;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
@@ -325,7 +325,7 @@ public class ObjectKeywordsValidatorTest {
                     Assert.assertEquals("#", error.getSchemaLocation().toString());
                     Assert.assertEquals(3, error.getViolationCount());
                 })
-                .expectedKeyword(JsonSchemaKeyword.PROPERTY_NAMES.key())
+                .expectedKeyword(JsonSchemaKeywordType.PROPERTY_NAMES.key())
                 .expectedSchemaLocation("#")
                 .expect();
     }

@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
+import io.sbsp.jsonschema.JsonValueWithLocation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.FORMAT;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MAX_LENGTH;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MIN_LENGTH;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.PATTERN;
+import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.FORMAT;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_LENGTH;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_LENGTH;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN;
 
 public class StringKeywordsLoader implements KeywordsLoader {
 

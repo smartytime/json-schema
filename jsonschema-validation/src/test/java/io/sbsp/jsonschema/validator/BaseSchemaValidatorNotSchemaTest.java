@@ -1,11 +1,11 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import org.junit.Test;
 
 import javax.json.JsonValue;
 
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.sbsp.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockBooleanSchema;

@@ -15,7 +15,7 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,8 +24,8 @@ import javax.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
 import static io.sbsp.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockNumberSchema;
 import static java.util.Arrays.asList;

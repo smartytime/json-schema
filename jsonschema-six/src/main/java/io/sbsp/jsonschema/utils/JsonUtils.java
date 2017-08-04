@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.utils;
 
 import com.google.common.collect.ImmutableMap;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 import lombok.SneakyThrows;
 
 import javax.annotation.Nullable;
@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.$ID;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
 import static javax.json.spi.JsonProvider.provider;
 import static javax.json.stream.JsonGenerator.PRETTY_PRINTING;
 

@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator;
 
 import com.google.common.base.Strings;
-import io.sbsp.jsonschema.six.enums.FormatType;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.FormatType;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.extractors.BaseKeywordValidatorExtractor;
 import io.sbsp.jsonschema.validator.extractors.KeywordValidatorExtractor;
 import io.sbsp.jsonschema.validator.keywords.string.formatValidators.FormatValidator;

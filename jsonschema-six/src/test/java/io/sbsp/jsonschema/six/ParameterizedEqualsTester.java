@@ -1,10 +1,16 @@
 package io.sbsp.jsonschema.six;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
-import io.sbsp.jsonschema.six.keywords.ArrayKeywords;
-import io.sbsp.jsonschema.six.keywords.NumberKeywords;
-import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.six.keywords.StringKeywords;
+import io.sbsp.jsonschema.JsonPath;
+import io.sbsp.jsonschema.JsonSchema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.ReferenceSchema;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaLocation;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.keywords.ArrayKeywords;
+import io.sbsp.jsonschema.keywords.NumberKeywords;
+import io.sbsp.jsonschema.keywords.ObjectKeywords;
+import io.sbsp.jsonschema.keywords.StringKeywords;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;

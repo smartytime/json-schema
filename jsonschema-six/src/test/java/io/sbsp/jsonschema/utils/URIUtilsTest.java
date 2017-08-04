@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.utils;
 
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 import org.junit.Test;
 
 import javax.json.JsonObject;

@@ -1,6 +1,8 @@
 package io.sbsp.jsonschema.six;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.UnexpectedValueException;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 import org.junit.Test;
 
 import javax.json.JsonArray;
@@ -16,7 +18,7 @@ import static io.sbsp.jsonschema.TestUtils.createJsonObjectWithLocation;
 import static io.sbsp.jsonschema.TestUtils.createJsonStringWithLocation;
 import static io.sbsp.jsonschema.TestUtils.createValue;
 import static io.sbsp.jsonschema.TestUtils.jsonString;
-import static io.sbsp.jsonschema.six.JsonValueWithLocation.fromJsonValue;
+import static io.sbsp.jsonschema.JsonValueWithLocation.fromJsonValue;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonValueWithLocationTest {
@@ -308,8 +310,8 @@ public class JsonValueWithLocationTest {
     // }
     //
     // @Override
-    // public JsonValue getValue(String jsonPointer) {
-    //     return asJsonObject().getValue(jsonPointer);
+    // public JsonValue getKeywordValue(String jsonPointer) {
+    //     return asJsonObject().getKeywordValue(jsonPointer);
     // }
     //
     // public boolean has(JsonSchemaKeyword property, JsonValue.ValueType... ofType) {

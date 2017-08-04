@@ -1,24 +1,25 @@
 package io.sbsp.jsonschema.six;
 
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.TestUtils;
-import io.sbsp.jsonschema.six.keywords.ArrayKeywords;
-import io.sbsp.jsonschema.six.keywords.NumberKeywords;
-import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.six.keywords.StringKeywords;
+import io.sbsp.jsonschema.keywords.ArrayKeywords;
+import io.sbsp.jsonschema.keywords.NumberKeywords;
+import io.sbsp.jsonschema.keywords.ObjectKeywords;
+import io.sbsp.jsonschema.keywords.StringKeywords;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Test;
 
 import java.net.URI;
 import java.util.regex.Pattern;
 
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.ARRAY;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.BOOLEAN;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.INTEGER;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.NULL;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.NUMBER;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.OBJECT;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.STRING;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.ARRAY;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.BOOLEAN;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.INTEGER;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.NULL;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.NUMBER;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.OBJECT;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.STRING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 

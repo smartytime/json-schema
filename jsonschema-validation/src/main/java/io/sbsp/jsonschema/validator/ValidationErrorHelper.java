@@ -1,10 +1,10 @@
 package io.sbsp.jsonschema.validator;
 
 import com.google.common.base.Joiner;
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationError.ValidationErrorBuilder;
 
 import java.util.Collection;
@@ -16,7 +16,7 @@ public class ValidationErrorHelper {
     public static final String TYPE_MISMATCH_ERROR_MESSAGE = "expected type: %s, found: %s";
     public static final String VALIDATION_KEYWORD_PREFIX = "validation.keyword.";
 
-    public static ValidationErrorBuilder buildKeywordFailure(JsonValueWithLocation subject, Schema schema, JsonSchemaKeyword keyword) {
+    public static ValidationErrorBuilder buildKeywordFailure(JsonValueWithLocation subject, Schema schema, JsonSchemaKeywordType keyword) {
         checkNotNull(keyword, "keyword must not be null");
         checkNotNull(subject, "subject must not be null");
 
@@ -35,7 +35,7 @@ public class ValidationErrorHelper {
 
         String commaSeparatedTypes = Joiner.on(",").join(expectedTypes);
         return createBuilder(subject, schema)
-                .keyword(JsonSchemaKeyword.TYPE)
+                .keyword(JsonSchemaKeywordType.TYPE)
                 .message("expected one of the following types: %s, found: %s", commaSeparatedTypes, subject.getJsonSchemaType())
                 .code("validation.typeMismatch");
     }
@@ -45,7 +45,7 @@ public class ValidationErrorHelper {
         checkNotNull(subject, "subject must not be null");
 
         return createBuilder(subject, schema)
-                .keyword(JsonSchemaKeyword.TYPE)
+                .keyword(JsonSchemaKeywordType.TYPE)
                 .message(TYPE_MISMATCH_ERROR_MESSAGE, expectedType, subject.getJsonSchemaType())
                 .code("validation.typeMismatch");
 

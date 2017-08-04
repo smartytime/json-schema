@@ -1,15 +1,18 @@
 package io.sbsp.jsonschema.six;
 
 import com.google.common.collect.ImmutableList;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
-import io.sbsp.jsonschema.six.keywords.ArrayKeywords;
-import io.sbsp.jsonschema.six.keywords.ArrayKeywords.ArrayKeywordsBuilder;
-import io.sbsp.jsonschema.six.keywords.NumberKeywords;
-import io.sbsp.jsonschema.six.keywords.NumberKeywords.NumberKeywordsBuilder;
-import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.six.keywords.ObjectKeywords.ObjectKeywordsBuilder;
-import io.sbsp.jsonschema.six.keywords.StringKeywords;
-import io.sbsp.jsonschema.six.keywords.StringKeywords.StringKeywordsBuilder;
+import io.sbsp.jsonschema.JsonSchema;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaLocation;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.keywords.ArrayKeywords;
+import io.sbsp.jsonschema.keywords.ArrayKeywords.ArrayKeywordsBuilder;
+import io.sbsp.jsonschema.keywords.NumberKeywords;
+import io.sbsp.jsonschema.keywords.NumberKeywords.NumberKeywordsBuilder;
+import io.sbsp.jsonschema.keywords.ObjectKeywords;
+import io.sbsp.jsonschema.keywords.ObjectKeywords.ObjectKeywordsBuilder;
+import io.sbsp.jsonschema.keywords.StringKeywords;
+import io.sbsp.jsonschema.keywords.StringKeywords.StringKeywordsBuilder;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
 import org.junit.runners.Parameterized;

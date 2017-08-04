@@ -15,9 +15,9 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.SchemaException;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaException;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,12 +30,12 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilderWithId;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ENUM;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.NULL;
+import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilderWithId;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ENUM;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.NULL;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonArray;
 import static io.sbsp.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.sbsp.jsonschema.validator.ResourceLoader.DEFAULT;

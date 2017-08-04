@@ -1,5 +1,6 @@
 package io.sbsp.jsonschema.six;
 
+import io.sbsp.jsonschema.JsonPath;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 

@@ -1,6 +1,6 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import org.junit.Assert;
 import org.junit.Test;
 

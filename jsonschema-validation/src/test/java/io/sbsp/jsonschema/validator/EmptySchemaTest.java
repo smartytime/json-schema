@@ -16,16 +16,16 @@
 package io.sbsp.jsonschema.validator;
 
 import com.google.common.base.Strings;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilderWithId;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.$ID;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.Schema.jsonSchemaBuilderWithId;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
 import static io.sbsp.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.expectSuccess;
 

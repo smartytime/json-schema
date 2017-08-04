@@ -1,17 +1,17 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.SchemaLocation;
-import io.sbsp.jsonschema.six.UnexpectedValueException;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaLocation;
+import io.sbsp.jsonschema.UnexpectedValueException;
 
 import javax.json.JsonValue;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_ITEMS;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ITEMS;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MAX_ITEMS;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MIN_ITEMS;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.UNIQUE_ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.UNIQUE_ITEMS;
 import static javax.json.JsonValue.ValueType;
 
 /**

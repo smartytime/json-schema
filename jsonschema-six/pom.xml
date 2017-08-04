@@ -72,7 +72,7 @@
                             io.sbsp.jsonschema.six.types;version=${project.version},
                             io.sbsp.jsonschema.six.validation;version=${project.version},
                             io.sbsp.jsonschema.six.enums;version=${project.version},
-                            io.sbsp.jsonschema.six.keywords;version=${project.version},
+                            io.sbsp.jsonschema.keywords;version=${project.version},
                             io.sbsp.jsonschema.utils;version=${project.version},
                         </Export-Package>
                     </instructions>

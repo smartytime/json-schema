@@ -15,7 +15,7 @@
  */
 package io.sbsp.jsonschema.loader.internal;
 
-import io.sbsp.jsonschema.six.SchemaLocation;
+import io.sbsp.jsonschema.SchemaLocation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

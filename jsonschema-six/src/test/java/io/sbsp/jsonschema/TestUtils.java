@@ -1,7 +1,5 @@
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;

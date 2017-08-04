@@ -1,6 +1,6 @@
 package io.sbsp.jsonschema.six;
 
-import io.sbsp.jsonschema.six.enums.FormatType;
+import io.sbsp.jsonschema.enums.FormatType;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

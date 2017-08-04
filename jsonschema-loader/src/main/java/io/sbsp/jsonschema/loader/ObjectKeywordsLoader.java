@@ -1,19 +1,19 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.UnexpectedValueException;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.UnexpectedValueException;
 
 import javax.json.JsonString;
 import java.util.regex.Pattern;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.DEPENDENCIES;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MAX_PROPERTIES;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MIN_PROPERTIES;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.PATTERN_PROPERTIES;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.PROPERTIES;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.REQUIRED;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DEPENDENCIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.REQUIRED;
 import static javax.json.JsonValue.ValueType.ARRAY;
 import static javax.json.JsonValue.ValueType.OBJECT;
 

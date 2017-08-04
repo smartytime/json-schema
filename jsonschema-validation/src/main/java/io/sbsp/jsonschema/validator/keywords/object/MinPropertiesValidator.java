@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.validator.keywords.object;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.MIN_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_PROPERTIES;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 public class MinPropertiesValidator extends KeywordValidator {

@@ -15,8 +15,8 @@
  */
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.SchemaException;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaException;
 import org.junit.Assert;
 
 import javax.json.JsonObject;

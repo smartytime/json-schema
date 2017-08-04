@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.loader;
 
 import com.google.common.base.Preconditions;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.utils.JsonUtils;
 
 import javax.json.JsonObject;

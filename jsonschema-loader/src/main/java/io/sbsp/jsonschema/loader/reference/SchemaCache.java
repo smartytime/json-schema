@@ -1,9 +1,9 @@
 package io.sbsp.jsonschema.loader.reference;
 
-import io.sbsp.jsonschema.six.JsonPath;
-import io.sbsp.jsonschema.six.JsonSchemaDetails;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.SchemaLocation;
+import io.sbsp.jsonschema.JsonPath;
+import io.sbsp.jsonschema.JsonSchemaDetails;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.utils.RecursiveJsonIterator;
 import io.sbsp.jsonschema.utils.URIUtils;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.$ID;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
 
 /**
  * @author erosb

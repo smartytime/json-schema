@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.validator.keywords.array;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import io.sbsp.jsonschema.validator.SchemaValidator;
@@ -11,7 +11,7 @@ import lombok.NonNull;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ITEMS;
 
 public class ArrayItemValidator extends KeywordValidator {
     @NonNull

@@ -1,26 +1,26 @@
 package io.sbsp.jsonschema.loader;
 
-import io.sbsp.jsonschema.six.JsonPath;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.SchemaException;
-import io.sbsp.jsonschema.six.UnexpectedValueException;
+import io.sbsp.jsonschema.JsonPath;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaException;
+import io.sbsp.jsonschema.UnexpectedValueException;
 
 import javax.json.JsonString;
 import javax.json.JsonValue.ValueType;
 import java.util.Arrays;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ALL_OF;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ANY_OF;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.CONST;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.DEFAULT;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.DESCRIPTION;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ENUM;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.NOT;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ONE_OF;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.TITLE;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ALL_OF;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ANY_OF;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.CONST;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DEFAULT;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DESCRIPTION;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ENUM;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.NOT;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ONE_OF;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TITLE;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 
 public class SharedKeywordsLoader implements KeywordsLoader {
     private SharedKeywordsLoader() {

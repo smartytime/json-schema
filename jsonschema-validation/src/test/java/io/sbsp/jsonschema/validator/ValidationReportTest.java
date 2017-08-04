@@ -1,9 +1,9 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ public class ValidationReportTest {
                 .pattern("[a-z]+")
                 .minLength(12)
                 .type(JsonSchemaType.STRING)
-                .build(), JsonSchemaKeyword.PATTERN)
+                .build(), JsonSchemaKeywordType.PATTERN)
                 .build());
 
         final String reportString = report.toString();

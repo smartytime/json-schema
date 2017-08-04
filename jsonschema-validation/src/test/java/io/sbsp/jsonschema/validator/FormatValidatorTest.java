@@ -15,7 +15,7 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.enums.FormatType;
+import io.sbsp.jsonschema.enums.FormatType;
 import io.sbsp.jsonschema.validator.keywords.string.formatValidators.FormatValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
