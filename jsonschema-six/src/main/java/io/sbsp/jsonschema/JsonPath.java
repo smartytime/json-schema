@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import io.sbsp.jsonschema.utils.CharUtils;
 import io.sbsp.jsonschema.utils.Unescaper;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 
@@ -22,6 +23,7 @@ import static io.sbsp.jsonschema.utils.CharUtils.jsonPointerSegmentEscaper;
 import static io.sbsp.jsonschema.utils.CharUtils.jsonPointerSegmentUnescaper;
 import static io.sbsp.jsonschema.utils.CharUtils.urlSegmentUnescaper;
 
+@EqualsAndHashCode(of = "segments")
 public class JsonPath {
 
     @NonNull

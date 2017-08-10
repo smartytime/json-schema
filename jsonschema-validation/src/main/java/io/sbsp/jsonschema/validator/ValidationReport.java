@@ -34,7 +34,6 @@ public class ValidationReport {
         final List<ValidationError> errors = report.getErrors();
         if (errors.size() > 0) {
             addError(ValidationError.validationBuilder()
-                    .schemaLocation(schema.getPointerFragmentURI())
                     .violatedSchema(schema)
                     .causingExceptions(errors)
                     .keyword(keyword)

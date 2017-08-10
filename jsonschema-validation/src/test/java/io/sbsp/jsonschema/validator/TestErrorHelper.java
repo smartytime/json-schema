@@ -11,7 +11,7 @@ public class TestErrorHelper {
         checkNotNull(schema, "schema" +
                 " must not be null");
         return ValidationError.validationBuilder()
-                .schemaLocation(schema.getLocation().getUniqueURI())
+                .violatedSchema(schema)
                 .message(ValidationErrorHelper.TYPE_MISMATCH_ERROR_MESSAGE, desired, found)
                 .keyword(JsonSchemaKeywordType.TYPE)
                 .pointerToViolation(schema.getLocation().getJsonPath())

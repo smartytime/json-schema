@@ -52,9 +52,9 @@ public class ValidationTestSupport {
                 .count();
     }
 
-    public static long countMatchingMessage(final List<String> messages, final String expectedSubstring) {
+    public static long countMatchingMessage(final List<ValidationError> messages, final String expectedSubstring) {
         return messages.stream()
-                .filter(message -> message.contains(expectedSubstring))
+                .filter(message -> message.getMessage().contains(expectedSubstring))
                 .count();
     }
 

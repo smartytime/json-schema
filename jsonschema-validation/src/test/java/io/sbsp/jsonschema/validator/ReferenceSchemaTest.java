@@ -15,7 +15,11 @@
  */
 package io.sbsp.jsonschema.validator;
 
+import io.sbsp.jsonschema.six.JsonSchema;
+import io.sbsp.jsonschema.six.ReferenceSchema;
 import io.sbsp.jsonschema.utils.JsonUtils;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 import javax.json.JsonObject;
@@ -32,5 +36,13 @@ public class ReferenceSchemaTest {
         System.out.println(actual);
         assertEquals(rawSchemaJson.get("properties"),
                 JsonUtils.readJsonObject(actual).getJsonObject("properties"));
+    }
+
+    @Test
+    public void equalsTest() {
+        EqualsVerifier.forClass(ReferenceSchema.class)
+                .withOnlyTheseFields("refURI")
+                .suppress(Warning.STRICT_INHERITANCE)
+                .verify();
     }
 }

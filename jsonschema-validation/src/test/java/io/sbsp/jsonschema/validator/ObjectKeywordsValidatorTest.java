@@ -54,6 +54,7 @@ import static io.sbsp.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.failureOf;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static javax.json.spi.JsonProvider.provider;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class ObjectKeywordsValidatorTest {
@@ -183,7 +184,7 @@ public class ObjectKeywordsValidatorTest {
         assertEquals(1, countCauseByJsonPointer(e, "#/numberProp"));
         assertEquals(1, countCauseByJsonPointer(e, "#/stringPatternMatch"));
 
-        List<String> messages = e.getAllMessages();
+        List<ValidationError> messages = e.getAllMessages();
         assertEquals(3, messages.size());
         assertEquals(1, countMatchingMessage(messages, "#:"));
         assertEquals(1, countMatchingMessage(messages, "#/numberProp:"));
@@ -233,7 +234,7 @@ public class ObjectKeywordsValidatorTest {
         assertEquals(1, countCauseByJsonPointer(nested2Exception, "#/nested/nested/numberProp"));
         assertEquals(1, countCauseByJsonPointer(nested2Exception, "#/nested/nested/stringPatternMatch"));
 
-        List<String> messages = subjectException.getAllMessages();
+        List<ValidationError> messages = subjectException.getAllMessages();
         assertEquals(9, messages.size());
         assertEquals(1, countMatchingMessage(messages, "#:"));
         assertEquals(1, countMatchingMessage(messages, "#/numberProp:"));
@@ -383,7 +384,7 @@ public class ObjectKeywordsValidatorTest {
             final JsonNumber testValue = provider().createValue(1);
             return createTestValidator(subject).validate(testValue);
         });
-        assertEquals("#/dependencies/a", e.getSchemaLocation());
+        assertThat(e.getSchemaLocation()).hasToString("#/dependencies/a");
     }
 
     @Test

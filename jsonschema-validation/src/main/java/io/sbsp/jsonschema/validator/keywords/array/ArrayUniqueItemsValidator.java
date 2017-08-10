@@ -37,8 +37,8 @@ public class ArrayUniqueItemsValidator extends KeywordValidator<BooleanKeyword> 
                 if (ObjectComparator.lexicalEquivalent(contained, item)) {
                     report.addError(buildKeywordFailure(subject, schema, UNIQUE_ITEMS)
                             .message("array items are not unique")
-                            .model(item)
-                            .model(contained)
+                            .argument(item)
+                            .argument(contained)
                             .build());
                     return false;
                 }

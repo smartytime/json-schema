@@ -276,7 +276,7 @@ public class ArraySchemaValidatorTest {
 
         assertSoftly(a -> {
             a.assertThat(error.get().getKeyword()).isEqualTo(TYPE);
-            a.assertThat(error.get().getModel()).containsExactly(JsonSchemaType.INTEGER, JsonSchemaType.NUMBER);
+            a.assertThat(error.get().getArguments()).containsExactly(JsonSchemaType.INTEGER, JsonSchemaType.NUMBER);
         });
     }
 
@@ -316,7 +316,7 @@ public class ArraySchemaValidatorTest {
         assertSoftly(assertj -> {
             ValidationError validationError = error.get();
             assertj.assertThat(validationError.getKeyword()).isEqualTo(ENUM);
-            assertj.assertThat(validationError.getSchemaLocationURI()).isEqualTo(URI.create("#/items"));
+            assertj.assertThat(validationError.getSchemaLocation()).hasToString("#/items");
             assertj.assertThat(validationError.getPointerToViolation()).isEqualTo("#/1");
         });
     }

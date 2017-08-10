@@ -54,7 +54,7 @@ public class ValidationErrorHelper {
     public static ValidationErrorBuilder createBuilder(JsonValueWithLocation subject, Schema schema) {
         return ValidationError.validationBuilder()
                 .violatedSchema(schema)
-                .pointerToViolation(subject.getPath())
-                .schemaLocation(schema.getLocation().getJsonPointerFragment());
+                .pointerToViolation(subject.getPath());
+
     }
 }

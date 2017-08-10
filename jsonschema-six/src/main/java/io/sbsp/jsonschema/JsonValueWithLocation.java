@@ -3,6 +3,7 @@ package io.sbsp.jsonschema;
 import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.utils.JsonUtils;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -29,6 +30,7 @@ import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
  * This class is used for convenience in accessing data within a JsonObject.  It wraps the JSR353 {@link JsonObject}
  * and adds some extra methods that allow more fluent usage.
  */
+@EqualsAndHashCode(of = {"wrapped", "location"})
 public class JsonValueWithLocation implements ReadOnlyJsonObject {
 
     @NonNull
@@ -295,16 +297,6 @@ public class JsonValueWithLocation implements ReadOnlyJsonObject {
             return false;
         }
         return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return wrapped.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return wrapped.equals(o);
     }
 
     /**

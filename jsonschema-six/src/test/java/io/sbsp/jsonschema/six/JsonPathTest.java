@@ -1,6 +1,8 @@
 package io.sbsp.jsonschema.six;
 
 import io.sbsp.jsonschema.JsonPath;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
@@ -10,6 +12,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonPathTest {
 
+
+    @Test
+    public void testEquals() {
+        EqualsVerifier.forClass(JsonPath.class)
+                .withOnlyTheseFields("segments")
+                .suppress(Warning.STRICT_INHERITANCE)
+                .verify();
+        ;
+    }
     @Test
     public void testGetLastPath_WhenPathIsBlank_ThenReturnsNull() {
         assertThat(JsonPath.rootPath().getLastPath())

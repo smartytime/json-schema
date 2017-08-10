@@ -3,6 +3,8 @@ package io.sbsp.jsonschema.six;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.UnexpectedValueException;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
 
 import javax.json.JsonArray;
@@ -25,11 +27,21 @@ public class JsonValueWithLocationTest {
 
     private JsonProvider provider = JsonProvider.provider();
 
+    @Test
+    public void testEquals() {
+        EqualsVerifier.forClass(JsonValueWithLocation.class)
+                .suppress(Warning.STRICT_INHERITANCE)
+                .withOnlyTheseFields("wrapped", "location")
+                .verify();
+
+    }
+
     @Test(expected = NullPointerException.class)
     public void construct_WhenNullInput_ThenThrowNPE() {
         fromJsonValue(null, null);
     }
 
+    @Test
     public void testGetValueType() {
         final JsonObject jsonValue = provider.createObjectBuilder()
                 .add("foo", "bar")
