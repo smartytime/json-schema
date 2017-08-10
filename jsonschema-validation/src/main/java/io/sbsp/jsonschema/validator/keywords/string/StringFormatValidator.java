@@ -2,6 +2,8 @@ package io.sbsp.jsonschema.validator.keywords.string;
 
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.StringKeyword;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.string.formatValidators.FormatValidator;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
@@ -14,14 +16,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.FORMAT;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class StringFormatValidator extends KeywordValidator {
+public class StringFormatValidator extends KeywordValidator<StringKeyword> {
 
     @NonNull
     private final FormatValidator formatValidator;
 
     @Builder
     public StringFormatValidator(Schema schema, FormatValidator formatValidator) {
-        super(FORMAT, schema);
+        super(SchemaKeyword.format, schema);
         this.formatValidator = checkNotNull(formatValidator);
     }
 

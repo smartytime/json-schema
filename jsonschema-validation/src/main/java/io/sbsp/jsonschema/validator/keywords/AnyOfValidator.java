@@ -2,6 +2,8 @@ package io.sbsp.jsonschema.validator.keywords;
 
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.SchemaListKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -17,7 +19,7 @@ import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFai
 
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class AnyOfValidator extends KeywordValidator {
+public class AnyOfValidator extends KeywordValidator<SchemaListKeyword> {
 
     @Singular
     @NonNull
@@ -25,7 +27,7 @@ public class AnyOfValidator extends KeywordValidator {
 
     @Builder
     public AnyOfValidator(Schema schema, List<SchemaValidator> anyOfValidators) {
-        super(ANY_OF, schema);
+        super(SchemaKeyword.anyOf, schema);
         this.anyOfValidators = anyOfValidators;
     }
 

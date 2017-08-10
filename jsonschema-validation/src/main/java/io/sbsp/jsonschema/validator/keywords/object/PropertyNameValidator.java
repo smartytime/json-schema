@@ -1,13 +1,14 @@
 package io.sbsp.jsonschema.validator.keywords.object;
 
 import com.google.common.base.MoreObjects;
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.SingleSchemaKeyword;
+import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
-import io.sbsp.jsonschema.validator.SchemaValidator;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -20,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PROPERTY_NAMES;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class PropertyNameValidator extends KeywordValidator {
+public class PropertyNameValidator extends KeywordValidator<SingleSchemaKeyword> {
 
     @NonNull
     private final SchemaValidator propertyNameValidator;
@@ -30,7 +31,7 @@ public class PropertyNameValidator extends KeywordValidator {
 
     @Builder
     public PropertyNameValidator(Schema schema, SchemaValidator propertyNameValidator, JsonProvider jsonProvider) {
-        super(JsonSchemaKeywordType.PROPERTY_NAMES, schema);
+        super(SchemaKeyword.propertyNames, schema);
         this.propertyNameValidator = checkNotNull(propertyNameValidator);
         this.jsonProvider = MoreObjects.firstNonNull(jsonProvider, JsonProvider.provider());
     }

@@ -1,8 +1,10 @@
 package io.sbsp.jsonschema.validator.keywords;
 
-import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.TypeKeyword;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -13,10 +15,9 @@ import javax.json.JsonValue;
 import java.util.EnumSet;
 import java.util.Set;
 
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildTypeMismatchError;
 
-public class TypeValidator extends KeywordValidator {
+public class TypeValidator extends KeywordValidator<TypeKeyword> {
 
     @Singular
     @NonNull
@@ -25,7 +26,7 @@ public class TypeValidator extends KeywordValidator {
 
     @Builder
     public TypeValidator(Schema schema, Set<JsonSchemaType> requiredTypes) {
-        super(TYPE, schema);
+        super(SchemaKeyword.type, schema);
         this.requiredTypes = EnumSet.copyOf(requiredTypes);
         this.requiresInteger = this.requiredTypes.contains(JsonSchemaType.INTEGER) &&
                 !this.requiredTypes.contains(JsonSchemaType.NUMBER);
@@ -41,7 +42,7 @@ public class TypeValidator extends KeywordValidator {
             schemaType = JsonUtils.schemaTypeFor(subject);
         }
         if (!requiredTypes.contains(schemaType)) {
-            report.addError(buildTypeMismatchError(subject, schema, schema.getTypes()).build());
+            report.addError(buildTypeMismatchError(subject, schema, requiredTypes).build());
         }
         return report.isValid();
     }

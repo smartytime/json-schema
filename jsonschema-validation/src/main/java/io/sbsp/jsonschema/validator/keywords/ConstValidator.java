@@ -1,8 +1,9 @@
 package io.sbsp.jsonschema.validator.keywords;
 
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.JsonValueKeyword;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
 
@@ -12,13 +13,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.CONST;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class ConstValidator extends KeywordValidator {
+public class ConstValidator extends KeywordValidator<JsonValueKeyword> {
 
     private final JsonValue constValue;
 
     @Builder
     public ConstValidator(Schema parentSchema, JsonValue constValue) {
-        super(JsonSchemaKeywordType.CONST, parentSchema);
+        super(SchemaKeyword.$const, parentSchema);
         this.constValue = checkNotNull(constValue);
     }
 

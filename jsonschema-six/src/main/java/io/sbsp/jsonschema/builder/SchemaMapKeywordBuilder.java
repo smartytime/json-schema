@@ -1,51 +1,65 @@
 package io.sbsp.jsonschema.builder;
 
 import com.google.common.collect.ImmutableMap;
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaFactory;
+import io.sbsp.jsonschema.SchemaLocation;
+import io.sbsp.jsonschema.keyword.SchemaMapKeyword;
 
+import javax.annotation.Nullable;
+import javax.json.JsonObject;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class SchemaMapKeywordBuilder implements SchemaKeywordBuilder {
+public class SchemaMapKeywordBuilder implements SchemaKeywordBuilder<SchemaMapKeyword> {
 
-    private final Map<String, JsonSchemaBuilder> keywordValue;
-    private final Set<JsonSchemaKeywordType> keywords;
+    private final Map<String, JsonSchemaBuilder> schemaMap;
 
-    public SchemaMapKeywordBuilder(String key, JsonSchemaBuilder keywordValue, JsonSchemaKeywordType keyword) {
+    public SchemaMapKeywordBuilder(String key, JsonSchemaBuilder schemaMap) {
         checkNotNull(key, "key must not be null");
-        checkNotNull(keywordValue, "keywordValue must not be null");
-        checkNotNull(keyword, "keyword must not be null");
-        this.keywords = Collections.unmodifiableSet(EnumSet.of(keyword));
-        this.keywordValue = ImmutableMap.of(key, keywordValue);
+        checkNotNull(schemaMap, "schemaMap must not be null");
+        this.schemaMap = ImmutableMap.of(key, schemaMap);
     }
 
-    private SchemaMapKeywordBuilder(Map<String, JsonSchemaBuilder> keywordValues, Set<JsonSchemaKeywordType> keywords) {
+    public SchemaMapKeywordBuilder(Map<String, ? extends JsonSchemaBuilder> keywordValues) {
         checkNotNull(keywordValues, "keywordValues must not be null");
-        checkNotNull(keywords, "keyword must not be null");
-        this.keywords = keywords;
-        this.keywordValue = Collections.unmodifiableMap(keywordValues);
-    }
-
-    public SchemaMapKeywordBuilder(Map<String, JsonSchemaBuilder> keywordValues, JsonSchemaKeywordType keyword) {
-        checkNotNull(keywordValues, "keywordValues must not be null");
-        checkNotNull(keyword, "keyword must not be null");
-        this.keywords = Collections.unmodifiableSet(EnumSet.of(keyword, keyword));
-        this.keywordValue = Collections.unmodifiableMap(keywordValues);
+        this.schemaMap = Collections.unmodifiableMap(keywordValues);
     }
 
     public Map<String, JsonSchemaBuilder> getSchemas() {
-        return keywordValue;
+        return schemaMap;
     }
 
     public SchemaMapKeywordBuilder addSchema(String key, JsonSchemaBuilder anotherValue) {
         checkNotNull(anotherValue, "anotherValue must not be null");
-        final Map<String, JsonSchemaBuilder> items = new LinkedHashMap<String, JsonSchemaBuilder>(keywordValue);
+        final Map<String, JsonSchemaBuilder> items = new LinkedHashMap<String, JsonSchemaBuilder>(schemaMap);
         items.put(key, anotherValue);
-        return new SchemaMapKeywordBuilder(items, keywords);
+        return new SchemaMapKeywordBuilder(items);
+    }
+
+    @Override
+    public SchemaMapKeyword build(SchemaLocation location, @Nullable SchemaFactory factory, @Nullable JsonObject rootDocument) {
+        Map<String, Schema> keywordMap = new LinkedHashMap<>();
+        for (Map.Entry<String, JsonSchemaBuilder> entry : schemaMap.entrySet()) {
+            final SchemaLocation childLocationForKey = location.child(entry.getKey());
+            if (factory != null) {
+                final Optional<Schema> cachedSchema = factory.findCachedSchema(location.getUniqueURI());
+                if (cachedSchema.isPresent()) {
+                    keywordMap.put(entry.getKey(), cachedSchema.get());
+                    continue;
+                }
+            }
+            final JsonSchemaBuilder childBuilder = entry.getValue();
+            keywordMap.put(entry.getKey(), childBuilder.schemaFactory(factory)
+                    .currentDocument(rootDocument)
+                    .build(childLocationForKey));
+        }
+        return new SchemaMapKeyword(keywordMap);
+
+
     }
 }

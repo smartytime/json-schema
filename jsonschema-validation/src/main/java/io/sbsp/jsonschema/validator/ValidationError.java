@@ -18,8 +18,6 @@ package io.sbsp.jsonschema.validator;
 import io.sbsp.jsonschema.JsonPath;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
-import io.sbsp.jsonschema.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.validator.extractors.ArrayKeywordValidatorExtractor;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Singular;
@@ -219,8 +217,7 @@ public class ValidationError {
     }
 
     /**
-     * Sort of static factory method. It is used by {@link ObjectKeywords} and
-     * {@link ArrayKeywordValidatorExtractor} to create {@code ValidationException}s, handling the case of multiple violations
+     * Sort of static factory method. It is used by validators to create {@code ValidationError}s, handling the case of multiple violations
      * occuring during validation.
      * <p>
      * <ul>

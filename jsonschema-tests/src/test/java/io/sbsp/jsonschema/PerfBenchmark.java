@@ -9,7 +9,7 @@ import javax.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
 
 public class PerfBenchmark {
 

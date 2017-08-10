@@ -15,8 +15,10 @@
  */
 package io.sbsp.jsonschema.validator;
 
+import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaException;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
@@ -29,13 +31,12 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilderWithId;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchemaBuilderWithId;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ENUM;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.NULL;
+import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonArray;
 import static io.sbsp.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.sbsp.jsonschema.validator.ResourceLoader.DEFAULT;
@@ -63,7 +64,7 @@ public class ArraySchemaValidatorTest {
         // }
         // itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
         // return this;
-        final Schema arraySchema = jsonSchemaBuilder().itemSchema(mockBooleanSchema())
+        final Schema arraySchema = jsonSchema().itemSchema(mockBooleanSchema())
                 .schemaOfAdditionalItems(mockNullSchema())
                 .build();
         expectSuccess(arraySchema, arrayTestCases.get("additionalItemsSchema"));
@@ -74,7 +75,7 @@ public class ArraySchemaValidatorTest {
         JsonSchemaBuilder nullSchema = jsonSchemaBuilderWithId("nulls").type(NULL);
 
         Schema subject =
-                jsonSchemaBuilder()
+                jsonSchema()
                         .itemSchemas(Collections.singletonList(mockBooleanSchema("#booleans")))
                         .schemaOfAdditionalItems(nullSchema)
                         .build();
@@ -95,13 +96,13 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void booleanItems() {
-        Schema subject = jsonSchemaBuilder().allItemSchema(mockBooleanSchema()).build();
+        Schema subject = jsonSchema().allItemSchema(mockBooleanSchema()).build();
         expectFailure(subject, mockBooleanSchema().build(), "#/2", arrayTestCases.get("boolArrFailure"));
     }
 
     @Test
     public void doesNotRequireExplicitArray() {
-        final Schema arraySchema = jsonSchemaBuilder()
+        final Schema arraySchema = jsonSchema()
                 .needsUniqueItems(true)
                 .build();
         expectSuccess(arraySchema, arrayTestCases.get("doesNotRequireExplicitArray"));
@@ -109,7 +110,7 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void maxItems() {
-        Schema subject = buildWithLocation(jsonSchemaBuilder().maxItems(0));
+        Schema subject = buildWithLocation(jsonSchema().maxItems(0));
         failureOf(subject)
                 .schema(subject)
                 .expectedPointer("#")
@@ -121,7 +122,7 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void minItems() {
-        Schema subject = buildWithLocation(jsonSchemaBuilder().minItems(2));
+        Schema subject = buildWithLocation(jsonSchema().minItems(2));
         failureOf(subject)
                 .expectedPointer("#")
                 .expectedKeyword("minItems")
@@ -131,13 +132,13 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void noItemSchema() {
-        final Schema schema = jsonSchemaBuilder().build();
+        final Schema schema = jsonSchema().build();
         expectSuccess(schema, arrayTestCases.get("noItemSchema"));
     }
 
     @Test
     public void nonUniqueArrayOfArrays() {
-        Schema subject = buildWithLocation(jsonSchemaBuilder().needsUniqueItems(true));
+        Schema subject = buildWithLocation(jsonSchema().needsUniqueItems(true));
         failureOf(subject)
                 .expectedPointer("#")
                 .expectedKeyword("uniqueItems")
@@ -185,7 +186,7 @@ public class ArraySchemaValidatorTest {
         // }
         // itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
         // return this;
-        jsonSchemaBuilder().itemSchema(mockBooleanSchema()).allItemSchema(mockNullSchema())
+        jsonSchema().itemSchema(mockBooleanSchema()).allItemSchema(mockNullSchema())
                 .build();
     }
 
@@ -196,8 +197,8 @@ public class ArraySchemaValidatorTest {
         // }
         // itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
         // return this;
-        Schema subject = jsonSchemaBuilder().itemSchema(mockBooleanSchema()).build();
-        final Schema expectedSchema = subject.getArrayKeywords().getItemSchemas().get(0);
+        Draft6Schema subject = jsonSchema().itemSchema(mockBooleanSchema()).build().asDraft6();
+        final Schema expectedSchema = subject.getItemSchemas().get(0);
 
         failureOf(subject)
                 .expectedViolatedSchema(expectedSchema)
@@ -217,25 +218,25 @@ public class ArraySchemaValidatorTest {
 
     @Test
     public void uniqueItemsObjectViolation() {
-        Schema subject = jsonSchemaBuilder().needsUniqueItems(true).build();
+        Schema subject = jsonSchema().needsUniqueItems(true).build();
         expectFailure(subject, "#", arrayTestCases.get("nonUniqueObjects"));
     }
 
     @Test
     public void uniqueItemsViolation() {
-        Schema subject = jsonSchemaBuilder().needsUniqueItems(true).build();
+        Schema subject = jsonSchema().needsUniqueItems(true).build();
         expectFailure(subject, "#", arrayTestCases.get("nonUniqueItems"));
     }
 
     @Test
     public void uniqueItemsWithSameToString() {
-        final Schema schema = jsonSchemaBuilder().needsUniqueItems(true).build();
+        final Schema schema = jsonSchema().needsUniqueItems(true).build();
         expectSuccess(schema, arrayTestCases.get("uniqueItemsWithSameToString"));
     }
 
     @Test
     public void uniqueObjectValues() {
-        final Schema schema = jsonSchemaBuilder().needsUniqueItems(true).build();
+        final Schema schema = jsonSchema().needsUniqueItems(true).build();
         expectSuccess(schema, arrayTestCases.get("uniqueObjectValues"));
     }
 
@@ -264,7 +265,7 @@ public class ArraySchemaValidatorTest {
         JsonSchemaBuilder enumSchema = ValidationMocks.mockIntegerSchema()
                 .enumValues(jsonArray(12, 24.3, 65));
 
-        final Schema arraySchema = jsonSchemaBuilder()
+        final Schema arraySchema = jsonSchema()
                 .allItemSchema(enumSchema)
                 .build();
 
@@ -284,7 +285,7 @@ public class ArraySchemaValidatorTest {
         JsonSchemaBuilder enumSchema = mockNumberSchema()
                 .enumValues(jsonArray(12, 24.3, 65));
 
-        final Schema arraySchema = jsonSchemaBuilder()
+        final Schema arraySchema = jsonSchema()
                 .allItemSchema(enumSchema)
                 .build();
 
@@ -301,7 +302,7 @@ public class ArraySchemaValidatorTest {
                 .enumValues(jsonArray(12, 24.3, 65));
 
 
-        final Schema arraySchema = jsonSchemaBuilder()
+        final Schema arraySchema = jsonSchema()
                 .allItemSchema(enumSchema)
                 .build();
 

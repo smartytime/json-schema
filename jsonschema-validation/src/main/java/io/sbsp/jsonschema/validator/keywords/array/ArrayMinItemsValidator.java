@@ -2,6 +2,8 @@ package io.sbsp.jsonschema.validator.keywords.array;
 
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.NumberKeyword;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
@@ -10,12 +12,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_ITEMS;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class ArrayMinItemsValidator extends KeywordValidator {
+public class ArrayMinItemsValidator extends KeywordValidator<NumberKeyword> {
     private final int minItems;
 
     @Builder
     public ArrayMinItemsValidator(Schema schema, int minItems) {
-        super(MIN_ITEMS, schema);
+        super(SchemaKeyword.minItems, schema);
         checkArgument(minItems >= 0, "minItems can't be negative");
 
         this.minItems = minItems;

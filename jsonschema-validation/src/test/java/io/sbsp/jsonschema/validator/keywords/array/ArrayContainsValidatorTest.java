@@ -1,30 +1,29 @@
 package io.sbsp.jsonschema.validator.keywords.array;
 
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
-import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;
 import org.junit.Test;
 
 import javax.json.JsonArray;
 import javax.json.spi.JsonProvider;
-
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
 import static io.sbsp.jsonschema.validator.ValidationMocks.createTestValidator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ArrayContainsValidatorTest {
     @Test
     public void validate_DoesntContains() throws Exception {
-        Schema containsSchema = jsonSchemaBuilder()
+        Schema containsSchema = jsonSchema()
                 .type(JsonSchemaType.ARRAY)
-                .containsSchema(jsonSchemaBuilder()
-                        .anyOfSchema(jsonSchemaBuilder().constValueInteger(3))
-                        .anyOfSchema(jsonSchemaBuilder().constValueDouble(4))
-                        .anyOfSchema(jsonSchemaBuilder().constValueString("5")))
+                .containsSchema(jsonSchema()
+                        .anyOfSchema(jsonSchema().constValueInteger(3))
+                        .anyOfSchema(jsonSchema().constValueDouble(4))
+                        .anyOfSchema(jsonSchema().constValueString("5")))
                 .build();
 
         final SchemaValidator testValidator = createTestValidator(containsSchema);
@@ -42,12 +41,12 @@ public class ArrayContainsValidatorTest {
 
     @Test
     public void validate_Contains() throws Exception {
-        Schema containsSchema = jsonSchemaBuilder()
+        Schema containsSchema = jsonSchema()
                 .type(JsonSchemaType.ARRAY)
-                .containsSchema(jsonSchemaBuilder()
-                        .anyOfSchema(jsonSchemaBuilder().constValueDouble(3))
-                        .anyOfSchema(jsonSchemaBuilder().constValueDouble(4))
-                        .anyOfSchema(jsonSchemaBuilder().constValueString("5")))
+                .containsSchema(jsonSchema()
+                        .anyOfSchema(jsonSchema().constValueDouble(3))
+                        .anyOfSchema(jsonSchema().constValueDouble(4))
+                        .anyOfSchema(jsonSchema().constValueString("5")))
                 .build();
 
         final SchemaValidator testValidator = createTestValidator(containsSchema);

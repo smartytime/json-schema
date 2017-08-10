@@ -18,6 +18,7 @@ package io.sbsp.jsonschema.validator.keywords.string.formatValidators;
 import io.sbsp.jsonschema.enums.FormatType;
 
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static java.util.Objects.requireNonNull;
 
@@ -79,15 +80,24 @@ public interface FormatValidator {
         requireNonNull(format, "format cannot be null");
         String formatName = format.toString();
         switch (formatName) {
+
             case "date-time":
                 return new DateTimeFormatValidator();
+            case "time":
+                return new TimeFormatValidator();
+            case "date":
+                return new DateFormatValidator();
             case "email":
                 return new EmailFormatValidator();
             case "hostname":
                 return new HostnameFormatValidator();
+            case "host-name":
+                return new HostnameFormatValidator();
             case "uri":
                 return new URIFormatValidator();
             case "ipv4":
+                return new IPV4Validator();
+            case "ip-address":
                 return new IPV4Validator();
             case "ipv6":
                 return new IPV6Validator();
@@ -97,6 +107,18 @@ public interface FormatValidator {
                 return new URITemplateFormatValidator();
             case "uri-reference":
                 return new URIReferenceFormatValidator();
+            case "uriref":
+                return new URIReferenceFormatValidator();
+            case "style":
+                return new NoopFormatValidator("style");
+            case "color":
+                return new ColorFormatValidator();
+            case "phone":
+                return new PhoneFormatValidator();
+            case "regex":
+                return new RegexFormatValidator();
+            case "utc-millisec":
+                return new PatternBasedValidator(Pattern.compile("^[0-9]+$"), "utc-millisex");
             default:
                 throw new IllegalArgumentException("unsupported format: " + formatName);
         }

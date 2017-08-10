@@ -5,6 +5,8 @@ import lombok.Getter;
 
 import javax.json.JsonValue;
 import java.net.URI;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 /**
  * Thrown by {@link SchemaLoader#load()} when it encounters
@@ -48,4 +50,6 @@ public class SchemaException extends RuntimeException {
     public SchemaException(String message) {
         this((String) null, message);
     }
+
+
 }

@@ -2,8 +2,7 @@ package io.sbsp.jsonschema.builder;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
-import io.sbsp.jsonschema.JsonSchema;
-import io.sbsp.jsonschema.JsonSchemaDetails;
+import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.ReferenceSchema;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaException;
@@ -11,12 +10,26 @@ import io.sbsp.jsonschema.SchemaFactory;
 import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.extractor.ExtractionReport;
+import io.sbsp.jsonschema.impl.Draft6SchemaImpl;
+import io.sbsp.jsonschema.keyword.BooleanKeyword;
+import io.sbsp.jsonschema.keyword.JsonArrayKeyword;
+import io.sbsp.jsonschema.keyword.JsonValueKeyword;
+import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.MaximumKeyword;
+import io.sbsp.jsonschema.keyword.MaximumKeyword.MaximumKeywordBuilder;
+import io.sbsp.jsonschema.keyword.MinimumKeyword;
+import io.sbsp.jsonschema.keyword.MinimumKeyword.MinimumKeywordBuilder;
+import io.sbsp.jsonschema.keyword.NumberKeyword;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
-import io.sbsp.jsonschema.keyword.keywords.SchemaListKeyword;
-import io.sbsp.jsonschema.keyword.keywords.SimpleKeyword;
-import io.sbsp.jsonschema.keyword.keywords.number.MaximumKeyword;
-import io.sbsp.jsonschema.keyword.keywords.number.MinimumKeyword;
-import io.sbsp.jsonschema.keyword.keywords.shared.TypeKeyword;
+import io.sbsp.jsonschema.keyword.SchemaKeywordImpl;
+import io.sbsp.jsonschema.keyword.SchemaListKeyword;
+import io.sbsp.jsonschema.keyword.SchemaMapKeyword;
+import io.sbsp.jsonschema.keyword.SingleSchemaKeyword;
+import io.sbsp.jsonschema.keyword.StringKeyword;
+import io.sbsp.jsonschema.keyword.StringSetKeyword;
+import io.sbsp.jsonschema.keyword.TypeKeyword;
+import io.sbsp.jsonschema.keyword.URIKeyword;
 
 import javax.annotation.Nullable;
 import javax.json.JsonArray;
@@ -26,92 +39,73 @@ import javax.json.spi.JsonProvider;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$REF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_ITEMS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ALL_OF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ANY_OF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.CONST;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.CONTAINS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DEFAULT;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DEPENDENCIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DESCRIPTION;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ENUM;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.FORMAT;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ITEMS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAXIMUM;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_ITEMS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_LENGTH;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MINIMUM;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_ITEMS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_LENGTH;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MULTIPLE_OF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.NOT;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ONE_OF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN_PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PROPERTY_NAMES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.REQUIRED;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TITLE;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.UNIQUE_ITEMS;
-import static io.sbsp.jsonschema.utils.StreamUtils.safeTransform;
 import static io.sbsp.jsonschema.utils.StreamUtils.supplyIfNull;
+import static java.util.Collections.emptyList;
 
 public class JsonSchemaBuilder {
 
-    private final Map<JsonSchemaKeywordType, SimpleKeyword<String>> strings = new HashMap<>();
-    private final Map<JsonSchemaKeywordType, SimpleKeyword<URI>> uris = new HashMap<>();
-    private final Map<JsonSchemaKeywordType, SimpleKeyword<JsonValue>> jsonValues = new HashMap<>();
-    private final Map<JsonSchemaKeywordType, SimpleKeyword<Number>> numbers = new HashMap<>();
-    private final Map<JsonSchemaKeywordType, SchemaMapKeywordBuilder> schemaMapKeywords = new HashMap<>();
-    private final Map<JsonSchemaKeywordType, SchemaListKeywordBuilder> schemaListKeywords = new HashMap<>();
-    private final Map<JsonSchemaKeywordType, SimpleKeyword<JsonSchemaBuilder>> schemas = new HashMap<>();
+    public static JsonSchemaBuilder jsonSchema() {
+        return new JsonSchemaBuilder();
+    }
 
-    private PropertyDependencyKeyword propertyDependencyKeyword;
-    private MinimumKeyword minimumKeyword;
-    private MaximumKeyword maximumKeyword;
-    private TypeKeyword typeKeyword;
+    public static JsonSchemaBuilder jsonSchema(SchemaLocation location) {
+        return new JsonSchemaBuilder(location);
+    }
+
+    public static JsonSchemaBuilder jsonSchemaBuilderWithId(SchemaLocation location, String id) {
+        return new JsonSchemaBuilder(location, URI.create(id));
+    }
+
+    public static JsonSchemaBuilder refSchemaBuilder(URI ref, SchemaLocation location, @Nullable SchemaFactory schemaFactory) {
+        return jsonSchema(location).ref(ref, schemaFactory);
+    }
+
+    public static JsonSchemaBuilder jsonSchemaBuilderWithId(String id) {
+        checkNotNull(id, "id must not be null");
+        return new JsonSchemaBuilder(URI.create(id));
+    }
+
+    public static JsonSchemaBuilder jsonSchemaBuilderWithId(URI id) {
+        checkNotNull(id, "id must not be null");
+        return new JsonSchemaBuilder(id);
+    }
+
+    private final Map<KeywordMetadata<?>, SchemaKeyword> keywords = new HashMap<>();
+    private final Map<KeywordMetadata<?>, SchemaKeywordBuilder> keywordBuilders = new HashMap<>();
 
     private JsonObject currentDocument;
     private JsonProvider provider;
     private SchemaFactory schemaFactory;
     private final SchemaLocation location;
+    private ExtractionReport extractionReport;
 
-    private JsonSchemaBuilder() {
+    protected JsonSchemaBuilder() {
         this.location = null;
     }
 
-    private JsonSchemaBuilder(URI $id) {
+    protected JsonSchemaBuilder(URI $id) {
         checkNotNull($id, "$id must not be null");
-        this.handleURI($ID, $id);
+        this.addOrRemoveURI(SchemaKeyword.$id, $id);
         this.location = null;
     }
 
-    private JsonSchemaBuilder(SchemaLocation location, URI $id) {
+    protected JsonSchemaBuilder(SchemaLocation location, URI $id) {
         checkNotNull(location, "location must not be null");
         checkNotNull($id, "$id must not be null");
-        this.handleURI($ID, $id);
+        this.addOrRemoveURI(SchemaKeyword.$id, $id);
         this.location = location;
     }
 
-    private JsonSchemaBuilder(SchemaLocation location) {
+    protected JsonSchemaBuilder(SchemaLocation location) {
         checkNotNull(location, "location must not be null");
         this.location = location;
     }
@@ -122,14 +116,14 @@ public class JsonSchemaBuilder {
     }
 
     public JsonSchemaBuilder ref(URI ref, @Nullable SchemaFactory schemaFactory) {
-        this.handleURI($REF, ref);
+        this.addOrRemoveURI(SchemaKeyword.$ref, ref);
         this.schemaFactory = schemaFactory;
         return this;
     }
 
     public JsonSchemaBuilder ref(String ref) {
         checkNotNull(ref, "ref must not be null");
-        return this.handleURI($REF, URI.create(ref));
+        return this.addOrRemoveURI(SchemaKeyword.$ref, URI.create(ref));
     }
 
     public JsonSchemaBuilder provider(JsonProvider provider) {
@@ -146,10 +140,8 @@ public class JsonSchemaBuilder {
         throw new SchemaException(location.getJsonPointerFragment(), messageCode);
     }
 
-    public Schema build() {
-        final URI $id = Optional.ofNullable(uris.get($ID))
-                .map(SimpleKeyword::getKeywordValue)
-                .orElse(null);
+    public Draft6Schema build() {
+        final URI $id = $id();
 
         final SchemaLocation location;
         if ($id == null) {
@@ -163,19 +155,39 @@ public class JsonSchemaBuilder {
                 location = SchemaLocation.hashedRoot(this, $id);
             }
         }
-        return build(location);
+        return build(location).asDraft6();
     }
 
-    private Schema build(SchemaLocation location) {
+    public JsonObject currentDocument() {
+        return currentDocument;
+    }
+
+    public ExtractionReport extractionReport() {
+        return extractionReport;
+    }
+
+    public JsonSchemaBuilder extractionReport(ExtractionReport extractionReport) {
+        this.extractionReport = extractionReport;
+        return this;
+    }
+
+    @Nullable
+    public URI $id() {
+        final URIKeyword keyword = getKeyword(SchemaKeyword.$id);
+        return keyword != null ? keyword.getKeywordValue() : null;
+    }
+
+    @Nullable
+    public URI $ref() {
+        final URIKeyword keyword = getKeyword(SchemaKeyword.$ref);
+        return keyword != null ? keyword.getKeywordValue() : null;
+    }
+
+    Schema build(SchemaLocation location) {
         checkNotNull(location, "location must not be null");
 
-        final URI $id = Optional.ofNullable(uris.get($ID))
-                .map(SimpleKeyword::getKeywordValue)
-                .orElse(null);
-
-        final URI $ref = Optional.ofNullable(uris.get($REF))
-                .map(SimpleKeyword::getKeywordValue)
-                .orElse(null);
+        final URI $id = $id();
+        final URI $ref = $ref();
 
         // Use the location provided during building as an override
         location = MoreObjects.firstNonNull(this.location, location);
@@ -200,68 +212,19 @@ public class JsonSchemaBuilder {
                     .build();
         }
 
-        final Map<JsonSchemaKeywordType, SchemaKeyword> keywords;
+        ImmutableMap.Builder<KeywordMetadata<?>, SchemaKeyword> collector = ImmutableMap.builder();
+        collector.putAll(this.keywords);
 
-        ImmutableMap.Builder<JsonSchemaKeywordType, SchemaKeyword> collector = ImmutableMap.builder();
-        collector.putAll(jsonValues);
-        collector.putAll(strings);
-        collector.putAll(numbers);
-        collector.putAll(uris);
+        for (Map.Entry<KeywordMetadata<?>, SchemaKeywordBuilder> entry : this.keywordBuilders.entrySet()) {
+            final KeywordMetadata<?> keyword = entry.getKey();
+            final SchemaKeywordBuilder schemaBuilder = entry.getValue();
+            final SchemaLocation childLocation = location.child(keyword.getKey());
 
-        if (typeKeyword != null) {
-            collector.put(TYPE, typeKeyword);
+            final SchemaKeyword builtKeyword = schemaBuilder.build(childLocation, schemaFactory, currentDocument);
+            collector.put(keyword, builtKeyword);
         }
 
-        if (propertyDependencyKeyword != null) {
-            collector.put(DEPENDENCIES, propertyDependencyKeyword);
-        }
-
-        if (minimumKeyword != null) {
-            collector.put(MINIMUM, minimumKeyword);
-        }
-
-        if (maximumKeyword != null) {
-            collector.put(MAXIMUM, maximumKeyword);
-        }
-
-        // Build and load all schema keywords
-        for (Map.Entry<JsonSchemaKeywordType, SimpleKeyword<JsonSchemaBuilder>> entry : schemas.entrySet()) {
-            final JsonSchemaKeywordType keyword = entry.getKey();
-            final JsonSchemaBuilder schemaBuilder = entry.getValue().getKeywordValue();
-            final SchemaLocation schemaLocation = location.child(keyword);
-
-            final Schema builtSchema = findCachedOrBuild(schemaLocation, schemaBuilder);
-            collector.put(keyword, new SimpleKeyword<>(builtSchema, keyword));
-        }
-
-        for (Map.Entry<JsonSchemaKeywordType, SchemaListKeywordBuilder> entry : schemaListKeywords.entrySet()) {
-            final JsonSchemaKeywordType keyword = entry.getKey();
-            final List<JsonSchemaBuilder> schemaBuilder = entry.getValue().getSchemas();
-            List<Schema> listOfSchema = new ArrayList<>();
-            int i = 0;
-            for (JsonSchemaBuilder builder : schemaBuilder) {
-                final SchemaLocation idxLocation = location.child(keyword.key(), i++);
-                listOfSchema.add(findCachedOrBuild(idxLocation, builder));
-            }
-
-            collector.put(keyword, new SchemaListKeyword(keyword, listOfSchema));
-        }
-
-        for (Map.Entry<JsonSchemaKeywordType, SchemaMapKeywordBuilder> entry : schemaMapKeywords.entrySet()) {
-            final JsonSchemaKeywordType keyword = entry.getKey();
-            final Map<String, JsonSchemaBuilder> schemaBuilder = entry.getValue().getSchemas();
-            Map<String, Schema> schemaMap = new HashMap<>();
-            int i = 0;
-            for (Map.Entry<String, JsonSchemaBuilder> schemaEntry : schemaBuilder.entrySet()) {
-                final String schemaKey = keyword.key();
-                final SchemaLocation keyLocation = location.child(schemaKey, schemaEntry.getKey());
-                schemaMap.put(schemaKey, findCachedOrBuild(keyLocation, schemaEntry.getValue()));
-            }
-        }
-
-
-        final JsonSchemaDetails schemaDetails = detailsBuilder.build();
-        return new JsonSchema(location, schemaDetails);
+        return new Draft6SchemaImpl(location, collector.build());
     }
 
     // #############################
@@ -280,54 +243,36 @@ public class JsonSchemaBuilder {
     // }
 
     public JsonSchemaBuilder title(String title) {
-        return handleString(TITLE, title);
-    }
-
-    private <X> JsonSchemaBuilder handleString(JsonSchemaKeywordType keyword, String value) {
-        if (value == null) {
-            strings.remove(keyword);
-            return this;
-        }
-        final SimpleKeyword<String> keywordValue = new SimpleKeyword<>(value, keyword);
-        strings.put(keyword, keywordValue);
-        return this;
-    }
-
-    private <X> JsonSchemaBuilder handleURI(JsonSchemaKeywordType keyword, URI value) {
-        if (value == null) {
-            uris.remove(keyword);
-            return this;
-        }
-        final SimpleKeyword<URI> keywordValue = new SimpleKeyword<>(value, keyword);
-        uris.put(keyword, keywordValue);
-        return this;
-    }
-
-    private JsonSchemaBuilder handleNumber(JsonSchemaKeywordType keyword, Number value) {
-        if (value == null) {
-            numbers.remove(keyword);
-            return this;
-        }
-        final SimpleKeyword<Number> keywordValue = new SimpleKeyword<>(value, keyword);
-        numbers.put(keyword, keywordValue);
-        return this;
+        return addOrRemoveString(SchemaKeyword.title, title);
     }
 
     public JsonSchemaBuilder defaultValue(JsonValue defaultValue) {
-        return handleString(DEFAULT, defaultValue);
+        return addOrRemoveJsonValue(SchemaKeyword.$default, defaultValue);
     }
 
     public JsonSchemaBuilder description(String description) {
-        return handleString(DESCRIPTION, description);
+        return addOrRemoveString(SchemaKeyword.description, description);
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <X extends SchemaKeyword> X getKeyword(KeywordMetadata<X> keyword) {
+        return (X) keywords.get(keyword);
     }
 
     public JsonSchemaBuilder type(JsonSchemaType requiredType) {
-        final TypeKeyword existingValue = (TypeKeyword) schemaMapKeywords.get(TYPE);
+        final TypeKeyword existingValue = getKeyword(SchemaKeyword.type);
         if (existingValue == null) {
-            schemaMapKeywords.put(TYPE, new TypeKeyword(requiredType));
+            keywords.put(SchemaKeyword.type, new TypeKeyword(requiredType));
         } else {
-            schemaMapKeywords.put(TYPE, existingValue.withAdditionalType(requiredType));
+            keywords.put(SchemaKeyword.type, existingValue.withAdditionalType(requiredType));
         }
+        return this;
+    }
+
+    public <X extends SchemaKeyword> JsonSchemaBuilder keyword(KeywordMetadata<X> keyword, X value) {
+        checkNotNull(keyword, "keyword must not be null");
+        checkNotNull(value, "value must not be null");
+        this.keywords.put(keyword, value);
         return this;
     }
 
@@ -337,74 +282,15 @@ public class JsonSchemaBuilder {
 
     public JsonSchemaBuilder types(Set<JsonSchemaType> requiredTypes) {
         if(requiredTypes != null) {
-            schemaMapKeywords.put(TYPE, new TypeKeyword(requiredTypes));
+            keywords.put(SchemaKeyword.type, new TypeKeyword(requiredTypes));
         } else {
-            schemaMapKeywords.remove(TYPE);
+            clearTypes();
         }
         return this;
     }
 
     public JsonSchemaBuilder clearTypes() {
-        schemaMapKeywords.remove(TYPE);
-        return this;
-    }
-
-    private <T> JsonSchemaBuilder handleListKeyword(JsonSchemaKeywordType keyword, T value) {
-        final SchemaListKeywordBuilder<T> existingValue = (SchemaListKeywordBuilder<T>) schemaMapKeywords.get(keyword);
-        if (existingValue == null) {
-            schemaMapKeywords.put(TYPE, new SchemaListKeywordBuilder<T>(value, keyword));
-        } else {
-            schemaMapKeywords.put(TYPE, existingValue.withAnotherSchema(value));
-        }
-        return this;
-    }
-
-    private <T> JsonSchemaBuilder handleListKeyword(JsonSchemaKeywordType keyword, Collection<T> value) {
-        if (value == null) {
-            schemaMapKeywords.remove(keyword);
-        } else {
-            schemaMapKeywords.put(keyword, new SchemaListKeywordBuilder<T>(value, keyword));
-        }
-        return this;
-    }
-
-    private <T> JsonSchemaBuilder handleSchema(JsonSchemaKeywordType keyword, JsonSchemaBuilder value) {
-        if (value == null) {
-            schemasMapKeywords.remove(keyword);
-        } else {
-            schemaMapKeywords.put(keyword, new SchemaListKeywordBuilder<T>(value, keyword));
-        }
-        return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> JsonSchemaBuilder handleMapKeyword(JsonSchemaKeywordType keyword, String key, T value) {
-        final SchemaMapKeywordBuilder<T> existingValue = (SchemaMapKeywordBuilder<T>) schemaMapKeywords.get(keyword);
-        if (existingValue == null) {
-            schemaMapKeywords.put(TYPE, new SchemaListKeywordBuilder<T>(value, keyword));
-        } else {
-            schemaMapKeywords.put(TYPE, existingValue.addSchema(key, value));
-        }
-        return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T> JsonSchemaBuilder handleMultimapKeyword(JsonSchemaKeywordType keyword, String key, T value) {
-        final PropertyDependencyKeyword<T> existingValue = (PropertyDependencyKeyword<T>) schemaMapKeywords.get(keyword);
-        if (existingValue == null) {
-            schemaMapKeywords.put(TYPE, new SchemaListKeywordBuilder<T>(value, keyword));
-        } else {
-            schemaMapKeywords.put(TYPE, existingValue.propertyDependency(key, value));
-        }
-        return this;
-    }
-
-    private <T> JsonSchemaBuilder handleMapKeyword(JsonSchemaKeywordType keyword, Map<String, T> value) {
-        if (value == null) {
-            schemaMapKeywords.remove(keyword);
-        } else {
-            schemaMapKeywords.put(keyword, new SchemaMapKeywordBuilder<>(value, keyword));
-        }
+        keywords.remove(SchemaKeyword.type);
         return this;
     }
 
@@ -413,43 +299,43 @@ public class JsonSchemaBuilder {
     // #################################
 
     public JsonSchemaBuilder allOfSchema(JsonSchemaBuilder allOfSchema) {
-        return handleListKeyword(ALL_OF, allOfSchema);
+        return addSchemaToList(SchemaKeyword.allOf, allOfSchema);
     }
 
     public JsonSchemaBuilder allOfSchemas(Collection<? extends JsonSchemaBuilder> allOfSchemas) {
-        return handleListKeyword(ALL_OF, allOfSchemas);
+        return addOrRemoveSchemaList(SchemaKeyword.allOf, allOfSchemas);
     }
 
     public JsonSchemaBuilder clearAllOfSchemas() {
-        return handleListKeyword(ALL_OF, null);
+        return addOrRemoveSchemaList(SchemaKeyword.allOf, null);
     }
 
     public JsonSchemaBuilder anyOfSchema(JsonSchemaBuilder anyOfSchema) {
-        return handleListKeyword(ANY_OF, anyOfSchema);
+        return addSchemaToList(SchemaKeyword.anyOf, anyOfSchema);
     }
-    
+
     public JsonSchemaBuilder anyOfSchemas(Collection<? extends JsonSchemaBuilder> anyOfSchemas) {
-        return handleListKeyword(ANY_OF, anyOfSchemas);
+        return addOrRemoveSchemaList(SchemaKeyword.anyOf, anyOfSchemas);
     }
 
     public JsonSchemaBuilder clearAnyOfSchemas() {
-        return handleListKeyword(ANY_OF, null);
-    } 
-    
-    public JsonSchemaBuilder oneOfSchema(JsonSchemaBuilder oneOfSchema) {
-        return handleListKeyword(ONE_OF, oneOfSchema);
+        return addOrRemoveSchemaList(SchemaKeyword.anyOf, null);
     }
-    
+
+    public JsonSchemaBuilder oneOfSchema(JsonSchemaBuilder oneOfSchema) {
+        return addSchemaToList(SchemaKeyword.oneOf, oneOfSchema);
+    }
+
     public JsonSchemaBuilder oneOfSchemas(Collection<? extends JsonSchemaBuilder> oneOfSchemas) {
-        return handleListKeyword(ONE_OF, oneOfSchemas);
+        return addOrRemoveSchemaList(SchemaKeyword.oneOf, oneOfSchemas);
     }
 
     public JsonSchemaBuilder clearOneOfSchemas() {
-        return handleListKeyword(ONE_OF, null);
+        return addOrRemoveSchemaList(SchemaKeyword.oneOf, null);
     }
 
     public JsonSchemaBuilder constValue(JsonValue constValue) {
-        return handleString(CONST, constValue);
+        return addOrRemoveJsonValue(SchemaKeyword.$const, constValue);
     }
 
     public JsonSchemaBuilder constValueDouble(double constValue) {
@@ -465,11 +351,11 @@ public class JsonSchemaBuilder {
     }
 
     public JsonSchemaBuilder enumValues(JsonArray enumValues) {
-        return this.handleString(ENUM, enumValues);
+        return this.addOrRemoveJsonArray(SchemaKeyword.$enum, enumValues);
     }
 
     public JsonSchemaBuilder notSchema(JsonSchemaBuilder notSchema) {
-        return this.handleString(NOT, notSchema);
+        return this.addOrRemoveSchema(SchemaKeyword.not, notSchema);
     }
 
     // #######################################################
@@ -478,40 +364,54 @@ public class JsonSchemaBuilder {
     // #######################################################
 
     public JsonSchemaBuilder allItemSchema(@Valid JsonSchemaBuilder allItemSchema) {
-        return this.handleString(ITEMS, allItemSchema);
+        if (allItemSchema == null) {
+            keywordBuilders.remove(SchemaKeyword.items);
+        } else {
+            keywordBuilders.put(SchemaKeyword.items, new ItemsKeywordBuilder(allItemSchema));
+        }
+        return this;
     }
 
     public JsonSchemaBuilder containsSchema(@Valid JsonSchemaBuilder containsSchema) {
-        return this.handleString(CONTAINS, containsSchema);
+        return this.addOrRemoveSchema(SchemaKeyword.contains, containsSchema);
     }
 
     public JsonSchemaBuilder itemSchema(JsonSchemaBuilder itemSchema) {
-        return this.handleListKeyword(ITEMS, itemSchema);
+        checkNotNull(itemSchema, "itemSchema must not be null");
+        final ItemsKeywordBuilder existing = (ItemsKeywordBuilder) keywordBuilders.getOrDefault(SchemaKeyword.items, new ItemsKeywordBuilder(emptyList()));
+        existing.withAnotherSchema(itemSchema);
+        keywordBuilders.put(SchemaKeyword.items, existing);
+        return this;
     }
 
     public JsonSchemaBuilder itemSchemas(List<JsonSchemaBuilder> itemSchemas) {
-        return this.handleListKeyword(ITEMS, itemSchemas);
+        if (itemSchemas == null) {
+            keywordBuilders.remove(SchemaKeyword.items);
+        } else {
+            keywordBuilders.put(SchemaKeyword.items, new ItemsKeywordBuilder(itemSchemas));
+        }
+        return this;
     }
 
     public JsonSchemaBuilder minItems(@Min(0) Integer minItems) {
-        return this.handleString(MIN_ITEMS, minItems);
+        return this.addOrRemoveNumber(SchemaKeyword.minItems, minItems);
     }
 
     public JsonSchemaBuilder maxItems(@Min(0) Integer maxItems) {
-        return this.handleString(MAX_ITEMS, maxItems);
+        return this.addOrRemoveNumber(SchemaKeyword.maxItems, maxItems);
     }
 
     public JsonSchemaBuilder needsUniqueItems(boolean needsUniqueItems) {
         if (needsUniqueItems) {
-            return this.handleString(UNIQUE_ITEMS, true);
+            return this.addOrRemoveBoolean(SchemaKeyword.uniqueItems, true);
         } else {
-            schemaMapKeywords.remove(UNIQUE_ITEMS);
+            keywords.remove(SchemaKeyword.uniqueItems);
             return this;
         }
     }
 
     public JsonSchemaBuilder schemaOfAdditionalItems(@Valid JsonSchemaBuilder schemaOfAdditionalItems) {
-        this.handleString(ADDITIONAL_ITEMS, schemaOfAdditionalItems);
+        this.addOrRemoveSchema(SchemaKeyword.additionalItems, schemaOfAdditionalItems);
         return this;
     }
 
@@ -522,71 +422,64 @@ public class JsonSchemaBuilder {
 
     public JsonSchemaBuilder exclusiveMaximum(Number exclusiveMaximum) {
         if (exclusiveMaximum == null) {
-            schemaMapKeywords.remove(MAXIMUM);
+            keywords.remove(SchemaKeyword.maximum);
             return this;
         }
-        final MaximumKeyword existing = (MaximumKeyword) schemaMapKeywords.get(MAXIMUM);
-        final MaximumKeyword update;
-        if (existing != null) {
-            update = existing.toBuilder().exclusiveMaximum(exclusiveMaximum).build();
-        } else {
-            update = MaximumKeyword.builder().exclusiveMaximum(exclusiveMaximum).build();
-        }
-        schemaMapKeywords.put(MAXIMUM, update);
+        final MaximumKeyword existing = getKeyword(SchemaKeyword.maximum);
+        final MaximumKeywordBuilder keywordBuilder = existing != null ? existing.toBuilder() : MaximumKeyword.builder();
+        final MaximumKeyword keyword = keywordBuilder.maximum(exclusiveMaximum).isExclusive(true).build();
+        keywords.put(SchemaKeyword.maximum, keyword);
         return this;
     }
 
     public JsonSchemaBuilder exclusiveMinimum(Number exclusiveMinimum) {
         if (exclusiveMinimum == null) {
-            schemaMapKeywords.remove(MINIMUM);
+            keywords.remove(SchemaKeyword.minimum);
             return this;
         }
-        final MinimumKeyword existing = (MinimumKeyword) schemaMapKeywords.get(MINIMUM);
-        final MinimumKeyword update;
-        if (existing != null) {
-            update = existing.toBuilder().exclusiveMinimum(exclusiveMinimum).build();
-        } else {
-            update = MinimumKeyword.builder().exclusiveMinimum(exclusiveMinimum).build();
-        }
-        schemaMapKeywords.put(MINIMUM, update);
+        final MinimumKeyword existing = getKeyword(SchemaKeyword.minimum);
+        final MinimumKeywordBuilder keywordBuilder = existing != null ? existing.toBuilder() : MinimumKeyword.builder();
+        final MinimumKeyword keyword = keywordBuilder.minimum(exclusiveMinimum).isExclusive(true).build();
+        keywords.put(SchemaKeyword.minimum, keyword);
         return this;
     }
 
     public JsonSchemaBuilder minimum(Number minimum) {
         if (minimum == null) {
-            schemaMapKeywords.remove(MINIMUM);
+            keywords.remove(SchemaKeyword.minimum);
             return this;
         }
-        final MinimumKeyword existing = (MinimumKeyword) schemaMapKeywords.get(MINIMUM);
+        final MinimumKeyword existing = getKeyword(SchemaKeyword.minimum);
+
         final MinimumKeyword update;
         if (existing != null) {
             update = existing.toBuilder().minimum(minimum).build();
         } else {
             update = MinimumKeyword.builder().minimum(minimum).build();
         }
-        schemaMapKeywords.put(MINIMUM, update);
+        keywords.put(SchemaKeyword.minimum, update);
         return this;
     }
 
     public JsonSchemaBuilder maximum(Number maximum) {
         if (maximum == null) {
-            schemaMapKeywords.remove(MAXIMUM);
+            keywords.remove(SchemaKeyword.maximum);
             return this;
         }
-        final MaximumKeyword existing = (MaximumKeyword) schemaMapKeywords.get(MAXIMUM);
+        final MaximumKeyword existing = getKeyword(SchemaKeyword.maximum);
         final MaximumKeyword update;
         if (existing != null) {
             update = existing.toBuilder().maximum(maximum).build();
         } else {
             update = MaximumKeyword.builder().maximum(maximum).build();
         }
-        schemaMapKeywords.put(MAXIMUM, update);
+        keywords.put(SchemaKeyword.maximum, update);
         return this;
     }
 
 
     public JsonSchemaBuilder multipleOf(@Min(1) Number multipleOf) {
-        this.handleNumber(MULTIPLE_OF, multipleOf);
+        this.addOrRemoveNumber(SchemaKeyword.multipleOf, multipleOf);
         return this;
     }
 
@@ -596,70 +489,94 @@ public class JsonSchemaBuilder {
     // #######################################################
 
     public JsonSchemaBuilder clearPropertySchemas() {
-        schemaMapKeywords.remove(PROPERTIES);
+        keywordBuilders.remove(SchemaKeyword.properties);
         return this;
     }
 
     public JsonSchemaBuilder clearRequiredProperties() {
-        schemaMapKeywords.remove(REQUIRED);
+        keywordBuilders.remove(SchemaKeyword.required);
         return this;
     }
 
     public JsonSchemaBuilder maxProperties(@Min(0) Integer maxProperties) {
-        this.handleNumber(MAX_PROPERTIES, maxProperties);
+        this.addOrRemoveNumber(SchemaKeyword.maxProperties, maxProperties);
         return this;
     }
 
     public JsonSchemaBuilder minProperties(@Min(0) Integer minProperties) {
-        this.handleNumber(MIN_PROPERTIES, minProperties);
+        this.addOrRemoveNumber(SchemaKeyword.minProperties, minProperties);
         return this;
     }
 
     public JsonSchemaBuilder patternProperty(Pattern pattern, JsonSchemaBuilder schema) {
         checkNotNull(pattern, "pattern must not be null");
-        this.handleMapKeyword(PATTERN_PROPERTIES, pattern.pattern(), schema);
+        this.putKeywordSchema(SchemaKeyword.patternProperties, pattern.pattern(), schema);
         return this;
     }
 
     public JsonSchemaBuilder patternProperty(String pattern, JsonSchemaBuilder schema) {
-        this.handleMapKeyword(PATTERN_PROPERTIES, pattern, schema);
+        this.putKeywordSchema(SchemaKeyword.patternProperties, pattern, schema);
         return this;
     }
 
     public JsonSchemaBuilder propertyDependency(String ifPresent, String thenRequireThisProperty) {
         checkNotNull(ifPresent, "ifPresent must not be null");
-        this.handleMapKeyword(DEPENDENCIES, ifPresent, thenRequireThisProperty);
+
+        final PropertyDependencyKeywordBuilder depBuilder;
+        final PropertyDependencyKeywordBuilder existing = (PropertyDependencyKeywordBuilder) keywordBuilders.get(SchemaKeyword.dependencies);
+        if (existing == null) {
+            depBuilder = new PropertyDependencyKeywordBuilder(ifPresent, thenRequireThisProperty);
+        } else {
+            depBuilder = existing.propertyDependency(ifPresent, thenRequireThisProperty);
+        }
+
+        keywordBuilders.put(SchemaKeyword.dependencies, depBuilder);
         return this;
     }
 
     public JsonSchemaBuilder propertyNameSchema(JsonSchemaBuilder propertyNameSchema) {
-        this.handleSchema(PROPERTY_NAMES, propertyNameSchema);
+        this.addOrRemoveSchema(SchemaKeyword.propertyNames, propertyNameSchema);
         return this;
     }
 
     public JsonSchemaBuilder propertySchema(String propertySchemaKey, JsonSchemaBuilder propertySchemaValue) {
         checkNotNull(propertySchemaKey, "propertySchemaKey must not be null");
         checkNotNull(propertySchemaValue, "propertySchemaValue must not be null");
-        this.handleMapKeyword(PROPERTIES, propertySchemaKey, propertySchemaValue);
+        this.putKeywordSchema(SchemaKeyword.properties, propertySchemaKey, propertySchemaValue);
         return this;
     }
 
     public JsonSchemaBuilder requiredProperty(String requiredProperty) {
         checkNotNull(requiredProperty, "requiredProperty must not be null");
-        this.handleListKeyword(REQUIRED, requiredProperty);
+        final StringSetKeyword requiredKeyword;
+        StringSetKeyword existing = getKeyword(SchemaKeyword.required);
+        if (existing == null) {
+            requiredKeyword = new StringSetKeyword(requiredProperty);
+        } else {
+            requiredKeyword = existing.withAnotherValue(requiredProperty);
+        }
+
+        keywords.put(SchemaKeyword.required, requiredKeyword);
         return this;
     }
 
     public JsonSchemaBuilder schemaDependency(String property, JsonSchemaBuilder dependency) {
         checkNotNull(property, "property must not be null");
         checkNotNull(dependency, "dependency must not be null");
-        this.handleMapKeyword(DEPENDENCIES, property, dependency);
+        final PropertyDependencyKeywordBuilder depBuilder;
+        final PropertyDependencyKeywordBuilder existing = (PropertyDependencyKeywordBuilder) keywordBuilders.get(SchemaKeyword.dependencies);
+        if (existing == null) {
+            depBuilder = new PropertyDependencyKeywordBuilder(new SchemaMapKeywordBuilder(property, dependency));
+        } else {
+            depBuilder = existing.addSchema(property, dependency);
+        }
+        keywordBuilders.put(SchemaKeyword.dependencies, depBuilder);
         return this;
     }
 
     public JsonSchemaBuilder schemaOfAdditionalProperties(JsonSchemaBuilder schemaOfAdditionalProperties) {
         checkNotNull(schemaOfAdditionalProperties, "schemaOfAdditionalProperties must not be null");
-        this.handleString(ADDITIONAL_PROPERTIES, schemaOfAdditionalProperties);
+        this.addOrRemoveSchema(SchemaKeyword.additionalProperties, schemaOfAdditionalProperties);
         return this;
     }
 
@@ -669,22 +586,23 @@ public class JsonSchemaBuilder {
     // #######################################################
 
     public JsonSchemaBuilder format(String format) {
-        this.handleString(FORMAT, format);
+        this.addOrRemoveString(SchemaKeyword.format, format);
         return this;
     }
 
     public JsonSchemaBuilder maxLength(@Min(0) Integer maxLength) {
-        this.handleString(MAX_LENGTH, maxLength);
+        this.addOrRemoveNumber(SchemaKeyword.maxLength, maxLength);
         return this;
     }
 
     public JsonSchemaBuilder minLength(@Min(0) Integer minLength) {
-        this.handleString(MIN_LENGTH, minLength);
+        this.addOrRemoveNumber(SchemaKeyword.minLength, minLength);
         return this;
     }
 
     public JsonSchemaBuilder pattern(Pattern pattern) {
-        this.handleString(PATTERN, pattern.pattern());
+        checkNotNull(pattern, "pattern must not be null");
+        this.addOrRemoveString(SchemaKeyword.pattern, pattern.pattern());
         return this;
     }
 
@@ -693,57 +611,110 @@ public class JsonSchemaBuilder {
     }
 
     // #######################################################
-    // BUILDING SUBSCHEMAS
+    // HELPER FUNCTIONS
     // #######################################################
 
-    private Optional<Schema> buildKeywordSubschema(SchemaLocation parentSchema, JsonSchemaKeywordType keyword, JsonSchemaBuilder subschemaBuilder) {
-        if (subschemaBuilder == null) {
-            return Optional.empty();
+    protected <X> JsonSchemaBuilder addOrRemoveString(KeywordMetadata<StringKeyword> keyword, String value) {
+        if (!removeIfNecessary(keyword, value)) {
+            final SchemaKeywordImpl<String> keywordValue = new StringKeyword(value);
+            keywords.put(keyword, keywordValue);
         }
-        final SchemaLocation subschemaLocation = parentSchema.child(keyword);
-        return Optional.of(
-                findCachedOrBuild(subschemaLocation, subschemaBuilder)
-        );
+        return this;
     }
 
-    private <X> Optional<Map<X, Schema>> buildKeywordSubschemaMap(SchemaLocation parentSchema, JsonSchemaKeywordType keyword, Map<X, JsonSchemaBuilder> builders) {
+    protected <X> boolean removeIfNecessary(KeywordMetadata<?> keyword, X value) {
         checkNotNull(keyword, "keyword must not be null");
-        if (builders == null || builders.size() == 0) {
-            return Optional.empty();
+        if (value == null) {
+            keywords.remove(keyword);
         }
-
-        Map<X, Schema> values = new LinkedHashMap<>();
-        builders.forEach((x, builder) -> {
-            final SchemaLocation childLocation = parentSchema.child(keyword.key(), x.toString());
-            values.put(x, findCachedOrBuild(childLocation, builder));
-        });
-        return Optional.of(values);
+        return value == null;
     }
 
-    private Optional<List<Schema>> buildKeywordSubschemaList(SchemaLocation parentSchema, JsonSchemaKeywordType keyword, Collection<JsonSchemaBuilder> builders) {
-        if (builders == null || builders.size() == 0) {
-            return Optional.empty();
+    protected JsonSchemaBuilder addOrRemoveURI(KeywordMetadata<URIKeyword> keyword, URI value) {
+        if (!removeIfNecessary(keyword, value)) {
+            final URIKeyword keywordValue = new URIKeyword(value);
+            keywords.put(keyword, keywordValue);
         }
-        AtomicInteger idx = new AtomicInteger(0);
-
-        return Optional.ofNullable(safeTransform(builders, builder -> {
-            final SchemaLocation idxInfo = parentSchema.child(keyword.key(), idx.getAndIncrement());
-            return findCachedOrBuild(idxInfo, builder);
-        }));
+        return this;
     }
 
-    private Schema findCachedOrBuild(SchemaLocation location, JsonSchemaBuilder builder) {
-        if (schemaFactory != null) {
-            final Optional<Schema> cachedSchema = schemaFactory.findCachedSchema(location.getUniqueURI());
-            if (cachedSchema.isPresent()) {
-                return cachedSchema.get();
-            }
+    protected JsonSchemaBuilder addOrRemoveJsonArray(KeywordMetadata<JsonArrayKeyword> keyword, JsonArray value) {
+        if (!removeIfNecessary(keyword, value)) {
+            final JsonArrayKeyword keywordValue = new JsonArrayKeyword(value);
+            keywords.put(keyword, keywordValue);
         }
+        return this;
+    }
 
-        return builder
-                .currentDocument(currentDocument)
-                .schemaFactory(schemaFactory)
-                .build(location);
+    protected JsonSchemaBuilder addOrRemoveNumber(KeywordMetadata<NumberKeyword> keyword, Number value) {
+        if (!removeIfNecessary(keyword, value)) {
+            final NumberKeyword keywordValue = new NumberKeyword(value);
+            keywords.put(keyword, keywordValue);
+        }
+        return this;
+    }
+
+    protected JsonSchemaBuilder addOrRemoveBoolean(KeywordMetadata<BooleanKeyword> keyword, Boolean bool) {
+        if (!removeIfNecessary(keyword, bool)) {
+            final BooleanKeyword keywordValue = new BooleanKeyword(bool);
+            keywords.put(keyword, keywordValue);
+        }
+        return this;
+    }
+
+    protected JsonSchemaBuilder addOrRemoveJsonValue(KeywordMetadata<JsonValueKeyword> keyword, JsonValue value) {
+        if (!removeIfNecessary(keyword, value)) {
+            final JsonValueKeyword keywordValue = new JsonValueKeyword(value);
+            keywords.put(keyword, keywordValue);
+        }
+        return this;
+    }
+
+    protected JsonSchemaBuilder addSchemaToList(KeywordMetadata<SchemaListKeyword> keyword, JsonSchemaBuilder value) {
+        final SchemaListKeywordBuilder existingValue = (SchemaListKeywordBuilder) keywordBuilders.get(keyword);
+        if (existingValue == null) {
+            keywordBuilders.put(keyword, new SchemaListKeywordBuilder(value));
+        } else {
+            keywordBuilders.put(keyword, existingValue.withAnotherSchema(value));
+        }
+        return this;
+    }
+
+    public <T> JsonSchemaBuilder addOrRemoveSchemaList(KeywordMetadata<SchemaListKeyword> keyword, Collection<? extends JsonSchemaBuilder> schemas) {
+        if (schemas == null) {
+            keywordBuilders.remove(keyword);
+        } else {
+            keywordBuilders.put(keyword, new SchemaListKeywordBuilder(schemas));
+        }
+        return this;
+    }
+
+    public JsonSchemaBuilder addOrRemoveSchema(KeywordMetadata<? extends SingleSchemaKeyword> keyword, JsonSchemaBuilder value) {
+        if (!removeIfNecessary(keyword, value)) {
+            final SingleSchemaKeywordBuilder keywordValue = new SingleSchemaKeywordBuilder(value);
+            keywordBuilders.put(keyword, keywordValue);
+        }
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T extends JsonSchemaBuilder> JsonSchemaBuilder putKeywordSchema(KeywordMetadata<SchemaMapKeyword> keyword, String key, T value) {
+        final SchemaMapKeywordBuilder existingValue = (SchemaMapKeywordBuilder) keywordBuilders.get(keyword);
+        if (existingValue == null) {
+            keywordBuilders.put(keyword, new SchemaMapKeywordBuilder(key, value));
+        } else {
+            keywordBuilders.put(keyword, existingValue.addSchema(key, value));
+        }
+        return this;
+    }
+
+    public <T extends JsonSchemaBuilder> JsonSchemaBuilder putAllKeywordSchemas(KeywordMetadata<SchemaMapKeyword> keyword, Map<String, T> schemas) {
+        if (schemas == null) {
+            keywordBuilders.remove(keyword);
+        } else {
+            keywordBuilders.put(keyword, new SchemaMapKeywordBuilder(schemas));
+        }
+        return this;
     }
 
     // #######################################################

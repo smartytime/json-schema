@@ -68,7 +68,7 @@
                         <Import-Package>*</Import-Package>
                         <Export-Package>
                             io.sbsp.jsonschema.loader;version=${project.version},
-                            io.sbsp.jsonschema.loader.reference;version=${project.version},
+                            io.sbsp.jsonschema.extractor.reference;version=${project.version},
                         </Export-Package>
                     </instructions>
                 </configuration>

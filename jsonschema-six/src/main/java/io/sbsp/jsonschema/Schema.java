@@ -1,13 +1,16 @@
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
-import lombok.ToString;
+import io.sbsp.jsonschema.enums.JsonSchemaVersion;
+import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
 
-import javax.annotation.Nullable;
+import javax.json.spi.JsonProvider;
 import javax.json.stream.JsonGenerator;
+import java.io.StringWriter;
 import java.net.URI;
+import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static io.sbsp.jsonschema.utils.JsonUtils.prettyPrintGeneratorFactory;
 
 public interface Schema {
 
@@ -15,11 +18,21 @@ public interface Schema {
 
     URI getId();
 
+    URI getSchemaURI();
+
     String getTitle();
 
     String getDescription();
 
-    JsonGenerator toJson(final JsonGenerator writer);
+    JsonSchemaVersion getVersion();
+
+    JsonGenerator toJson(final JsonGenerator writer, JsonSchemaVersion version);
+
+    Map<KeywordMetadata<?>, SchemaKeyword> getKeywords();
+
+    default JsonGenerator toJson(final JsonGenerator writer) {
+        return toJson(writer, getVersion());
+    }
 
     default URI getAbsoluteURI() {
         return getLocation().getUniqueURI();
@@ -29,32 +42,35 @@ public interface Schema {
         return getLocation().getJsonPointerFragment();
     }
 
-    static JsonSchemaBuilder jsonSchemaBuilder() {
-        return new JsonSchemaBuilder();
+    default Schema asVersion(JsonSchemaVersion version) {
+        switch (version) {
+            case Draft3:
+                return asDraft3();
+            case Draft4:
+                return asDraft4();
+            case Draft5:
+                return asDraft4();
+            case Draft6:
+                return asDraft6();
+            default:
+                throw new IllegalArgumentException("Unable to determine version from: " + version);
+        }
     }
 
-    static JsonSchemaBuilder jsonSchemaBuilder(SchemaLocation location) {
-        return new JsonSchemaBuilder(location);
+    Draft6Schema asDraft6();
+    Draft3Schema asDraft3();
+    Draft4Schema asDraft4();
+
+    default String toString(boolean pretty) {
+        final StringWriter stringWriter = new StringWriter();
+        final JsonGenerator generator;
+        if (pretty) {
+            generator = prettyPrintGeneratorFactory().createGenerator(stringWriter);
+        } else {
+            generator = JsonProvider.provider().createGenerator(stringWriter);
+        }
+        this.toJson(generator);
+        generator.flush();
+        return stringWriter.toString();
     }
-
-    static JsonSchemaBuilder jsonSchemaBuilderWithId(SchemaLocation location, String id) {
-        return new JsonSchemaBuilder(location, URI.create(id));
-    }
-
-    static JsonSchemaBuilder refSchemaBuilder(URI ref, SchemaLocation location, @Nullable SchemaFactory schemaFactory) {
-        return jsonSchemaBuilder(location).ref(ref, schemaFactory);
-    }
-
-    static JsonSchemaBuilder jsonSchemaBuilderWithId(String id) {
-        checkNotNull(id, "id must not be null");
-        return new JsonSchemaBuilder(URI.create(id));
-    }
-
-    static JsonSchemaBuilder jsonSchemaBuilderWithId(URI id) {
-        checkNotNull(id, "id must not be null");
-        return new JsonSchemaBuilder(id);
-    }
-
-    @ToString
-
 }

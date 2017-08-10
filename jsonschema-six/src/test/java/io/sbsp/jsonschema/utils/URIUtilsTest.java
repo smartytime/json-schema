@@ -1,6 +1,6 @@
 package io.sbsp.jsonschema.utils;
 
-import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
 import org.junit.Test;
 
@@ -9,6 +9,7 @@ import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import java.net.URI;
 
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class URIUtilsTest {
@@ -127,14 +128,14 @@ public class URIUtilsTest {
 
     @Test
     public void generateUniqueURI_ForSameBuilder_ReturnsSameURI() {
-        final Schema.JsonSchemaBuilder aBuilder = Schema.jsonSchemaBuilder()
+        final JsonSchemaBuilder aBuilder = JsonSchemaBuilder.jsonSchema()
                 .constValue(JsonValue.TRUE)
                 .pattern("bob")
                 .type(JsonSchemaType.STRING)
                 .type(JsonSchemaType.NUMBER)
                 .enumValues(JsonUtils.jsonArray("one", 2, "three"));
 
-        final Schema.JsonSchemaBuilder bBuilder = Schema.jsonSchemaBuilder()
+        final JsonSchemaBuilder bBuilder = JsonSchemaBuilder.jsonSchema()
                 .constValue(JsonValue.TRUE)
                 .pattern("bob")
                 .type(JsonSchemaType.STRING)

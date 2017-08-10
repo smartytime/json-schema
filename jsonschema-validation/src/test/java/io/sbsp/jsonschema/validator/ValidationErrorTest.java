@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockBooleanSchema;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockNullSchema;
@@ -41,7 +41,7 @@ import static org.junit.Assert.assertEquals;
 public class ValidationErrorTest {
 
     public static final ResourceLoader loader = ResourceLoader.DEFAULT;
-    private final Schema rootSchema = jsonSchemaBuilder().build();
+    private final Schema rootSchema = jsonSchema().build();
 
     @Test
     public void testConstructor() {

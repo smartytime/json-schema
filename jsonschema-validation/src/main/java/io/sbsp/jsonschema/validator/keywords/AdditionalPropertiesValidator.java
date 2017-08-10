@@ -3,6 +3,8 @@ package io.sbsp.jsonschema.validator.keywords;
 import com.google.common.collect.ImmutableSet;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.SingleSchemaKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
@@ -16,7 +18,7 @@ import java.util.regex.Pattern;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
 
-public class AdditionalPropertiesValidator extends KeywordValidator {
+public class AdditionalPropertiesValidator extends KeywordValidator<SingleSchemaKeyword> {
 
     @NonNull
     private final SchemaValidator additionalPropertiesValidator;
@@ -28,11 +30,13 @@ public class AdditionalPropertiesValidator extends KeywordValidator {
     private final Set<Pattern> patternProperties;
 
     @Builder
-    public AdditionalPropertiesValidator(Schema schema, SchemaValidator additionalPropertiesValidator, Set<String> propertySchemaKeys, Set<Pattern> patternProperties) {
-        super(ADDITIONAL_PROPERTIES, schema);
+    public AdditionalPropertiesValidator(Schema schema, SchemaValidator additionalPropertiesValidator, Set<String> propertySchemaKeys, Set<String> patternProperties) {
+        super(SchemaKeyword.additionalProperties, schema);
         this.additionalPropertiesValidator = checkNotNull(additionalPropertiesValidator);
         this.propertySchemaKeys = Collections.unmodifiableSet(new HashSet<>(propertySchemaKeys));
-        this.patternProperties = ImmutableSet.copyOf(patternProperties);
+        this.patternProperties = patternProperties.stream()
+                .map(Pattern::compile)
+                .collect(ImmutableSet.toImmutableSet());
     }
 
     @Override

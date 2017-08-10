@@ -3,9 +3,11 @@ package io.sbsp.jsonschema.validator.keywords.array;
 import com.google.common.collect.ImmutableList;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.ItemsKeyword;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
-import io.sbsp.jsonschema.validator.SchemaValidator;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -13,9 +15,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ITEMS;
-
-public class ArrayPerItemValidator extends KeywordValidator {
+public class ArrayPerItemValidator extends KeywordValidator<ItemsKeyword> {
     @NonNull
     private final ImmutableList<SchemaValidator> indexedValidators;
 
@@ -24,7 +24,7 @@ public class ArrayPerItemValidator extends KeywordValidator {
 
     @Builder
     public ArrayPerItemValidator(Schema schema, List<SchemaValidator> indexedValidators, SchemaValidator additionalItemValidator) {
-        super(ITEMS, schema);
+        super(SchemaKeyword.items, schema);
         this.indexedValidators = ImmutableList.copyOf(indexedValidators);
         this.additionalItemValidator = additionalItemValidator;
     }

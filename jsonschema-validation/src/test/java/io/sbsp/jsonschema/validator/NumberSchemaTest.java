@@ -21,7 +21,7 @@ import org.junit.Test;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonNumberValue;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.sbsp.jsonschema.utils.JsonUtils.readJsonObject;

@@ -3,6 +3,8 @@ package io.sbsp.jsonschema.validator.keywords;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.ObjectComparator;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.JsonArrayKeyword;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import lombok.Builder;
 
@@ -15,12 +17,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ENUM;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class EnumValidator extends KeywordValidator {
+public class EnumValidator extends KeywordValidator<JsonArrayKeyword> {
     private final List<JsonValue> enumValues;
 
     @Builder
     EnumValidator(Schema schema, JsonArray enumValues) {
-        super(ENUM, schema);
+        super(SchemaKeyword.$enum, schema);
         checkNotNull(enumValues);
         this.enumValues = new ArrayList<>(enumValues);
     }

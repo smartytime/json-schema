@@ -124,7 +124,7 @@ public class JsonValueWithLocationTest {
     //     if (is(JsonValue.ValueType.NULL)) {
     //         return null;
     //     } else {
-    //         return ((JsonString) wrapped).getString();
+    //         return ((JsonString) wrapped).string();
     //     }
     // }
     //
@@ -210,7 +210,7 @@ public class JsonValueWithLocationTest {
     // public Optional<String> findString(JsonSchemaKeyword property) {
     //     checkNotNull(property, "property must not be null");
     //     return findByKey(property.key(), JsonString.class)
-    //             .map(JsonString::getString);
+    //             .map(JsonString::string);
     // }
     //
     // public void forEachIndex(BiConsumer<? super Integer, ? super JsonValueWithLocation> action) {
@@ -259,13 +259,13 @@ public class JsonValueWithLocationTest {
     // }
     //
     // @Override
-    // public String getString(String name) {
-    //     return asJsonObject().getString(name);
+    // public String string(String name) {
+    //     return asJsonObject().string(name);
     // }
     //
     // @Override
-    // public String getString(String name, String defaultValue) {
-    //     return asJsonObject().getString(name, defaultValue);
+    // public String string(String name, String defaultValue) {
+    //     return asJsonObject().string(name, defaultValue);
     // }
     //
     // @Override
@@ -298,20 +298,20 @@ public class JsonValueWithLocationTest {
     //     return fromJsonValue(asJsonObject().get(childKey), location.child(childKey));
     // }
     //
-    // public String getString(JsonSchemaKeyword property) {
+    // public String string(JsonSchemaKeyword property) {
     //     try {
     //         if (asJsonObject().isNull(property.key())) {
     //             return null;
     //         }
-    //         return asJsonObject().getString(property.key());
+    //         return asJsonObject().string(property.key());
     //     } catch (ClassCastException e) {
     //         throw new UnexpectedValueException(location, asJsonObject().get(property.key()), ValueType.STRING);
     //     }
     // }
     //
     // @Override
-    // public JsonValue getKeywordValue(String jsonPointer) {
-    //     return asJsonObject().getKeywordValue(jsonPointer);
+    // public JsonValue keywordValue(String jsonPointer) {
+    //     return asJsonObject().keywordValue(jsonPointer);
     // }
     //
     // public boolean has(JsonSchemaKeyword property, JsonValue.ValueType... ofType) {
@@ -440,7 +440,7 @@ public class JsonValueWithLocationTest {
     //         if (asJsonObject.keySet().contains($ID.key())) {
     //             final JsonValue $id = asJsonObject.get($ID.key());
     //             if ($id.getValueType() == ValueType.STRING) {
-    //                 uri = URI.create(((JsonString) $id).getString());
+    //                 uri = URI.create(((JsonString) $id).string());
     //                 location = location.withId(uri);
     //             }
     //         }
@@ -451,7 +451,7 @@ public class JsonValueWithLocationTest {
     // public static JsonValueWithLocation fromJsonValue(JsonObject jsonObject) {
     //     final SchemaLocation rootSchemaLocation;
     //     if (jsonObject.containsKey($ID.key())) {
-    //         String $id = jsonObject.getString($ID.key());
+    //         String $id = jsonObject.string($ID.key());
     //         rootSchemaLocation = SchemaLocation.documentRoot($id);
     //     } else {
     //         rootSchemaLocation = SchemaLocation.anonymousRoot();

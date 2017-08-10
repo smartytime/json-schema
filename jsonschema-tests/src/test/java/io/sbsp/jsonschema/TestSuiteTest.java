@@ -44,7 +44,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static io.sbsp.jsonschema.ValidationMocks.createTestValidator;
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
 
 @RunWith(Parameterized.class)
 public class TestSuiteTest {

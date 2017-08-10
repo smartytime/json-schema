@@ -15,9 +15,10 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
-import io.sbsp.jsonschema.keywords.ObjectKeywords;
+import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import lombok.experimental.var;
 import org.junit.Assert;
@@ -29,12 +30,11 @@ import javax.json.JsonValue;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.*;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.BOOLEAN;
-import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonObjectBuilder;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
@@ -73,7 +73,7 @@ public class ObjectKeywordsValidatorTest {
 
     @Test
     public void additionalPropertySchema() {
-        JsonSchemaBuilder boolSchema = jsonSchemaBuilder().type(BOOLEAN);
+        JsonSchemaBuilder boolSchema = jsonSchema().type(BOOLEAN);
         Schema schema = mockObjectSchema().schemaOfAdditionalProperties(boolSchema).build();
         JsonObject fooBar = jsonObjectBuilder().add("foo", "bar").build();
 
@@ -392,14 +392,13 @@ public class ObjectKeywordsValidatorTest {
         builder.propertyDependency("a", "b");
         builder.schemaDependency("a", mockBooleanSchema());
         builder.patternProperty("aaa", mockBooleanSchema());
-        Schema schema = builder.build();
+        Draft6Schema schema = builder.build().asDraft6();
         builder.propertyDependency("c", "a");
         builder.schemaDependency("b", mockBooleanSchema());
         builder.patternProperty("bbb", mockBooleanSchema());
-        final ObjectKeywords keywords = schema.getObjectKeywords();
-        assertEquals(1, keywords.getPropertyDependencies().size());
-        assertEquals(1, keywords.getSchemaDependencies().size());
-        assertEquals(1, keywords.getPatternProperties().size());
+        assertEquals(1, schema.getPropertyDependencies().size());
+        assertEquals(1, schema.getPropertySchemaDependencies().size());
+        assertEquals(1, schema.getPatternProperties().size());
     }
 
     @Test

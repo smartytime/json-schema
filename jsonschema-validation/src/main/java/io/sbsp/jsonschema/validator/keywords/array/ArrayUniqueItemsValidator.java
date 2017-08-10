@@ -3,6 +3,8 @@ package io.sbsp.jsonschema.validator.keywords.array;
 import io.sbsp.jsonschema.ObjectComparator;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.BooleanKeyword;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
@@ -15,11 +17,11 @@ import java.util.Collection;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.UNIQUE_ITEMS;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class ArrayUniqueItemsValidator extends KeywordValidator {
+public class ArrayUniqueItemsValidator extends KeywordValidator<BooleanKeyword> {
 
     @Builder
     public ArrayUniqueItemsValidator(Schema schema) {
-        super(UNIQUE_ITEMS, schema);
+        super(SchemaKeyword.uniqueItems, schema);
     }
 
     @Override

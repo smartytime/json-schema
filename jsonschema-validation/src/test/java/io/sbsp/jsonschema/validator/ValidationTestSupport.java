@@ -15,9 +15,9 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.Schema;
-import io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 
 import javax.json.JsonValue;
 import java.util.List;

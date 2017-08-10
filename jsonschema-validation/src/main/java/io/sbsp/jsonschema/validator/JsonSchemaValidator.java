@@ -2,15 +2,14 @@ package io.sbsp.jsonschema.validator;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.SetMultimap;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
-import io.sbsp.jsonschema.validator.extractors.KeywordValidatorExtractor;
-import io.sbsp.jsonschema.validator.extractors.KeywordValidators;
+import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.validator.factory.KeywordToValidatorTransformer;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
-import io.sbsp.jsonschema.validator.keywords.TypeValidator;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 
 import javax.annotation.Nullable;
 import javax.json.JsonValue.ValueType;
@@ -33,13 +32,6 @@ public class JsonSchemaValidator implements SchemaValidator {
     private final List<KeywordValidator> falseValidators;
 
     /**
-     * The type validator applies to all types, so it's pulled out separately.  If this schema doesn't require
-     * and explicit type(s), this will be null.
-     */
-    @Nullable
-    private final TypeValidator typeValidator;
-
-    /**
      * The underlying schema being validated.  This instance isn't actually used for validation, it's primarily
      * here for metadata when recording errors.
      */
@@ -52,18 +44,9 @@ public class JsonSchemaValidator implements SchemaValidator {
     private final boolean noop;
 
     @Builder(builderMethodName = "jsonSchemaValidator")
-    public JsonSchemaValidator(@Singular List<KeywordValidatorExtractor> factories, Schema schema, SchemaValidatorFactory validatorFactory) {
+    public JsonSchemaValidator(SetMultimap<KeywordMetadata, KeywordToValidatorTransformer> factories, Schema schema, SchemaValidatorFactory validatorFactory) {
         checkNotNull(factories, "factories must not be null");
         this.schema = schema;
-
-        if (schema.getTypes().size() > 0) {
-            typeValidator = TypeValidator.builder()
-                    .schema(schema)
-                    .requiredTypes(schema.getTypes())
-                    .build();
-        } else {
-            typeValidator = null;
-        }
 
         // Cache the validator to avoid infinite recursion
         validatorFactory.cacheValidator(schema.getAbsoluteURI(), this);
@@ -77,7 +60,7 @@ public class JsonSchemaValidator implements SchemaValidator {
         this.falseValidators = validators.get(ValueType.FALSE);
         this.nullValidators = validators.get(ValueType.NULL);
 
-        this.noop = validators.isEmpty() && this.typeValidator == null;
+        this.noop = validators.isEmpty();
     }
 
     /**
@@ -100,13 +83,6 @@ public class JsonSchemaValidator implements SchemaValidator {
             for (int i = 0; i < size; i++) {
                 applicableValidators.get(i).validate(subject, childReport);
             }
-        }
-
-        if (typeValidator != null) {
-            if (childReport == null) {
-                childReport = parentReport.createChildReport();
-            }
-            typeValidator.validate(subject, childReport);
         }
 
         if (childReport != null && !childReport.isValid()) {
@@ -162,22 +138,26 @@ public class JsonSchemaValidator implements SchemaValidator {
      *
      * @param schema The schema that is to be validated
      * @param validatorFactory A validatorFactory used to construct new {@link KeywordValidator} instances
-     * @param factories A list of {@link KeywordValidatorExtractor} - these inspect the provided schema, and return the
+     * @param factories A list of {@link KeywordToValidatorTransformer} - these inspect the provided schema, and return the
      *                  necessary keyword validators based on the schema.
      *
      * @return A {@link ListMultimap} with the keywords sorted by their applicable types.
      */
+    @SuppressWarnings("unchecked")
     private static ListMultimap<ValueType, KeywordValidator> mapValidatorsToType(Schema schema, SchemaValidatorFactory validatorFactory,
-                                                                                 List<KeywordValidatorExtractor> factories) {
+                                                                                 SetMultimap<KeywordMetadata, KeywordToValidatorTransformer> factories) {
         ImmutableListMultimap.Builder<ValueType, KeywordValidator> validatorsByType = ImmutableListMultimap.builder();
-        for (KeywordValidatorExtractor factory : factories) {
-            if (factory.appliesToSchema(schema)) {
-                KeywordValidators keywordValidators = factory.getKeywordValidators(schema, validatorFactory);
-                for (ValueType valueType : factory.getApplicableTypes()) {
-                    keywordValidators.forEach(validator -> validatorsByType.put(valueType, validator));
+        schema.getKeywords().forEach((keyword, keywordValue)->{
+            factories.get(keyword).forEach(tx-> {
+                final KeywordValidator keywordValidator = tx.getKeywordValidator(schema, keyword, keywordValue, validatorFactory);
+                if (keywordValidator != null) {
+                    keyword.getApplicableTypes().forEach(applicableType-> {
+                        validatorsByType.put(applicableType, keywordValidator);
+                    });
                 }
-            }
-        }
+            });
+        });
+
         return validatorsByType.build();
     }
 

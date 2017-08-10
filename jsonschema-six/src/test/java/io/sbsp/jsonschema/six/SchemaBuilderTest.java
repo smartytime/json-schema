@@ -1,18 +1,16 @@
 package io.sbsp.jsonschema.six;
 
+import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.TestUtils;
-import io.sbsp.jsonschema.keywords.ArrayKeywords;
-import io.sbsp.jsonschema.keywords.NumberKeywords;
-import io.sbsp.jsonschema.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.keywords.StringKeywords;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Test;
 
 import java.net.URI;
 import java.util.regex.Pattern;
 
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchemaBuilderWithId;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.ARRAY;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.BOOLEAN;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.INTEGER;
@@ -27,66 +25,61 @@ public class SchemaBuilderTest {
 
     @Test
     public void buildAllStringKeywords() {
-        final Schema stringSchema = jsonSchemaBuilder()
+        final Draft6Schema schema = jsonSchema()
                 .type(STRING)
                 .minLength(3)
                 .maxLength(6)
                 .pattern("[a-z]*")
                 .format("uri-template")
-                .build();
+                .build().asDraft6();
 
-        assertThat(stringSchema.hasStringKeywords())
-                .isTrue();
-        assertThat(stringSchema.getTypes())
+        assertThat(schema.getTypes())
                 .hasSize(1)
                 .containsExactly(STRING);
 
-        final StringKeywords keywords = stringSchema.getStringKeywords();
         assertSoftly(a -> {
-            a.assertThat(keywords.getMinLength())
+            a.assertThat(schema.getMinLength())
                     .isNotNull()
                     .isEqualTo(3);
-            a.assertThat(keywords.getMaxLength())
+            a.assertThat(schema.getMaxLength())
                     .isNotNull()
                     .isEqualTo(6);
-            a.assertThat(keywords.getFormat())
+            a.assertThat(schema.getFormat())
                     .isNotEmpty().isNotNull()
                     .isEqualTo("uri-template");
-            a.assertThat(keywords.getPattern())
+            a.assertThat(schema.getPattern())
                     .isNotNull();
-            a.assertThat(keywords.getPattern().pattern())
+            a.assertThat(schema.getPattern())
                     .isEqualTo("[a-z]*");
         });
     }
 
     @Test
     public void buildAllNumberKeywords() {
-        final Schema numberSchema = jsonSchemaBuilder()
+        final Draft6Schema schema = jsonSchema()
                 .type(NUMBER)
                 .minimum(1)
                 .maximum(9)
                 .exclusiveMinimum(0)
                 .exclusiveMaximum(10)
                 .multipleOf(3.4d)
-                .build();
+                .build().asDraft6();
 
-        assertThat(numberSchema.hasNumberKeywords()).isTrue();
-        final NumberKeywords keywords = numberSchema.getNumberKeywords();
         assertSoftly(a -> {
-            a.assertThat(keywords.getMaximum())
+            a.assertThat(schema.getMaximum())
                     .isNotNull()
                     .isEqualTo(9);
-            a.assertThat(keywords.getMinimum())
+            a.assertThat(schema.getMinimum())
                     .isNotNull()
                     .isEqualTo(1);
-            a.assertThat(keywords.getExclusiveMaximum())
+            a.assertThat(schema.getExclusiveMaximum())
                     .isNotNull()
                     .isEqualTo(10);
-            a.assertThat(keywords.getExclusiveMinimum())
+            a.assertThat(schema.getExclusiveMinimum())
                     .isNotNull()
                     .isEqualTo(0);
 
-            a.assertThat(keywords.getMultipleOf())
+            a.assertThat(schema.getMultipleOf())
                     .isNotNull()
                     .isEqualTo(3.4d);
         });
@@ -94,43 +87,43 @@ public class SchemaBuilderTest {
 
     @Test
     public void buildArrayKeywords_AllItemSchema() {
-        final Schema arraySchema = jsonSchemaBuilder()
+        final Draft6Schema schema = jsonSchema()
                 .type(ARRAY)
                 .minItems(1)
                 .maxItems(10)
                 .needsUniqueItems(true)
-                .allItemSchema(jsonSchemaBuilder()
+                .allItemSchema(jsonSchema()
                         .notSchema(
-                                jsonSchemaBuilder().type(NULL)
+                                jsonSchema().type(NULL)
                         )
                 )
-                .containsSchema(jsonSchemaBuilder()
+                .containsSchema(jsonSchema()
                         .type(STRING)
                 )
-                .build();
+                .build()
+                .asDraft6();
 
-        assertThat(arraySchema.hasArrayKeywords()).isTrue();
-        final ArrayKeywords keywords = arraySchema.getArrayKeywords();
         assertSoftly(a -> {
-            a.assertThat(keywords.getMinItems())
+            a.assertThat(schema.getMinItems())
                     .isNotNull()
                     .isEqualTo(1);
-            a.assertThat(keywords.getMaxItems())
+            a.assertThat(schema.getMaxItems())
                     .isNotNull()
                     .isEqualTo(10);
-            a.assertThat(keywords.findAllItemSchema())
+            a.assertThat(schema.getAllItemSchema())
                     .isPresent()
-                    .hasValue(jsonSchemaBuilder().notSchema(
-                            jsonSchemaBuilder().type(NULL)
-                    ).build());
-            final Schema allItemSchema = keywords.getAllItemSchema();
+                    .hasValue(jsonSchema().notSchema(jsonSchema().type(NULL))
+                            .build()
+                            .asDraft6());
+            final Schema allItemSchema = schema.getAllItemSchema().get();
             a.assertThat(allItemSchema.getLocation().getJsonPointerFragment())
                     .isEqualTo(URI.create("#/items"));
 
-            a.assertThat(keywords.findContainsSchema())
+            a.assertThat(schema.getContainsSchema())
                     .isPresent()
-                    .hasValue(jsonSchemaBuilder().type(STRING).build());
-            final Schema containschema = keywords.getContainsSchema();
+                    .hasValue(jsonSchema().type(STRING).build().asDraft6());
+
+            final Schema containschema = schema.getContainsSchema().get();
             a.assertThat(containschema.getLocation().getJsonPointerFragment())
                     .isEqualTo(URI.create("#/contains"));
         });
@@ -138,30 +131,28 @@ public class SchemaBuilderTest {
 
     @Test
     public void buildArrayKeywords_IndexedItemSchema() {
-        final Schema arraySchema = jsonSchemaBuilder()
+        final Draft6Schema draft6Schema = jsonSchema()
                 .type(ARRAY)
-                .itemSchema(jsonSchemaBuilder().type(STRING))
-                .itemSchema(jsonSchemaBuilder().type(NUMBER))
-                .itemSchema(jsonSchemaBuilder().type(BOOLEAN))
-                .schemaOfAdditionalItems(jsonSchemaBuilder().type(STRING))
-                .build();
+                .itemSchema(jsonSchema().type(STRING))
+                .itemSchema(jsonSchema().type(NUMBER))
+                .itemSchema(jsonSchema().type(BOOLEAN))
+                .schemaOfAdditionalItems(jsonSchema().type(STRING))
+                .build().asDraft6();
 
-        assertThat(arraySchema.hasArrayKeywords()).isTrue();
-        final ArrayKeywords keywords = arraySchema.getArrayKeywords();
         assertSoftly(a -> {
-            a.assertThat(keywords.getItemSchemas())
+            a.assertThat(draft6Schema.getItemSchemas())
                     .isNotNull()
                     .hasSize(3)
                     .element(0)
-                    .isEqualTo(jsonSchemaBuilder().type(STRING).build());
-            final URI fragmentIdx0 = keywords.getItemSchemas().get(0).getLocation().getJsonPointerFragment();
+                    .isEqualTo(jsonSchema().type(STRING).build());
+            final URI fragmentIdx0 = draft6Schema.getItemSchemas().get(0).getLocation().getJsonPointerFragment();
             assertThat(fragmentIdx0)
                     .isNotNull()
                     .hasToString("#/items/0");
-            a.assertThat(keywords.findSchemaOfAdditionalItems())
+            a.assertThat(draft6Schema.getAdditionalItemsSchema())
                     .isPresent()
-                    .hasValue(jsonSchemaBuilder().type(STRING).build());
-            a.assertThat(keywords.getSchemaOfAdditionalItems().getLocation().getJsonPointerFragment())
+                    .hasValue(jsonSchema().type(STRING).build().asDraft6());
+            a.assertThat(draft6Schema.getAdditionalItemsSchema().get().getLocation().getJsonPointerFragment())
                     .hasToString("#/additionalItems");
         });
     }
@@ -170,57 +161,55 @@ public class SchemaBuilderTest {
     public void buildObjectKeywords_AllKeywords() {
         final Pattern pattern = Pattern.compile("[A-Z]*");
 
-        final Schema objectSchema = jsonSchemaBuilder()
+        final Draft6Schema schema = jsonSchema()
                 .type(OBJECT)
-                .propertySchema("name", jsonSchemaBuilder().type(STRING))
-                .propertySchema("age", jsonSchemaBuilder().type(NUMBER))
-                .patternProperty(pattern, jsonSchemaBuilder().type(OBJECT))
-                .schemaOfAdditionalProperties(jsonSchemaBuilder().type(ARRAY))
+                .propertySchema("name", jsonSchema().type(STRING))
+                .propertySchema("age", jsonSchema().type(NUMBER))
+                .patternProperty(pattern, jsonSchema().type(OBJECT))
+                .schemaOfAdditionalProperties(jsonSchema().type(ARRAY))
                 .requiredProperty("name")
                 .requiredProperty("another")
                 .minProperties(1)
                 .maxProperties(10)
-                .schemaDependency("email", jsonSchemaBuilder().maxProperties(4))
+                .schemaDependency("email", jsonSchema().maxProperties(4))
                 .propertyDependency("age", "email")
-                .build();
+                .build().asDraft6();
 
-        assertThat(objectSchema.hasObjectKeywords()).isTrue();
-        final ObjectKeywords keywords = objectSchema.getObjectKeywords();
         assertSoftly(a -> {
-            a.assertThat(keywords.getMinProperties()).isNotNull().isEqualTo(1);
-            a.assertThat(keywords.getMaxProperties()).isNotNull().isEqualTo(10);
-            a.assertThat(keywords.getRequiredProperties()).contains("name", "another");
-            a.assertThat(keywords.getPropertyDependencies().keySet()).hasSize(1);
-            a.assertThat(keywords.getPropertyDependencies().entries()).hasSize(1);
-            a.assertThat(keywords.getPatternProperties())
+            a.assertThat(schema.getMinProperties()).isNotNull().isEqualTo(1);
+            a.assertThat(schema.getMaxProperties()).isNotNull().isEqualTo(10);
+            a.assertThat(schema.getRequiredProperties()).contains("name", "another");
+            a.assertThat(schema.getPropertyDependencies().keySet()).hasSize(1);
+            a.assertThat(schema.getPropertyDependencies().entries()).hasSize(1);
+            a.assertThat(schema.getPatternProperties())
                     .isNotNull()
                     .hasSize(1)
-                    .containsEntry(pattern, jsonSchemaBuilder().type(OBJECT).build());
+                    .containsEntry(pattern.pattern(), jsonSchema().type(OBJECT).build());
 
-            a.assertThat(keywords.getSchemaDependencies())
+            a.assertThat(schema.getPropertySchemaDependencies())
                     .isNotNull()
                     .hasSize(1)
-                    .containsEntry("email", jsonSchemaBuilder().maxProperties(4).build());
+                    .containsEntry("email", jsonSchema().maxProperties(4).build());
         });
     }
 
     @Test
     public void buildSharedKeywords_AllKeywords() {
-        final Schema objectSchema = Schema.jsonSchemaBuilderWithId("#doopy")
+        final Draft6Schema objectSchema = jsonSchemaBuilderWithId("#doopy")
                 .title("My Title")
                 .description("A description")
                 .defaultValue(TestUtils.jsonString("A default value"))
-                .allOfSchema(jsonSchemaBuilder().enumValues(JsonUtils.jsonArray(1, 2, 3, 4)))
-                .allOfSchema(jsonSchemaBuilder().enumValues(JsonUtils.jsonArray(3, 4, 5, 6)))
-                .anyOfSchema(jsonSchemaBuilder().constValueDouble(4))
-                .anyOfSchema(jsonSchemaBuilder().constValueDouble(46))
-                .oneOfSchema(jsonSchemaBuilder().minimum(2))
-                .oneOfSchema(jsonSchemaBuilder().maximum(50))
+                .allOfSchema(jsonSchema().enumValues(JsonUtils.jsonArray(1, 2, 3, 4)))
+                .allOfSchema(jsonSchema().enumValues(JsonUtils.jsonArray(3, 4, 5, 6)))
+                .anyOfSchema(jsonSchema().constValueDouble(4))
+                .anyOfSchema(jsonSchema().constValueDouble(46))
+                .oneOfSchema(jsonSchema().minimum(2))
+                .oneOfSchema(jsonSchema().maximum(50))
                 .type(NUMBER)
                 .type(INTEGER)
-                .notSchema(jsonSchemaBuilder().constValueDouble(21))
+                .notSchema(jsonSchema().constValueDouble(21))
                 .enumValues(JsonUtils.jsonArray(1, 2, 3, 4, 5, 6, 7, 8, 9))
-                .build();
+                .build().asDraft6();
 
         assertSoftly(a -> {
             a.assertThat(objectSchema.getId()).isNotNull().hasToString("#doopy");
@@ -244,7 +233,7 @@ public class SchemaBuilderTest {
                     .contains(NUMBER, INTEGER);
             a.assertThat(objectSchema.getNotSchema())
                     .isPresent()
-                    .hasValue(jsonSchemaBuilder().constValueDouble(21).build());
+                    .hasValue(jsonSchema().constValueDouble(21).build());
             a.assertThat(objectSchema.getEnumValues())
                     .isPresent()
                     .hasValue(JsonUtils.jsonArray(1, 2, 3, 4, 5, 6, 7, 8, 9));

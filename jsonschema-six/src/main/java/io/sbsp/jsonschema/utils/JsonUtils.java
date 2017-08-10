@@ -27,6 +27,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
+import static javax.json.JsonValue.EMPTY_JSON_ARRAY;
 import static javax.json.spi.JsonProvider.provider;
 import static javax.json.stream.JsonGenerator.PRETTY_PRINTING;
 
@@ -35,6 +36,10 @@ public class JsonUtils {
     private static final Map<String, ?> PRETTY_PRINT_OPTS = ImmutableMap.of(PRETTY_PRINTING, true);
     private static final JsonWriterFactory PRETTY_PRINT_WRITER_FACTORY = JsonProvider.provider().createWriterFactory(PRETTY_PRINT_OPTS);
     private static final JsonGeneratorFactory PRETTY_PRINT_GENERATOR_FACTORY = JsonProvider.provider().createGeneratorFactory(PRETTY_PRINT_OPTS);
+
+    public static JsonArray emptyJsonArray() {
+        return EMPTY_JSON_ARRAY;
+    }
 
     public static JsonArray blankJsonArray() {
         return provider().createArrayBuilder().build();

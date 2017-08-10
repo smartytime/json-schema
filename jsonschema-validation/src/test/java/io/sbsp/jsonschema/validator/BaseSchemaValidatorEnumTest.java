@@ -1,7 +1,8 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,8 +16,7 @@ import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.*;
 import static io.sbsp.jsonschema.utils.JsonUtils.blankJsonArray;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonArray;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonObjectBuilder;
@@ -97,7 +97,7 @@ public class BaseSchemaValidatorEnumTest {
         JsonArray testEnum = JsonUtils.readValue("[1, 1.0, 1.00]", JsonArray.class);
         JsonNumber testValNotSame = JsonUtils.readValue("1.000", JsonNumber.class);
 
-        final Schema schema = jsonSchemaBuilder().enumValues(testEnum).build();
+        final Schema schema = jsonSchema().enumValues(testEnum).build();
 
         final Optional<ValidationError> validate = createTestValidator(schema).validate(testValNotSame);
 
@@ -168,6 +168,6 @@ public class BaseSchemaValidatorEnumTest {
     }
 
     private JsonSchemaBuilder subject() {
-        return jsonSchemaBuilder().enumValues(possibleValues.build());
+        return jsonSchema().enumValues(possibleValues.build());
     }
 }

@@ -69,7 +69,8 @@
                         </Import-Package>
                         <Export-Package>
                             io.sbsp.jsonschema.validator;version=${project.version},
-                            io.sbsp.jsonschema.validator.keywords.string.formatValidators;version=${project.version}
+                            io.sbsp.jsonschema.validator.keywords.string.formatValidators;version=${project.version},
+                            io.sbsp.jsonschema.validator.factory;version=${project.version}
                         </Export-Package>
                     </instructions>
                 </configuration>
@@ -145,7 +146,11 @@
             <version>3.8.0</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.googlecode.libphonenumber</groupId>
+            <artifactId>libphonenumber</artifactId>
+            <version>8.7.1</version>
+        </dependency>
         <dependency>
             <groupId>io.sbsp.jsonschema</groupId>
             <artifactId>jsonschema-six</artifactId>

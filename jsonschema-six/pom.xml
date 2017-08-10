@@ -68,11 +68,11 @@
                         <Import-Package>*
                         </Import-Package>
                         <Export-Package>
-                            io.sbsp.jsonschema.six;version=${project.version},
-                            io.sbsp.jsonschema.six.types;version=${project.version},
-                            io.sbsp.jsonschema.six.validation;version=${project.version},
-                            io.sbsp.jsonschema.six.enums;version=${project.version},
-                            io.sbsp.jsonschema.keywords;version=${project.version},
+                            io.sbsp.jsonschema;version=${project.version},
+                            io.sbsp.jsonschema.types;version=${project.version},
+                            io.sbsp.jsonschema.validation;version=${project.version},
+                            io.sbsp.jsonschema.enums;version=${project.version},
+                            io.sbsp.jsonschema.keyword;version=${project.version},
                             io.sbsp.jsonschema.utils;version=${project.version},
                         </Export-Package>
                     </instructions>

@@ -1,27 +1,13 @@
 package io.sbsp.jsonschema.enums;
 
+import com.google.common.base.CaseFormat;
 import io.sbsp.jsonschema.keyword.KeywordMetadata;
-import io.sbsp.jsonschema.keyword.KeywordMetadata.KeywordMetadataBuilder;
-import lombok.experimental.Delegate;
-
-import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft3;
-import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft4;
-import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft5;
-import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft6;
-import static io.sbsp.jsonschema.keyword.KeywordMetadata.keywordMetadata;
-import static javax.json.JsonValue.ValueType.ARRAY;
-import static javax.json.JsonValue.ValueType.FALSE;
-import static javax.json.JsonValue.ValueType.NULL;
-import static javax.json.JsonValue.ValueType.NUMBER;
-import static javax.json.JsonValue.ValueType.OBJECT;
-import static javax.json.JsonValue.ValueType.STRING;
-import static javax.json.JsonValue.ValueType.TRUE;
 
 /**
  * Represents each valid keyword in the json-schema specification.
  */
 public enum JsonSchemaKeywordType {
-    $SCHEMA(keywordMetadata().expects(STRING)),
+    $SCHEMA,
     /**
      * From draft-06
      * <p>
@@ -42,7 +28,7 @@ public enum JsonSchemaKeywordType {
      * validator might get stuck in an infinite recursive loop trying to validate the instance. Schemas
      * SHOULD NOT make use of infinite recursive nesting like this; the behavior is undefined.
      */
-    $REF(keywordMetadata().expects(STRING)),
+    $REF,
 
     /**
      * From draft-06
@@ -65,7 +51,7 @@ public enum JsonSchemaKeywordType {
      * The effect of defining an "$id" that neither matches the above requirements nor is a valid JSON pointer
      * is not defined.
      */
-    $ID(keywordMetadata().expects(STRING).since(Draft6)),
+    $ID,
 
     /**
      * From draft-03
@@ -80,7 +66,7 @@ public enum JsonSchemaKeywordType {
      * The current URI of the schema is also used to construct relative
      * references such as for $ref.
      */
-    ID(keywordMetadata().expects(STRING).since(Draft3).until(Draft5)),
+    ID,
 
     /**
      * From draft-06
@@ -91,7 +77,7 @@ public enum JsonSchemaKeywordType {
      * produced by this user interface. A title will preferably be short, whereas a description will
      * provide explanation about the purpose of the instance described by this schema.
      */
-    TITLE(keywordMetadata().expects(STRING)),
+    TITLE,
 
     /**
      * From draft-06
@@ -117,7 +103,7 @@ public enum JsonSchemaKeywordType {
      * As an example, here is a schema describing an array of positive integers, where the positive integer
      * constraint is a subschema in "definitions":
      */
-    DEFINITIONS(keywordMetadata().expects(OBJECT).since(Draft6)),
+    DEFINITIONS,
 
     /**
      * From draft-06
@@ -128,7 +114,7 @@ public enum JsonSchemaKeywordType {
      * produced by this user interface. A title will preferably be short, whereas a description will
      * provide explanation about the purpose of the instance described by this schema.
      */
-    DESCRIPTION(keywordMetadata().expects(STRING)),
+    DESCRIPTION,
 
     /**
      * From draft-06
@@ -139,7 +125,7 @@ public enum JsonSchemaKeywordType {
      * particular schema. It is RECOMMENDED that a default value be valid against
      * the associated schema.
      */
-    DEFAULT(keywordMetadata().expects(ARRAY, OBJECT, NUMBER, TRUE, FALSE, STRING, NULL)),
+    DEFAULT,
 
     /**
      * The value of "properties" MUST be an object.
@@ -155,7 +141,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as an empty object.
      */
-    PROPERTIES(keywordMetadata().expects(OBJECT).validates(JsonSchemaType.OBJECT)),
+    PROPERTIES,
 
     /**
      * The value of this keyword MUST be a non-negative integer.
@@ -164,7 +150,7 @@ public enum JsonSchemaKeywordType {
      * number of properties is less than, or equal to, the value of this
      * keyword.
      */
-    MAX_PROPERTIES(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.OBJECT).since(Draft4)),
+    MAX_PROPERTIES,
 
     /**
      * The value of this keyword MUST be an array.
@@ -175,7 +161,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as an empty array.
      */
-    REQUIRED(keywordMetadata().expects(ARRAY).validates(JsonSchemaType.OBJECT).since(Draft4)),
+    REQUIRED,
 
     /**
      * The value of "additionalProperties" MUST be a valid JSON Schema.
@@ -192,7 +178,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as an empty schema.
      */
-    ADDITIONAL_PROPERTIES(keywordMetadata().expects(OBJECT).validates(JsonSchemaType.OBJECT).since(Draft6)),
+    ADDITIONAL_PROPERTIES,
 
     /**
      * The value of this keyword MUST be a non-negative integer.
@@ -203,7 +189,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as a value of 0.
      */
-    MIN_PROPERTIES(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.OBJECT).since(Draft4)),
+    MIN_PROPERTIES,
 
     /**
      * This keyword specifies rules that are evaluated if the instance is an object and
@@ -222,7 +208,8 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as an empty object.
      */
-    DEPENDENCIES(keywordMetadata().expects(OBJECT).validates(JsonSchemaType.OBJECT)),
+    DEPENDENCIES,
+
     /**
      * The value of "patternProperties" MUST be an object. Each property name
      * of this object SHOULD be a valid regular expression, according to the
@@ -241,7 +228,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as an empty object.
      */
-    PATTERN_PROPERTIES(keywordMetadata().expects(OBJECT).validates(JsonSchemaType.OBJECT)),
+    PATTERN_PROPERTIES,
     /**
      * The value of "propertyNames" MUST be a valid JSON Schema.
      * <p>
@@ -251,7 +238,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as an empty schema.
      */
-    PROPERTY_NAMES(keywordMetadata().expects(ARRAY).validates(JsonSchemaType.OBJECT).since(Draft6)),
+    PROPERTY_NAMES,
 
     /**
      * The value of this keyword MUST be either a string or an array. If it is
@@ -264,7 +251,7 @@ public enum JsonSchemaKeywordType {
      * An instance validates if and only if the instance is in any of the sets listed
      * for this keyword.
      */
-    TYPE(keywordMetadata().expects(STRING).since(Draft4)),
+    TYPE,
 
     /**
      * The value of "multipleOf" MUST be a number, strictly greater than 0.
@@ -272,7 +259,7 @@ public enum JsonSchemaKeywordType {
      * A numeric instance is valid only if division by this keyword's value results in
      * an integer.
      */
-    MULTIPLE_OF(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.NUMBER).since(Draft4)),
+    MULTIPLE_OF,
 
     /**
      * The value of "maximum" MUST be a number, representing an inclusive upper limit
@@ -281,7 +268,7 @@ public enum JsonSchemaKeywordType {
      * If the instance is a number, then this keyword validates only if the instance is
      * less than or exactly equal to "maximum".
      */
-    MAXIMUM(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.NUMBER)),
+    MAXIMUM,
 
     /**
      * The value of "exclusiveMaximum" MUST be number, representing an exclusive upper
@@ -290,7 +277,7 @@ public enum JsonSchemaKeywordType {
      * If the instance is a number, then the instance is valid only if it has a value
      * strictly less than (not equal to) "exclusiveMaximum".
      */
-    EXCLUSIVE_MAXIMUM(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.NUMBER).since(Draft6)),
+    EXCLUSIVE_MAXIMUM,
 
     /**
      * The value of "minimum" MUST be a number, representing an inclusive lower limit
@@ -299,7 +286,7 @@ public enum JsonSchemaKeywordType {
      * If the instance is a number, then this keyword validates only if the instance is
      * greater than or exactly equal to "minimum".
      */
-    MINIMUM(keywordMetadata().validates(JsonSchemaType.NUMBER).expects(NUMBER)),
+    MINIMUM,
 
     /**
      * The value of "exclusiveMinimum" MUST be number, representing an exclusive lower
@@ -308,7 +295,7 @@ public enum JsonSchemaKeywordType {
      * If the instance is a number, then the instance is valid only if it has a value
      * strictly greater than (not equal to) "exclusiveMinimum".
      */
-    EXCLUSIVE_MINIMUM(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.NUMBER).since(Draft6)),
+    EXCLUSIVE_MINIMUM,
 
     /**
      * Structural validation alone may be insufficient to validate that an instance
@@ -324,7 +311,7 @@ public enum JsonSchemaKeywordType {
      * format attribute and instance SHOULD succeed.
      * a href
      */
-    FORMAT(keywordMetadata().expects(STRING).validates(JsonSchemaType.STRING)),
+    FORMAT,
 
     /**
      * The value of this keyword MUST be a non-negative integer.
@@ -334,7 +321,7 @@ public enum JsonSchemaKeywordType {
      * The length of a string instance is defined as the number of its
      * characters as defined by <a href="https://tools.ietf.org/html/RFC7159">RFC 7159</a>.
      */
-    MAX_LENGTH(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.STRING)),
+    MAX_LENGTH,
 
     /**
      * The value of this keyword MUST be a non-negative integer.
@@ -348,7 +335,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as a value of 0.
      */
-    MIN_LENGTH(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.STRING)),
+    MIN_LENGTH,
 
     /**
      * The value of this keyword MUST be a string. This string SHOULD be a
@@ -359,7 +346,7 @@ public enum JsonSchemaKeywordType {
      * expression matches the instance successfully. Recall: regular
      * expressions are not implicitly anchored.
      */
-    PATTERN(keywordMetadata().expects(STRING).validates(JsonSchemaType.STRING)),
+    PATTERN,
 
     /**
      * The value of "items" MUST be either a valid JSON Schema or an array of valid
@@ -377,7 +364,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as an empty schema.
      */
-    ITEMS(keywordMetadata().expects(ARRAY, OBJECT).validates(JsonSchemaType.ARRAY)),
+    ITEMS,
 
     /**
      * The value of "additionalItems" MUST be a valid JSON Schema.
@@ -395,7 +382,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as an empty schema.
      */
-    ADDITIONAL_ITEMS(keywordMetadata().expects(OBJECT).validates(JsonSchemaType.ARRAY).since(Draft6)),
+    ADDITIONAL_ITEMS,
 
     /**
      * The value of this keyword MUST be a non-negative integer.
@@ -403,7 +390,7 @@ public enum JsonSchemaKeywordType {
      * An array instance is valid against "maxItems" if its size is
      * less than, or equal to, the value of this keyword.
      */
-    MAX_ITEMS(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.ARRAY)),
+    MAX_ITEMS,
 
     /**
      * The value of this keyword MUST be a non-negative integer.
@@ -413,7 +400,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as a value of 0.
      */
-    MIN_ITEMS(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.ARRAY)),
+    MIN_ITEMS,
 
     /**
      * The value of this keyword MUST be a boolean.
@@ -424,7 +411,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Omitting this keyword has the same behavior as a value of false.
      */
-    UNIQUE_ITEMS(keywordMetadata().expects(TRUE, FALSE).validates(JsonSchemaType.ARRAY)),
+    UNIQUE_ITEMS,
 
     /**
      * The value of this keyword MUST be a valid JSON Schema.
@@ -432,7 +419,7 @@ public enum JsonSchemaKeywordType {
      * An array instance is valid against "contains" if at least one of
      * its elements is valid against the given schema.
      */
-    CONTAINS(keywordMetadata().expects(OBJECT).validates(JsonSchemaType.ARRAY).since(Draft6)),
+    CONTAINS,
 
     /**
      * The value of this keyword MUST be an array. This array SHOULD have at
@@ -443,7 +430,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * Elements in the array might be of any value, including null.
      */
-    ENUM(keywordMetadata().expects(ARRAY)),
+    ENUM,
 
     /**
      * The value of this keyword MUST be an array. There are no restrictions placed on the values within the array.
@@ -454,7 +441,7 @@ public enum JsonSchemaKeywordType {
      * Implementations MAY use the value of "default", if present, as an additional example. If "examples" is
      * absent, "default" MAY still be used in this manner.
      */
-    EXAMPLES(keywordMetadata().expects(ARRAY).since(Draft6)),
+    EXAMPLES,
 
     /**
      * The value of this keyword MAY be of any type, including null.
@@ -462,7 +449,7 @@ public enum JsonSchemaKeywordType {
      * An instance validates successfully against this keyword if its value is
      * equal to the value of the keyword.
      */
-    CONST(keywordMetadata().expects(OBJECT, ARRAY, STRING, NUMBER, TRUE, FALSE, NULL).forAllSchemas().since(Draft6)),
+    CONST,
 
     /**
      * This keyword's value MUST be a valid JSON Schema.
@@ -470,7 +457,7 @@ public enum JsonSchemaKeywordType {
      * An instance is valid against this keyword if it fails to validate
      * successfully against the schema defined by this keyword.
      */
-    NOT(keywordMetadata().expects(OBJECT).validatesAnyType().since(Draft4)),
+    NOT,
     /**
      * This keyword's value MUST be a non-empty array.
      * Each item of the array MUST be a valid JSON Schema.
@@ -478,7 +465,7 @@ public enum JsonSchemaKeywordType {
      * An instance validates successfully against this keyword if it validates
      * successfully against all schemas defined by this keyword's value.
      */
-    ALL_OF(keywordMetadata().expects(ARRAY).validatesAnyType().since(Draft4)),
+    ALL_OF,
     /**
      * This keyword's value MUST be a non-empty array.
      * Each item of the array MUST be a valid JSON Schema.
@@ -486,7 +473,7 @@ public enum JsonSchemaKeywordType {
      * An instance validates successfully against this keyword if it validates
      * successfully against at least one schema defined by this keyword's value.
      */
-    ANY_OF(keywordMetadata().expects(ARRAY).validatesAnyType().since(Draft4)),
+    ANY_OF,
     /**
      * This keyword's value MUST be a non-empty array.
      * Each item of the array MUST be a valid JSON Schema.
@@ -494,7 +481,7 @@ public enum JsonSchemaKeywordType {
      * An instance validates successfully against this keyword if it validates
      * successfully against exactly one schema defined by this keyword's value.
      */
-    ONE_OF(keywordMetadata().expects(ARRAY).validatesAnyType().since(Draft4)),
+    ONE_OF,
 
     /**
      * From draft-3 schema
@@ -544,7 +531,7 @@ public enum JsonSchemaKeywordType {
      * <p>
      * {"type":["string","number"]}
      */
-    TYPE_WITH_ANY(keywordMetadata().key("type").expects(ARRAY, STRING).validatesAnyType().since(Draft3).until(Draft3)),
+    TYPE_WITH_ANY("type"),
 
     /**
      * From draft-3 schema
@@ -554,10 +541,7 @@ public enum JsonSchemaKeywordType {
      * to indicate additional items in the array are not allowed, or it can
      * be a schema that defines the schema of the additional items.
      */
-    ADDITIONAL_PROPERTIES_WITH_BOOLEAN(keywordMetadata().key("additionalProperties").expects(OBJECT, TRUE, FALSE)
-            .validates(JsonSchemaType.OBJECT)
-            .from(Draft3)
-            .until(Draft5)),
+    ADDITIONAL_PROPERTIES_WITH_BOOLEAN("additionalProperties"),
 
     /**
      * From draft-3 schema
@@ -567,10 +551,7 @@ public enum JsonSchemaKeywordType {
      * to indicate additional items in the array are not allowed, or it can
      * be a schema that defines the schema of the additional items.
      */
-    ADDITIONAL_ITEMS_WITH_BOOLEAN(keywordMetadata().key("additionalItems").expects(OBJECT, TRUE, FALSE)
-            .validates(JsonSchemaType.ARRAY)
-            .from(Draft3)
-            .until(Draft5)),
+    ADDITIONAL_ITEMS_WITH_BOOLEAN("additionalItems"),
 
     /**
      * From draft-3 schema
@@ -579,7 +560,7 @@ public enum JsonSchemaKeywordType {
      * be undefined.  This is false by default, making the instance
      * optional.
      */
-    REQUIRED_PROPERTY(keywordMetadata().key("required").expects(TRUE, FALSE).validatesAnyType().from(Draft3).until(Draft3)),
+    REQUIRED_PROPERTY("required"),
 
     /**
      * From draft-03
@@ -589,7 +570,7 @@ public enum JsonSchemaKeywordType {
      * "maximum" attribute.  This is false by default, meaning the instance
      * value can be less then or equal to the maximum value.
      */
-    EXCLUSIVE_MAXIMUM_BOOLEAN(keywordMetadata().key("exclusiveMaximum").expects(TRUE, FALSE).validatesAnyType().from(Draft3).until(Draft5)),
+    EXCLUSIVE_MAXIMUM_BOOLEAN("exclusiveMaximum"),
 
     /**
      * From draft-03
@@ -599,7 +580,7 @@ public enum JsonSchemaKeywordType {
      * "minimum" attribute.  This is false by default, meaning the instance
      * value can be greater then or equal to the minimum value.
      */
-    EXCLUSIVE_MINIMUM_BOOLEAN(keywordMetadata().key("exclusiveMinimum").expects(TRUE, FALSE).validatesAnyType().from(Draft3).until(Draft5)),
+    EXCLUSIVE_MINIMUM_BOOLEAN("exclusiveMinimum"),
 
     /**
      * From draft-03
@@ -609,7 +590,7 @@ public enum JsonSchemaKeywordType {
      * "minimum" attribute.  This is false by default, meaning the instance
      * value can be greater then or equal to the minimum value.
      */
-    DIVISIBLE_BY(keywordMetadata().expects(NUMBER).validates(JsonSchemaType.NUMBER).from(Draft3).since(Draft3)),
+    DIVISIBLE_BY,
 
     /**
      * From draft-03
@@ -619,7 +600,7 @@ public enum JsonSchemaKeywordType {
      * instance matches any type or schema in the array, then this instance
      * is not valid.
      */
-    DISALLOW(keywordMetadata().expects(STRING, ARRAY).validatesAnyType().from(Draft3).until(Draft3)),
+    DISALLOW,
 
     /**
      * From draft-03
@@ -651,21 +632,33 @@ public enum JsonSchemaKeywordType {
      * "extends":"http://json-schema.org/draft-03/schema"
      * }
      */
-    EXTENDS(keywordMetadata().expects(OBJECT).validatesAnyType().from(Draft3).until(Draft3));
+    EXTENDS;
 
-    @Delegate
-    private final KeywordMetadata keywordMetadata;
+    // JsonSchemaKeywordType(KeywordMetadataBuilder metadata) {
+    //     this.keywordMetadata = metadata.name(this.name()).build();
+    // }
 
-    JsonSchemaKeywordType(KeywordMetadataBuilder metadata) {
-        this.keywordMetadata = metadata.name(this.name()).build();
+    private final String key;
+
+    JsonSchemaKeywordType(String keyword) {
+        this.key = keyword;
+    }
+
+    JsonSchemaKeywordType() {
+
+        this.key = CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name());
     }
 
     public String key() {
-        return keywordMetadata.getKey();
+        return key;
     }
 
     public String toString() {
-        return keywordMetadata.getKey();
+        return key;
+    }
+
+    private static KeywordMetadata.KeywordMetadataBuilder keywordMetadata() {
+        return KeywordMetadata.keywordMetadata();
     }
 
 }

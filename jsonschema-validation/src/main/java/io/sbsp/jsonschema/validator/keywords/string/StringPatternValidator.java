@@ -2,6 +2,8 @@ package io.sbsp.jsonschema.validator.keywords.string;
 
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.StringKeyword;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
@@ -13,14 +15,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class StringPatternValidator extends KeywordValidator {
+public class StringPatternValidator extends KeywordValidator<StringKeyword> {
 
     @NonNull
     private final Pattern pattern;
 
     @Builder
     public StringPatternValidator(Schema schema, Pattern pattern) {
-        super(PATTERN, schema);
+        super(SchemaKeyword.pattern, schema);
         this.pattern = checkNotNull(pattern);
     }
 

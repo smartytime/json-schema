@@ -16,15 +16,15 @@
 package io.sbsp.jsonschema.validator;
 
 import com.google.common.base.Strings;
-import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.Schema.jsonSchemaBuilderWithId;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchemaBuilderWithId;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
 import static io.sbsp.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.expectSuccess;
@@ -39,7 +39,7 @@ public class EmptySchemaTest {
 
     @Test
     public void testBuilder() {
-        Assert.assertEquals(jsonSchemaBuilder().build(), jsonSchemaBuilder().build());
+        Assert.assertEquals(jsonSchema().build(), jsonSchema().build());
     }
 
     @Test
@@ -65,20 +65,20 @@ public class EmptySchemaTest {
 
     @Test
     public void testToString() {
-        Assert.assertEquals("{}", jsonSchemaBuilder().build().toString());
+        Assert.assertEquals("{}", jsonSchema().build().toString());
     }
 
     @Test
     public void testValidate() {
-        expectSuccess(() -> createTestValidator(jsonSchemaBuilder().build()).validate(JsonUtils.jsonStringValue("something")));
+        expectSuccess(() -> createTestValidator(jsonSchema().build()).validate(JsonUtils.jsonStringValue("something")));
     }
 
     private JsonObject json(final String title, final String description, final String id) {
-        final Schema.JsonSchemaBuilder builder;
+        final JsonSchemaBuilder builder;
         if (!Strings.isNullOrEmpty(id)) {
             builder = jsonSchemaBuilderWithId(id);
         } else {
-            builder = jsonSchemaBuilder();
+            builder = jsonSchema();
         }
         String jsonFromString = builder
                 .title(title)

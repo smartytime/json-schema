@@ -1,27 +1,22 @@
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.enums.JsonSchemaType;
-import io.sbsp.jsonschema.keywords.ArrayKeywords;
-import io.sbsp.jsonschema.keywords.NumberKeywords;
-import io.sbsp.jsonschema.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.keywords.StringKeywords;
+import io.sbsp.jsonschema.enums.JsonSchemaVersion;
+import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.utils.JsonSchemaGenerator;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
-import javax.json.JsonArray;
 import javax.json.JsonObject;
-import javax.json.JsonValue;
 import javax.json.spi.JsonProvider;
 import javax.json.stream.JsonGenerator;
 import java.io.StringWriter;
 import java.net.URI;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$REF;
 import static io.sbsp.jsonschema.utils.JsonUtils.prettyPrintGeneratorFactory;
 
 /**
@@ -67,7 +62,11 @@ public final class ReferenceSchema implements Schema {
         } else {
             this.refSchema = null;
         }
+    }
 
+    @Override
+    public Map<KeywordMetadata<?>, SchemaKeyword> getKeywords() {
+        return requireRefSchema().getKeywords();
     }
 
     public static ReferenceSchemaBuilder refSchemaBuilder(URI refURI) {
@@ -85,13 +84,6 @@ public final class ReferenceSchema implements Schema {
 
     public URI getRefURI() {
         return refURI;
-    }
-
-    @Override
-    public JsonSchemaGenerator toJson(JsonSchemaGenerator writer) {
-        return writer.object()
-                .write($REF, refURI)
-                .endObject();
     }
 
     @Override
@@ -113,103 +105,55 @@ public final class ReferenceSchema implements Schema {
     }
 
     @Override
-    public Optional<JsonValue> getDefaultValue() {
-        return requireRefSchema().getDefaultValue();
-    }
-
-    @Override
     public SchemaLocation getLocation() {
         return location;
     }
 
     @Override
-    public ArrayKeywords getArrayKeywords() {
-        return requireRefSchema().getArrayKeywords();
-    }
-
-    @Override
-    public Optional<Schema> getNotSchema() {
-        return requireRefSchema().getNotSchema();
-    }
-
-    @Override
-    public Optional<JsonValue> getConstValue() {
-        return requireRefSchema().getConstValue();
-    }
-
-    @Override
-    public NumberKeywords getNumberKeywords() {
-        return requireRefSchema().getNumberKeywords();
-    }
-
-    @Override
     public URI getId() {
-        return requireRefSchema().getId();
+        return refSchema.getId();
+    }
+
+    @Override
+    public URI getSchemaURI() {
+        return refSchema.getSchemaURI();
     }
 
     @Override
     public String getTitle() {
-        return requireRefSchema().getTitle();
+        return refSchema.getTitle();
     }
 
     @Override
     public String getDescription() {
-        return requireRefSchema().getDescription();
+        return refSchema.getDescription();
     }
 
     @Override
-    public List<Schema> getAllOfSchemas() {
-        return requireRefSchema().getAllOfSchemas();
+    public JsonSchemaVersion getVersion() {
+        return refSchema.getVersion();
     }
 
     @Override
-    public List<Schema> getAnyOfSchemas() {
-        return requireRefSchema().getAnyOfSchemas();
+    public JsonGenerator toJson(JsonGenerator writer, JsonSchemaVersion version) {
+        return writer.writeStartObject()
+                .write(SchemaKeyword.$ref.getKey(), getRefURI().toString())
+                .writeEnd();
     }
 
     @Override
-    public List<Schema> getOneOfSchemas() {
-        return requireRefSchema().getOneOfSchemas();
+    public Draft6Schema asDraft6() {
+        return refSchema.asDraft6();
     }
 
     @Override
-    public Set<JsonSchemaType> getTypes() {
-        return requireRefSchema().getTypes();
+    public Draft3Schema asDraft3() {
+        return refSchema.asDraft3();
     }
 
     @Override
-    public Optional<JsonArray> getEnumValues() {
-        return requireRefSchema().getEnumValues();
-    }
-
-    @Override
-    public ObjectKeywords getObjectKeywords() {
-        return requireRefSchema().getObjectKeywords();
-    }
-
-    @Override
-    public StringKeywords getStringKeywords() {
-        return requireRefSchema().getStringKeywords();
-    }
-
-    @Override
-    public boolean hasStringKeywords() {
-        return requireRefSchema().hasStringKeywords();
-    }
-
-    @Override
-    public boolean hasObjectKeywords() {
-        return requireRefSchema().hasObjectKeywords();
-    }
-
-    @Override
-    public boolean hasArrayKeywords() {
-        return requireRefSchema().hasArrayKeywords();
-    }
-
-    @Override
-    public boolean hasNumberKeywords() {
-        return requireRefSchema().hasNumberKeywords();
+    public Draft4Schema asDraft4() {
+        return refSchema.asDraft4();
     }
 
     public static class ReferenceSchemaBuilder {

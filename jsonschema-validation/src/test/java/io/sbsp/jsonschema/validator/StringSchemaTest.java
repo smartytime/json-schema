@@ -23,7 +23,7 @@ import org.junit.Test;
 import javax.json.JsonObject;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.sbsp.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.sbsp.jsonschema.validator.ResourceLoader.DEFAULT;

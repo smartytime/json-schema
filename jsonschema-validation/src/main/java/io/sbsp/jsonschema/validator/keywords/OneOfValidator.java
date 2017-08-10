@@ -2,6 +2,8 @@ package io.sbsp.jsonschema.validator.keywords;
 
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.SchemaListKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;
 import io.sbsp.jsonschema.validator.ValidationReport;
@@ -14,7 +16,7 @@ import java.util.List;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ONE_OF;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class OneOfValidator extends KeywordValidator {
+public class OneOfValidator extends KeywordValidator<SchemaListKeyword> {
 
     @Singular
     @NonNull
@@ -22,7 +24,7 @@ public class OneOfValidator extends KeywordValidator {
 
     @Builder
     public OneOfValidator(Schema schema, List<SchemaValidator> oneOfValidators) {
-        super(ONE_OF, schema);
+        super(SchemaKeyword.oneOf, schema);
         this.oneOfValidators = oneOfValidators;
     }
 

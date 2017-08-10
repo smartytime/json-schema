@@ -5,6 +5,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchemaBuilderWithId;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.NULL;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.NUMBER;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.STRING;
@@ -16,7 +18,7 @@ import static org.junit.Assert.assertEquals;
  */
 public class SchemaExceptionTest {
 
-    private static final Schema NULL_SCHEMA = Schema.jsonSchemaBuilder().type(NULL).build();
+    private static final Schema NULL_SCHEMA = jsonSchema().type(NULL).build();
 
     @Rule
     public final ExpectedException expExc = ExpectedException.none();
@@ -30,7 +32,7 @@ public class SchemaExceptionTest {
 
     @Test
     public void nullWithMessage() {
-        Schema schema = Schema.jsonSchemaBuilderWithId("#/required/2").type(NULL).build();
+        Schema schema = jsonSchemaBuilderWithId("#/required/2").type(NULL).build();
         String actual = failure(schema, STRING, NULL).getMessage();
         assertEquals("#/required/2: expected type: string, found: null", actual);
     }

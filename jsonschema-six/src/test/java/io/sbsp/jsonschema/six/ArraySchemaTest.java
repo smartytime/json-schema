@@ -15,11 +15,12 @@
  */
 package io.sbsp.jsonschema.six;
 
-import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaException;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import org.junit.Test;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
 
 public class ArraySchemaTest {
 
@@ -30,8 +31,8 @@ public class ArraySchemaTest {
         // }
         // itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
         // return this;
-        Schema.jsonSchemaBuilder().allItemSchema(Schema.jsonSchemaBuilder().constValueString("Foo"))
-                .itemSchemas(newArrayList(Schema.jsonSchemaBuilder().constValueDouble(23.2)))
+        JsonSchemaBuilder.jsonSchema().allItemSchema(JsonSchemaBuilder.jsonSchema().constValueString("Foo"))
+                .itemSchemas(newArrayList(JsonSchemaBuilder.jsonSchema().constValueDouble(23.2)))
                 .build();
     }
 }

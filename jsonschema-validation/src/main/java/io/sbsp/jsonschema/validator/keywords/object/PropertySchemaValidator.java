@@ -3,6 +3,8 @@ package io.sbsp.jsonschema.validator.keywords.object;
 import com.google.common.collect.ImmutableMap;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.SchemaMapKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
@@ -16,18 +18,17 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PROPERTIES;
 
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class PropertySchemaValidator extends KeywordValidator {
+public class PropertySchemaValidator extends KeywordValidator<SchemaMapKeyword> {
     private final Map<String, SchemaValidator> propertyValidators;
     private final Set<String> validatedProperties;
     private final int propertyLength;
     private final Schema schema;
 
     public PropertySchemaValidator(ImmutableMap<String, SchemaValidator> propertyValidators, Schema schema) {
-        super(PROPERTIES, schema);
+        super(SchemaKeyword.properties, schema);
         checkNotNull(propertyValidators);
         this.propertyValidators = Collections.unmodifiableMap(new HashMap<>(propertyValidators));
         this.validatedProperties = new HashSet<>(propertyValidators.keySet());

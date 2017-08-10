@@ -2,24 +2,26 @@ package io.sbsp.jsonschema.validator.keywords.array;
 
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.ItemsKeyword;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
-import io.sbsp.jsonschema.validator.SchemaValidator;
 import lombok.Builder;
 import lombok.NonNull;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ITEMS;
 
-public class ArrayItemValidator extends KeywordValidator {
+public class ArrayItemValidator extends KeywordValidator<ItemsKeyword> {
+
     @NonNull
     private final SchemaValidator allItemValidator;
 
     @Builder
-    public ArrayItemValidator(Schema schema, SchemaValidator allItemValidator) {
-        super(ITEMS, schema);
+    public ArrayItemValidator(Schema parentSchema, SchemaValidator allItemValidator) {
+        super(SchemaKeyword.items, parentSchema);
         this.allItemValidator = checkNotNull(allItemValidator);
     }
 

@@ -171,7 +171,7 @@ public enum FormatType {
      * <p>
      * See {@link #IPV4}
      */
-    IP_ADDRESS(Draft3, Draft3),;
+    IP_ADDRESS(Draft3, Draft3);
 
     private final String key;
     private final Set<JsonSchemaVersion> applicableVersions;
