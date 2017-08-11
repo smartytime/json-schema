@@ -234,7 +234,7 @@ public class ValidationError {
                 '}';
     }
 
-    public ValidationError withKeyword(JsonSchemaKeyword keyword, String message) {
+    public ValidationError withKeyword(JsonSchemaKeywordType keyword, String message) {
         checkNotNull(keyword, "keyword must not be null");
         checkNotNull(message, "message must not be null");
         return toBuilder()

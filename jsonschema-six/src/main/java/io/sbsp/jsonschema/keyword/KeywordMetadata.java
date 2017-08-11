@@ -25,7 +25,6 @@ import static java.util.Collections.unmodifiableSet;
 
 @Getter
 @EqualsAndHashCode
-@ToString
 public class KeywordMetadata<K extends SchemaKeyword> {
 
     @NonNull
@@ -53,6 +52,12 @@ public class KeywordMetadata<K extends SchemaKeyword> {
         this.key = key;
         this.appliesToVersions = unmodifiableSet(EnumSet.range(since, until));
         this.expects = ImmutableSet.copyOf(expectsOneOf);
+    }
+
+
+    @Override
+    public String toString() {
+        return key + "-> " + appliesToVersions;
     }
 
     public Set<JsonValue.ValueType> getApplicableTypes() {

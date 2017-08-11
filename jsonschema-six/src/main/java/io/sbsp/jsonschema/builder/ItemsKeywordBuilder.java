@@ -1,5 +1,6 @@
 package io.sbsp.jsonschema.builder;
 
+import com.google.common.base.MoreObjects;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaFactory;
 import io.sbsp.jsonschema.SchemaLocation;
@@ -15,28 +16,33 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Collections.*;
 
 public class ItemsKeywordBuilder implements SchemaKeywordBuilder<ItemsKeyword> {
 
     private final List<JsonSchemaBuilder> indexSchemas;
     private final JsonSchemaBuilder additionalItemSchema;
+    private final JsonSchemaBuilder allItemSchema;
 
     public ItemsKeywordBuilder(JsonSchemaBuilder indexSchemas) {
         checkNotNull(indexSchemas, "indexSchemas must not be null");
-        this.indexSchemas = Collections.singletonList(indexSchemas);
+        this.indexSchemas = singletonList(indexSchemas);
         this.additionalItemSchema = null;
+        this.allItemSchema = null;
     }
 
     public ItemsKeywordBuilder(Collection<? extends JsonSchemaBuilder> keywordValues) {
         checkNotNull(keywordValues, "keywordValues must not be null");
-        this.indexSchemas = Collections.unmodifiableList(new ArrayList<>(keywordValues));
+        this.indexSchemas = unmodifiableList(new ArrayList<>(keywordValues));
         this.additionalItemSchema = null;
+        this.allItemSchema = null;
     }
 
-    public ItemsKeywordBuilder(JsonSchemaBuilder additionalItemSchema, Collection<? extends JsonSchemaBuilder> keywordValues) {
+    public ItemsKeywordBuilder(JsonSchemaBuilder allItemSchema, JsonSchemaBuilder additionalItemSchema, Collection<? extends JsonSchemaBuilder> keywordValues) {
         checkNotNull(keywordValues, "keywordValues must not be null");
-        this.indexSchemas = Collections.unmodifiableList(new ArrayList<>(keywordValues));
+        this.indexSchemas = unmodifiableList(new ArrayList<>(keywordValues));
         this.additionalItemSchema = additionalItemSchema;
+        this.allItemSchema = allItemSchema;
     }
 
     public List<JsonSchemaBuilder> getSchemas() {
@@ -47,11 +53,20 @@ public class ItemsKeywordBuilder implements SchemaKeywordBuilder<ItemsKeyword> {
         checkNotNull(anotherValue, "anotherValue must not be null");
         final List<JsonSchemaBuilder> items = new ArrayList<>(indexSchemas);
         items.add(anotherValue);
-        return new ItemsKeywordBuilder(additionalItemSchema, items);
+        return new ItemsKeywordBuilder(allItemSchema, additionalItemSchema, items);
     }
 
     public ItemsKeywordBuilder withAdditionalItemsSchema(JsonSchemaBuilder additionalItemSchema) {
-        return new ItemsKeywordBuilder(additionalItemSchema, indexSchemas);
+        return new ItemsKeywordBuilder(allItemSchema, additionalItemSchema, indexSchemas);
+    }
+
+    public ItemsKeywordBuilder withAllItemSchema(JsonSchemaBuilder allItemSchema) {
+        return new ItemsKeywordBuilder(allItemSchema, additionalItemSchema, indexSchemas);
+    }
+
+    public ItemsKeywordBuilder withIndexedSchemas(List<JsonSchemaBuilder> itemSchemas) {
+        final List<JsonSchemaBuilder> allItemSchemas = MoreObjects.firstNonNull(itemSchemas, emptyList());
+        return new ItemsKeywordBuilder(allItemSchema, additionalItemSchema, allItemSchemas);
     }
 
     @Override
@@ -82,6 +97,22 @@ public class ItemsKeywordBuilder implements SchemaKeywordBuilder<ItemsKeyword> {
             additionalItemSchema = null;
         }
 
-        return new ItemsKeyword(additionalItemSchema, listOfSchema);
+        final Schema allItemSchema;
+        if (this.allItemSchema != null) {
+            final SchemaLocation allItemSchemaLocation = location.child(JsonSchemaKeywordType.ITEMS);
+            this.allItemSchema.schemaFactory(factory).currentDocument(rootDocument);
+            allItemSchema = Optional.ofNullable(factory)
+                    .flatMap(f -> f.findCachedSchema(allItemSchemaLocation.getUniqueURI()))
+                    .orElseGet(() -> this.allItemSchema.schemaFactory(factory)
+                            .currentDocument(rootDocument)
+                            .build(allItemSchemaLocation));
+        } else {
+            allItemSchema = null;
+        }
+
+
+        return new ItemsKeyword(allItemSchema, additionalItemSchema, listOfSchema);
     }
+
+
 }

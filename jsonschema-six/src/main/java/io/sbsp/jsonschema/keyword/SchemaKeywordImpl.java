@@ -5,6 +5,7 @@ import io.sbsp.jsonschema.utils.JsonSchemaGenerator;
 
 import javax.json.JsonValue;
 import java.net.URI;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -38,6 +39,13 @@ public abstract class SchemaKeywordImpl<T> implements SchemaKeyword {
             generator.write(jsonKey, (Double) keywordValue);
         } else if (keywordValue instanceof Long) {
             generator.write(jsonKey, (Long) keywordValue);
+        } else if (keywordValue instanceof Set) {
+            generator.writeKey(jsonKey);
+            generator.writeStartArray();
+            ((Set<?>)keywordValue).forEach(item-> {
+                generator.write(item.toString());
+            });
+            generator.writeEnd();
         } else {
             throw new RuntimeException("Unable to serialize JSON - unknown value type: " + keywordValue.getClass());
         }

@@ -20,6 +20,7 @@ import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import io.sbsp.jsonschema.validator.keywords.NotKeywordValidator;
 import io.sbsp.jsonschema.validator.keywords.OneOfValidator;
 import io.sbsp.jsonschema.validator.keywords.SchemaDependenciesValidator;
+import io.sbsp.jsonschema.validator.keywords.TypeValidator;
 import io.sbsp.jsonschema.validator.keywords.array.ArrayContainsValidator;
 import io.sbsp.jsonschema.validator.keywords.array.ArrayItemValidator;
 import io.sbsp.jsonschema.validator.keywords.array.ArrayMaxItemsValidator;
@@ -142,6 +143,15 @@ public class SchemaValidatorFactory {
         }
 
         public Builder withCommonValidators() {
+
+            // ########################################
+            // TYPE
+            // ########################################
+            this.registerValidator(SchemaKeyword.type, (schema, keywordInfo, keyword, factory) ->
+                    TypeValidator.builder()
+                            .schema(schema)
+                            .requiredTypes(keyword.getTypes())
+                            .build());
 
             // ########################################
             // ENUM

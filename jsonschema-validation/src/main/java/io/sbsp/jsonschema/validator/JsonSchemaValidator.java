@@ -151,9 +151,16 @@ public class JsonSchemaValidator implements SchemaValidator {
             factories.get(keyword).forEach(tx-> {
                 final KeywordValidator keywordValidator = tx.getKeywordValidator(schema, keyword, keywordValue, validatorFactory);
                 if (keywordValidator != null) {
-                    keyword.getApplicableTypes().forEach(applicableType-> {
-                        validatorsByType.put(applicableType, keywordValidator);
-                    });
+                    if (keyword.getApplicableTypes().isEmpty()) {
+                        for (ValueType applicableType : ValueType.values()) {
+                            validatorsByType.put(applicableType, keywordValidator);
+                        }
+                    } else {
+                        keyword.getApplicableTypes().forEach(applicableType-> {
+                            validatorsByType.put(applicableType, keywordValidator);
+                        });
+                    }
+
                 }
             });
         });

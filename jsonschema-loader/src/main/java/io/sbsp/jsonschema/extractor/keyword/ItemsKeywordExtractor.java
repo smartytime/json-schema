@@ -4,16 +4,25 @@ import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.SchemaFactory;
 import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
+import io.sbsp.jsonschema.enums.JsonSchemaVersion;
 import io.sbsp.jsonschema.extractor.ExtractionReport;
 import io.sbsp.jsonschema.keyword.KeywordMetadata;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 
 import javax.json.JsonValue;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.JsonValueWithLocation.ValueType;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_ITEMS;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ITEMS;
 
 public class ItemsKeywordExtractor implements SchemaKeywordExtractor {
+
+    private final JsonSchemaVersion forVersion;
+
+    public ItemsKeywordExtractor(JsonSchemaVersion forVersion) {
+        this.forVersion = checkNotNull(forVersion);
+    }
 
     @Override
     public KeywordMetadata<?> getKeyword() {
@@ -47,6 +56,7 @@ public class ItemsKeywordExtractor implements SchemaKeywordExtractor {
                     report.logTypeMismatch(getKeyword(), itemsValue);
             }
         });
+        jsonObject.findByKey(ADDITIONAL_ITEMS);
         return report;
     }
 }

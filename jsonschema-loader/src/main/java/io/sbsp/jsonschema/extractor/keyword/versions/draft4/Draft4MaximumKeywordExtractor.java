@@ -1,4 +1,4 @@
-package io.sbsp.jsonschema.extractor.keyword.versions;
+package io.sbsp.jsonschema.extractor.keyword.versions.draft4;
 
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.SchemaFactory;

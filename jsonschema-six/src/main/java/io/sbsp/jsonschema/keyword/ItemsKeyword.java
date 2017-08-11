@@ -16,15 +16,26 @@ public class ItemsKeyword implements SchemaKeyword {
     private final Schema additionalItemSchema;
     private final Schema allItemSchema;
 
-    public ItemsKeyword(Schema additionalItemSchema, List<Schema> schemas) {
-        if (schemas.size() == 1) {
-            this.allItemSchema = schemas.get(0);
-            this.indexedSchemas = Collections.emptyList();
-        } else {
-            this.indexedSchemas = schemas;
-            this.allItemSchema = null;
-        }
+    public ItemsKeyword(Schema allItemSchema, Schema additionalItemSchema, List<Schema> schemas) {
+        this.allItemSchema = allItemSchema;
+        this.indexedSchemas = Collections.unmodifiableList(schemas);
         this.additionalItemSchema = additionalItemSchema;
+    }
+
+    public List<Schema> getIndexedSchemas() {
+        return indexedSchemas;
+    }
+
+    public Optional<Schema> getAllItemSchema() {
+        return Optional.ofNullable(allItemSchema);
+    }
+
+    public Optional<Schema> getAdditionalItemSchema() {
+        return Optional.ofNullable(additionalItemSchema);
+    }
+
+    public boolean hasIndexedSchemas() {
+        return allItemSchema == null;
     }
 
     @Override
@@ -39,21 +50,5 @@ public class ItemsKeyword implements SchemaKeyword {
         } else {
             getAllItemSchema().ifPresent(schema -> schema.toJson(generator, version));
         }
-    }
-
-    public boolean hasIndexedSchemas() {
-        return allItemSchema == null;
-    }
-
-    public List<Schema> getIndexedSchemas() {
-        return indexedSchemas;
-    }
-
-    public Optional<Schema> getAllItemSchema() {
-        return Optional.ofNullable(allItemSchema);
-    }
-
-    public Optional<Schema> getAdditionalItemSchema() {
-        return Optional.ofNullable(additionalItemSchema);
     }
 }

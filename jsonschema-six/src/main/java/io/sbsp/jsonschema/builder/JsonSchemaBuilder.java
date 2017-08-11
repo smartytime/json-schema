@@ -363,33 +363,26 @@ public class JsonSchemaBuilder {
     // @see ArrayKeywords
     // #######################################################
 
-    public JsonSchemaBuilder allItemSchema(@Valid JsonSchemaBuilder allItemSchema) {
-        if (allItemSchema == null) {
-            keywordBuilders.remove(SchemaKeyword.items);
-        } else {
-            keywordBuilders.put(SchemaKeyword.items, new ItemsKeywordBuilder(allItemSchema));
-        }
-        return this;
-    }
-
     public JsonSchemaBuilder containsSchema(@Valid JsonSchemaBuilder containsSchema) {
         return this.addOrRemoveSchema(SchemaKeyword.contains, containsSchema);
+    }
+
+    public JsonSchemaBuilder allItemSchema(@Valid JsonSchemaBuilder allItemSchema) {
+        final ItemsKeywordBuilder existing = (ItemsKeywordBuilder) keywordBuilders.getOrDefault(SchemaKeyword.items, new ItemsKeywordBuilder(emptyList()));
+        keywordBuilders.put(SchemaKeyword.items, existing.withAllItemSchema(allItemSchema));
+        return this;
     }
 
     public JsonSchemaBuilder itemSchema(JsonSchemaBuilder itemSchema) {
         checkNotNull(itemSchema, "itemSchema must not be null");
         final ItemsKeywordBuilder existing = (ItemsKeywordBuilder) keywordBuilders.getOrDefault(SchemaKeyword.items, new ItemsKeywordBuilder(emptyList()));
-        existing.withAnotherSchema(itemSchema);
-        keywordBuilders.put(SchemaKeyword.items, existing);
+        keywordBuilders.put(SchemaKeyword.items, existing.withAnotherSchema(itemSchema));
         return this;
     }
 
     public JsonSchemaBuilder itemSchemas(List<JsonSchemaBuilder> itemSchemas) {
-        if (itemSchemas == null) {
-            keywordBuilders.remove(SchemaKeyword.items);
-        } else {
-            keywordBuilders.put(SchemaKeyword.items, new ItemsKeywordBuilder(itemSchemas));
-        }
+        final ItemsKeywordBuilder existing = (ItemsKeywordBuilder) keywordBuilders.getOrDefault(SchemaKeyword.items, new ItemsKeywordBuilder(emptyList()));
+        keywordBuilders.put(SchemaKeyword.items, existing.withIndexedSchemas(itemSchemas));
         return this;
     }
 

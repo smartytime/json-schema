@@ -3,6 +3,7 @@ package io.sbsp.jsonschema.six;
 import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.TestUtils;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
@@ -26,38 +27,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 public class SchemaBuilderTest {
 
-    @Test
-    public void buildAllNumberKeywords() {
-        final Schema numberSchema = jsonSchemaBuilder()
-                .type(NUMBER)
-                .minimum(1)
-                .maximum(9)
-                .exclusiveMinimum(0)
-                .exclusiveMaximum(10)
-                .multipleOf(3.4d)
-                .build();
-
-        assertThat(numberSchema.hasNumberKeywords()).isTrue();
-        final NumberKeywords keywords = numberSchema.getNumberKeywords();
-        assertSoftly(a -> {
-            a.assertThat(keywords.getMaximum())
-                    .isNotNull()
-                    .isEqualTo(9);
-            a.assertThat(keywords.getMinimum())
-                    .isNotNull()
-                    .isEqualTo(1);
-            a.assertThat(keywords.getExclusiveMaximum())
-                    .isNotNull()
-                    .isEqualTo(10);
-            a.assertThat(keywords.getExclusiveMinimum())
-                    .isNotNull()
-                    .isEqualTo(0);
-
-            a.assertThat(keywords.getMultipleOf())
-                    .isNotNull()
-                    .isEqualTo(3.4d);
-        });
-    }
+    
 
     @Test
     public void buildAllStringKeywords() {
@@ -278,12 +248,12 @@ public class SchemaBuilderTest {
 
     @Test
     public void testBuilderEquals() {
-        EqualsVerifier.forClass(Schema.JsonSchemaBuilder.class)
+        EqualsVerifier.forClass(JsonSchemaBuilder.class)
                 .suppress(Warning.STRICT_INHERITANCE)
                 .suppress(Warning.NONFINAL_FIELDS)
-                .withPrefabValues(Schema.JsonSchemaBuilder.class,
-                        Schema.jsonSchemaBuilder().type(STRING),
-                        Schema.jsonSchemaBuilder().type(OBJECT))
+                .withPrefabValues(JsonSchemaBuilder.class,
+                        jsonSchema().type(STRING),
+                        jsonSchema().type(OBJECT))
                 .withPrefabValues(Pattern.class, Pattern.compile("[a-z]*]"), Pattern.compile("[A-Z]*]"))
                 .withOnlyTheseFields(
                         "ref",
@@ -309,23 +279,23 @@ public class SchemaBuilderTest {
 
     @Test
     public void testBuilderEqualsWithPatternProperty() {
-        Schema.JsonSchemaBuilder a = jsonSchemaBuilder().patternProperty("[a-z]*", jsonSchemaBuilder());
-        Schema.JsonSchemaBuilder b = jsonSchemaBuilder().patternProperty("[a-z]*", jsonSchemaBuilder());
+        JsonSchemaBuilder a = jsonSchema().patternProperty("[a-z]*", jsonSchema());
+        JsonSchemaBuilder b = jsonSchema().patternProperty("[a-z]*", jsonSchema());
         assertThat(a).isEqualTo(b);
     }
 
     @Test
     public void testBuilderHashcodeMatchesWithPatternProperty() {
-        Schema.JsonSchemaBuilder a = jsonSchemaBuilder().patternProperty("[a-z]*", jsonSchemaBuilder());
-        Schema.JsonSchemaBuilder b = jsonSchemaBuilder().patternProperty("[a-z]*", jsonSchemaBuilder());
+        JsonSchemaBuilder a = jsonSchema().patternProperty("[a-z]*", jsonSchema());
+        JsonSchemaBuilder b = jsonSchema().patternProperty("[a-z]*", jsonSchema());
         assertThat(a.hashCode()).isEqualTo(b.hashCode());
     }
 
     @Test
     public void testBuilderEqualsWithPattern() {
-        Schema.JsonSchemaBuilder a = jsonSchemaBuilder().pattern("[a-z]*");
-        Schema.JsonSchemaBuilder b = jsonSchemaBuilder().pattern("[a-z]*");
+        JsonSchemaBuilder a = jsonSchema().pattern("[a-z]*");
+        JsonSchemaBuilder b = jsonSchema().pattern("[a-z]*");
         assertThat(a).isEqualTo(b);
-        assertThat(a).isNotEqualTo(jsonSchemaBuilder().pattern("[A-Z]*"));
+        assertThat(a).isNotEqualTo(jsonSchema().pattern("[A-Z]*"));
     }
 }

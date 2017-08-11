@@ -15,8 +15,7 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.JsonSchema;
-import io.sbsp.jsonschema.six.ReferenceSchema;
+import io.sbsp.jsonschema.ReferenceSchema;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;

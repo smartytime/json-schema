@@ -17,10 +17,10 @@ import io.sbsp.jsonschema.extractor.keyword.StringKeywordExtractor;
 import io.sbsp.jsonschema.extractor.keyword.StringSetKeywordExtractor;
 import io.sbsp.jsonschema.extractor.keyword.TypeKeywordExtractor;
 import io.sbsp.jsonschema.extractor.keyword.URIKeywordExtractor;
-import io.sbsp.jsonschema.extractor.keyword.versions.Draft4MaximumKeywordExtractor;
-import io.sbsp.jsonschema.extractor.keyword.versions.Draft4MinimumKeywordExtractor;
-import io.sbsp.jsonschema.extractor.keyword.versions.Draft6MaximumKeywordExtractor;
-import io.sbsp.jsonschema.extractor.keyword.versions.Draft6MinimumKeywordExtractor;
+import io.sbsp.jsonschema.extractor.keyword.versions.draft4.Draft4MaximumKeywordExtractor;
+import io.sbsp.jsonschema.extractor.keyword.versions.draft4.Draft4MinimumKeywordExtractor;
+import io.sbsp.jsonschema.extractor.keyword.versions.draft6.Draft6MaximumKeywordExtractor;
+import io.sbsp.jsonschema.extractor.keyword.versions.draft6.Draft6MinimumKeywordExtractor;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 
 import java.util.List;
@@ -55,7 +55,7 @@ public interface SchemaExtractors {
                 new NumberKeywordExtractor(SchemaKeyword.maxLength),
                 new NumberKeywordExtractor(SchemaKeyword.minLength),
                 new StringKeywordExtractor(SchemaKeyword.pattern),
-                new ItemsKeywordExtractor(),
+                new ItemsKeywordExtractor(forVersion),
                 new SingleSchemaKeywordExtractor(SchemaKeyword.additionalItems),
                 new NumberKeywordExtractor(SchemaKeyword.maxItems),
                 new NumberKeywordExtractor(SchemaKeyword.minItems),
@@ -93,7 +93,7 @@ public interface SchemaExtractors {
                         new TypeKeywordExtractor(),
                         new NumberKeywordExtractor(SchemaKeyword.multipleOf),
                         new Draft4MaximumKeywordExtractor(),
-                        new ItemsKeywordExtractor(),
+                        new ItemsKeywordExtractor(forVersion),
                         new Draft4MinimumKeywordExtractor(),
                         new Draft6MaximumKeywordExtractor(),
                         new Draft6MinimumKeywordExtractor(),
