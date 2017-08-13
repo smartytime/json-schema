@@ -15,7 +15,9 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaBuilder;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -24,8 +26,7 @@ import javax.json.JsonValue;
 import java.util.List;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.*;
 import static io.sbsp.jsonschema.validator.ValidationMocks.createTestValidator;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockNumberSchema;
 import static java.util.Arrays.asList;
@@ -33,13 +34,13 @@ import static org.junit.Assert.assertTrue;
 
 public class CombinedKeywordValidatorTest {
 
-    private static final List<JsonSchemaBuilder> SUBSCHEMAS = asList(
+    private static final List<SchemaBuilder> SUBSCHEMAS = asList(
             mockNumberSchema().multipleOf(10),
             mockNumberSchema().multipleOf(3));
 
     @Test
     public void reportCauses() {
-        final Schema parentSchema = jsonSchemaBuilder().allOfSchemas(SUBSCHEMAS).build();
+        final Schema parentSchema = jsonSchema().allOfSchemas(SUBSCHEMAS).build();
         final JsonValue subject = JsonUtils.readValue("24");
         Optional<ValidationError> error = createTestValidator(parentSchema).validate(subject);
         assertTrue("Has an error", error.isPresent());
@@ -48,7 +49,7 @@ public class CombinedKeywordValidatorTest {
 
     @Test
     public void validateAll() {
-        ValidationTestSupport.failureOf(jsonSchemaBuilder().allOfSchemas(SUBSCHEMAS).build())
+        ValidationTestSupport.failureOf(jsonSchema().allOfSchemas(SUBSCHEMAS).build())
                 .input(20)
                 .expectedKeyword("allOf")
                 .expect();
@@ -56,7 +57,7 @@ public class CombinedKeywordValidatorTest {
 
     @Test
     public void validateAny() {
-        ValidationTestSupport.failureOf(jsonSchemaBuilder().anyOfSchemas(SUBSCHEMAS).build())
+        ValidationTestSupport.failureOf(jsonSchema().anyOfSchemas(SUBSCHEMAS).build())
                 .input(5)
                 .expectedKeyword("anyOf")
                 .expect();
@@ -64,7 +65,7 @@ public class CombinedKeywordValidatorTest {
 
     @Test
     public void validateOne() {
-        ValidationTestSupport.failureOf(jsonSchemaBuilder().oneOfSchemas(SUBSCHEMAS).build())
+        ValidationTestSupport.failureOf(jsonSchema().oneOfSchemas(SUBSCHEMAS).build())
                 .input(30)
                 .expectedKeyword("oneOf")
                 .expect();

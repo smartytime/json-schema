@@ -15,7 +15,7 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import static io.sbsp.jsonschema.six.SchemaLocation.documentRoot;
+import static io.sbsp.jsonschema.SchemaLocation.documentRoot;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.failureOf;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonArray;

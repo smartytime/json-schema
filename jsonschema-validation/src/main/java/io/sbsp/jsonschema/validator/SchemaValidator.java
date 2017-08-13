@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
 
 import javax.json.JsonValue;
 import java.util.Optional;

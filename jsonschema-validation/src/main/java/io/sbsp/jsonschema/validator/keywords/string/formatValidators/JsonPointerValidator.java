@@ -15,7 +15,7 @@
  */
 package io.sbsp.jsonschema.validator.keywords.string.formatValidators;
 
-import io.sbsp.jsonschema.six.JsonPath;
+import io.sbsp.jsonschema.JsonPath;
 
 import java.util.Optional;
 

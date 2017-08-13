@@ -15,11 +15,11 @@
  */
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.six.Schema;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;
 import lombok.SneakyThrows;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static java.util.Objects.requireNonNull;
 
 @RunWith(Parameterized.class)
@@ -77,6 +77,10 @@ public class IssueTest {
         Schema schema = loadSchema();
         fileByName("subject-valid.json").ifPresent(file -> validate(file, schema, true));
         fileByName("subject-invalid.json").ifPresent(file -> validate(file, schema, false));
+    }
+
+    @After
+    public void shutdown() {
         stopJetty();
     }
 

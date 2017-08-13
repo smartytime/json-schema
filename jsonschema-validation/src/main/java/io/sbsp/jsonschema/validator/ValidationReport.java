@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -30,11 +30,10 @@ public class ValidationReport {
         foundError = true;
     }
 
-    public boolean addReport(Schema schema, JsonValueWithLocation subject, JsonSchemaKeyword keyword, String message, ValidationReport report) {
+    public boolean addReport(Schema schema, JsonValueWithLocation subject, JsonSchemaKeywordType keyword, String message, ValidationReport report) {
         final List<ValidationError> errors = report.getErrors();
         if (errors.size() > 0) {
             addError(ValidationError.validationBuilder()
-                    .schemaLocation(schema.getPointerFragmentURI())
                     .violatedSchema(schema)
                     .causingExceptions(errors)
                     .keyword(keyword)

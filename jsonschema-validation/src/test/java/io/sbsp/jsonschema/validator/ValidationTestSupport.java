@@ -15,9 +15,10 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import org.assertj.core.api.Assertions;
 
 import javax.json.JsonValue;
 import java.util.List;
@@ -52,9 +53,9 @@ public class ValidationTestSupport {
                 .count();
     }
 
-    public static long countMatchingMessage(final List<String> messages, final String expectedSubstring) {
+    public static long countMatchingMessage(final List<ValidationError> messages, final String expectedSubstring) {
         return messages.stream()
-                .filter(message -> message.contains(expectedSubstring))
+                .filter(message -> message.getMessage().contains(expectedSubstring))
                 .count();
     }
 
@@ -64,7 +65,7 @@ public class ValidationTestSupport {
 
         Optional<ValidationError> errors = test(failingSchema, expectedPointer, input);
         assertTrue(errors.isPresent());
-        assertSame(expectedViolatedSchemaClass, errors.get().getViolatedSchema().getClass());
+        Assertions.assertThat(errors.get().getViolatedSchema()).isInstanceOf(expectedViolatedSchemaClass);
     }
 
     public static void expectFailure(final Schema failingSchema, final double num) {
@@ -166,7 +167,7 @@ public class ValidationTestSupport {
             expectFailure(this);
         }
 
-        public Failure expectedKeyword(final JsonSchemaKeyword keyword) {
+        public Failure expectedKeyword(final JsonSchemaKeywordType keyword) {
             this.expectedKeyword = keyword.key();
             return this;
         }

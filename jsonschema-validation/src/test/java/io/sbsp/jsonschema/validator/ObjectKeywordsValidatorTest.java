@@ -15,9 +15,10 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Draft6Schema;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import lombok.experimental.var;
 import org.junit.Assert;
@@ -29,12 +30,11 @@ import javax.json.JsonValue;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ADDITIONAL_PROPERTIES;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaType.BOOLEAN;
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.*;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.BOOLEAN;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonObjectBuilder;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
@@ -54,6 +54,7 @@ import static io.sbsp.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.failureOf;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static javax.json.spi.JsonProvider.provider;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class ObjectKeywordsValidatorTest {
@@ -73,7 +74,7 @@ public class ObjectKeywordsValidatorTest {
 
     @Test
     public void additionalPropertySchema() {
-        JsonSchemaBuilder boolSchema = jsonSchemaBuilder().type(BOOLEAN);
+        JsonSchemaBuilder boolSchema = jsonSchema().type(BOOLEAN);
         Schema schema = mockObjectSchema().schemaOfAdditionalProperties(boolSchema).build();
         JsonObject fooBar = jsonObjectBuilder().add("foo", "bar").build();
 
@@ -183,7 +184,7 @@ public class ObjectKeywordsValidatorTest {
         assertEquals(1, countCauseByJsonPointer(e, "#/numberProp"));
         assertEquals(1, countCauseByJsonPointer(e, "#/stringPatternMatch"));
 
-        List<String> messages = e.getAllMessages();
+        List<ValidationError> messages = e.getAllMessages();
         assertEquals(3, messages.size());
         assertEquals(1, countMatchingMessage(messages, "#:"));
         assertEquals(1, countMatchingMessage(messages, "#/numberProp:"));
@@ -233,7 +234,7 @@ public class ObjectKeywordsValidatorTest {
         assertEquals(1, countCauseByJsonPointer(nested2Exception, "#/nested/nested/numberProp"));
         assertEquals(1, countCauseByJsonPointer(nested2Exception, "#/nested/nested/stringPatternMatch"));
 
-        List<String> messages = subjectException.getAllMessages();
+        List<ValidationError> messages = subjectException.getAllMessages();
         assertEquals(9, messages.size());
         assertEquals(1, countMatchingMessage(messages, "#:"));
         assertEquals(1, countMatchingMessage(messages, "#/numberProp:"));
@@ -325,7 +326,7 @@ public class ObjectKeywordsValidatorTest {
                     Assert.assertEquals("#", error.getSchemaLocation().toString());
                     Assert.assertEquals(3, error.getViolationCount());
                 })
-                .expectedKeyword(JsonSchemaKeyword.PROPERTY_NAMES.key())
+                .expectedKeyword(JsonSchemaKeywordType.PROPERTY_NAMES.key())
                 .expectedSchemaLocation("#")
                 .expect();
     }
@@ -383,7 +384,7 @@ public class ObjectKeywordsValidatorTest {
             final JsonNumber testValue = provider().createValue(1);
             return createTestValidator(subject).validate(testValue);
         });
-        assertEquals("#/dependencies/a", e.getSchemaLocation());
+        assertThat(e.getSchemaLocation()).hasToString("#/dependencies/a");
     }
 
     @Test
@@ -392,14 +393,17 @@ public class ObjectKeywordsValidatorTest {
         builder.propertyDependency("a", "b");
         builder.schemaDependency("a", mockBooleanSchema());
         builder.patternProperty("aaa", mockBooleanSchema());
-        Schema schema = builder.build();
+
+        Draft6Schema schema = builder.build().asDraft6();
+        assertThat(schema.getPatternProperties()).hasSize(1);
+        assertThat(schema.getPropertyDependencies().size()).isEqualTo(1);
+        assertThat(schema.getPropertySchemaDependencies()).hasSize(1);
         builder.propertyDependency("c", "a");
         builder.schemaDependency("b", mockBooleanSchema());
         builder.patternProperty("bbb", mockBooleanSchema());
-        final ObjectKeywords keywords = schema.getObjectKeywords();
-        assertEquals(1, keywords.getPropertyDependencies().size());
-        assertEquals(1, keywords.getSchemaDependencies().size());
-        assertEquals(1, keywords.getPatternProperties().size());
+        assertEquals(1, schema.getPropertyDependencies().size());
+        assertEquals(1, schema.getPropertySchemaDependencies().size());
+        assertEquals(1, schema.getPatternProperties().size());
     }
 
     @Test

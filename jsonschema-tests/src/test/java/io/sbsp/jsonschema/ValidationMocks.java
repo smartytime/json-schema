@@ -1,7 +1,6 @@
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 

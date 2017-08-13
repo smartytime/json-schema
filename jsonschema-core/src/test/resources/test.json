@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "properties": {
+    "arrayOrString": {
+      "$id": "http://json-schema.org/draft-06/schema#",
+      "pattern": "^[a-z]*$",
+      "items": [ ],
+      "multipleOf": 2,
+      "$ref": { }
+    },
+    "appName": {
+      "allOf": [
+        {
+          "$ref": "http://infusionsoft.com/schemas/stuff.json#/definitions/appName",
+          "$id": "#validPlatformIdentifier",
+          "type": "string",
+          "pattern": "^[a-z_]$"
+
+        },
+        {
+          "maxLength": "20"
+        }
+      ]
+    },
+    "anotherProp": {
+      "$ref": "#validPlatformIdentifier"
+    }
+  }
+}
+

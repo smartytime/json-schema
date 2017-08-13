@@ -15,8 +15,7 @@
  */
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.loader.JsonSchemaFactory;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.loading.JsonSchemaFactory;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;

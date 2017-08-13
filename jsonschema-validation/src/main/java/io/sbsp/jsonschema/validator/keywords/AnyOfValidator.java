@@ -1,32 +1,33 @@
 package io.sbsp.jsonschema.validator.keywords;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import com.google.common.collect.ImmutableList;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.Keywords;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.SchemaListKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
+import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationReport;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.ToString;
 
 import java.util.List;
 
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.ANY_OF;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ANY_OF;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class AnyOfValidator extends KeywordValidator {
+public class AnyOfValidator extends KeywordValidator<SchemaListKeyword> {
 
-    @Singular
-    @NonNull
     private final List<SchemaValidator> anyOfValidators;
 
-    @Builder
-    public AnyOfValidator(Schema schema, List<SchemaValidator> anyOfValidators) {
-        super(ANY_OF, schema);
-        this.anyOfValidators = anyOfValidators;
+    public AnyOfValidator(SchemaListKeyword keyword, Schema schema, SchemaValidatorFactory factory) {
+        super(Keywords.anyOf, schema);
+        this.anyOfValidators = keyword.getSchemas().stream()
+                .map(factory::createValidator)
+                .collect(ImmutableList.toImmutableList());
     }
 
     @Override

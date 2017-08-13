@@ -15,15 +15,16 @@
  */
 package io.sbsp.jsonschema.validator;
 
+import io.sbsp.jsonschema.RefSchema;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.six.ReferenceSchema;
-import io.sbsp.jsonschema.six.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.validator.SchemaValidatorFactory.createValidatorForSchema;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.verifyFailure;
 
@@ -47,6 +48,6 @@ public class PointerBubblingTest {
     @Test
     public void rectangleSingleFailure() {
         JsonObject input = testInputs.getJsonObject("rectangleSingleFailure");
-        ValidationTestSupport.expectFailure(rectangleSchema, ReferenceSchema.class, "#/rectangle/a", input);
+        ValidationTestSupport.expectFailure(rectangleSchema, RefSchema.class, "#/rectangle/a", input);
     }
 }

@@ -15,13 +15,13 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonNumberValue;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.sbsp.jsonschema.utils.JsonUtils.readJsonObject;

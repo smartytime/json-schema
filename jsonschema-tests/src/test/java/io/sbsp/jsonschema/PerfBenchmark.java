@@ -1,8 +1,5 @@
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.SchemaLocation;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationReport;
@@ -12,7 +9,7 @@ import javax.json.JsonObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 
 public class PerfBenchmark {
 
@@ -26,7 +23,7 @@ public class PerfBenchmark {
         final JsonObject jsonObject = ResourceLoader.DEFAULT.readObj("perftest.json");
         final List<JsonValueWithLocation> testSubjects = new ArrayList<>();
         jsonObject.getJsonObject("schemas").forEach((k, v) -> {
-            testSubjects.add(JsonValueWithLocation.fromJsonValue(v, SchemaLocation.anonymousRoot()));
+            testSubjects.add(JsonValueWithLocation.fromJsonValue(v, SchemaLocation.hashedRoot(v)));
         });
 
         long startAt = System.currentTimeMillis();

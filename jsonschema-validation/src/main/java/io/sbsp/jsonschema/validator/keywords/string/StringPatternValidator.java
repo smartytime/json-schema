@@ -1,27 +1,26 @@
 package io.sbsp.jsonschema.validator.keywords.string;
 
-import io.sbsp.jsonschema.six.JsonValueWithLocation;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonValueWithLocation;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.Keywords;
+import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.keyword.StringKeyword;
+import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
-import lombok.Builder;
-import lombok.NonNull;
 
 import java.util.regex.Pattern;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.PATTERN;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
 
-public class StringPatternValidator extends KeywordValidator {
+public class StringPatternValidator extends KeywordValidator<StringKeyword> {
 
-    @NonNull
     private final Pattern pattern;
 
-    @Builder
-    public StringPatternValidator(Schema schema, Pattern pattern) {
-        super(PATTERN, schema);
-        this.pattern = checkNotNull(pattern);
+    public StringPatternValidator(StringKeyword keyword, Schema schema, SchemaValidatorFactory factory) {
+        super(Keywords.pattern, schema);
+        this.pattern = Pattern.compile(keyword.getKeywordValue());
     }
 
     @Override

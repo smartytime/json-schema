@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.enums.JsonSchemaType;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 
 import java.net.URI;
 
-import static io.sbsp.jsonschema.six.Schema.JsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilderWithId;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchemaBuilderWithId;
 
 public class ValidationMocks {
 
@@ -20,11 +20,11 @@ public class ValidationMocks {
     }
 
     public static JsonSchemaBuilder mockArraySchema() {
-        return jsonSchemaBuilder().type(JsonSchemaType.ARRAY);
+        return jsonSchema().type(JsonSchemaType.ARRAY);
     }
 
     public static JsonSchemaBuilder mockBooleanSchema() {
-        return jsonSchemaBuilder().type(JsonSchemaType.BOOLEAN);
+        return jsonSchema().type(JsonSchemaType.BOOLEAN);
     }
 
     public static JsonSchemaBuilder mockBooleanSchema(URI id) {
@@ -36,19 +36,19 @@ public class ValidationMocks {
     }
 
     public static JsonSchemaBuilder mockIntegerSchema() {
-        return jsonSchemaBuilder().type(JsonSchemaType.INTEGER);
+        return jsonSchema().type(JsonSchemaType.INTEGER);
     }
 
     public static JsonSchemaBuilder mockNullSchema() {
-        return jsonSchemaBuilder().type(JsonSchemaType.NULL);
+        return jsonSchema().type(JsonSchemaType.NULL);
     }
 
     public static JsonSchemaBuilder mockNumberSchema() {
-        return jsonSchemaBuilder().type(JsonSchemaType.NUMBER);
+        return jsonSchema().type(JsonSchemaType.NUMBER);
     }
 
     public static JsonSchemaBuilder mockObjectSchema() {
-        return jsonSchemaBuilder().type(JsonSchemaType.OBJECT);
+        return jsonSchema().type(JsonSchemaType.OBJECT);
     }
 
     public static JsonSchemaBuilder mockObjectSchema(String id) {
@@ -60,10 +60,10 @@ public class ValidationMocks {
     }
 
     public static JsonSchemaBuilder mockSchema() {
-        return jsonSchemaBuilder();
+        return jsonSchema();
     }
 
     public static JsonSchemaBuilder mockStringSchema() {
-        return jsonSchemaBuilder().type(JsonSchemaType.STRING);
+        return jsonSchema().type(JsonSchemaType.STRING);
     }
 }

@@ -15,12 +15,9 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.JsonPath;
-import io.sbsp.jsonschema.six.enums.JsonSchemaKeyword;
-import io.sbsp.jsonschema.six.Schema;
-import io.sbsp.jsonschema.six.keywords.ObjectKeywords;
-import io.sbsp.jsonschema.utils.JsonUtils;
-import io.sbsp.jsonschema.validator.extractors.ArrayKeywordValidatorExtractor;
+import io.sbsp.jsonschema.JsonPath;
+import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Singular;
@@ -49,29 +46,37 @@ public class ValidationError {
 
     private static final long serialVersionUID = 6192047123024651924L;
 
-    private final transient Schema violatedSchema;
+    /**
+     * The schema that generated this error
+     */
+    private final Schema violatedSchema;
+
+    /**
+     * A pointer to the violation within the input document we validated.
+     */
     private final JsonPath pointerToViolation;
 
-    private final String message;
-    @Singular
-    private final List<ValidationError> causingExceptions;
-    private final JsonSchemaKeyword keyword;
     private final String code;
-    private final URI schemaLocation;
+    private final String message;
+    private final String messageTemplate;
 
     @Singular
-    private final List models;
+    private final List<ValidationError> causingExceptions;
+    private final JsonSchemaKeywordType keyword;
+
+    @Singular
+    private final List<Object> arguments;
 
     /**
      * Returns all messages collected from all violations, including nested causing exceptions.
      *
      * @return all messages
      */
-    public List<String> getAllMessages() {
+    public List<ValidationError> getAllMessages() {
         if (causingExceptions.isEmpty()) {
-            return singletonList(getMessage());
+            return singletonList(this);
         } else {
-            return getAllMessages(causingExceptions).stream().collect(Collectors.toList());
+            return unmodifiableList(getAllMessages(causingExceptions));
         }
     }
 
@@ -89,7 +94,7 @@ public class ValidationError {
         return message;
     }
 
-    public JsonSchemaKeyword getKeyword() {
+    public JsonSchemaKeywordType getKeyword() {
         return keyword;
     }
 
@@ -103,8 +108,8 @@ public class ValidationError {
         return getPointerToViolation() + ": " + message;
     }
 
-    public List<Object> getModel() {
-        return models;
+    public List<Object> getArguments() {
+        return arguments;
     }
 
     public String getCode() {
@@ -125,16 +130,12 @@ public class ValidationError {
         return pointerToViolation.toURIFragment().toString();
     }
 
-    /**
-     * @return a path denoting the location of the violated keyword in the schema
-     * @since 1.6.0
-     */
-    public String getSchemaLocation() {
-        return schemaLocation.toString();
+    public Optional<JsonPath> getPathToViolation() {
+        return Optional.ofNullable(pointerToViolation);
     }
 
-    public URI getSchemaLocationURI() {
-        return schemaLocation;
+    public URI getSchemaLocation() {
+        return violatedSchema.getPointerFragmentURI();
     }
 
     public Schema getViolatedSchema() {
@@ -143,6 +144,54 @@ public class ValidationError {
 
     public int getViolationCount() {
         return getViolationCount(causingExceptions);
+    }
+
+    public JsonObject toJson() {
+        return toJson(true);
+    }
+
+    public JsonObject toJson(boolean withCauses) {
+        final JsonProvider provider = JsonProvider.provider();
+
+        var errorJson = provider.createObjectBuilder();
+
+        if (pointerToViolation == null) {
+            errorJson.add("pointerToViolation", JsonValue.NULL);
+        } else {
+            errorJson.add("pointerToViolation", getPointerToViolation());
+        }
+        if (this.keyword != null) {
+            errorJson.add("keyword", this.keyword.key());
+        }
+        if (code != null) {
+            errorJson.add("code", this.code);
+        }
+        errorJson.add("message", this.message);
+        if (violatedSchema != null) {
+            errorJson.add("schemaLocation", getSchemaLocation().toString());
+        }
+
+        if (this.arguments.size() > 0) {
+            errorJson.add("template", this.messageTemplate);
+
+            final JsonArrayBuilder argArray = JsonProvider.provider().createArrayBuilder();
+            this.arguments.stream()
+                    .map(Object::toString)
+                    .forEach(argArray::add);
+            errorJson.add("arguments", argArray.build());
+        }
+
+        if (withCauses && causingExceptions.size() > 0) {
+            final JsonArrayBuilder arrayBuilder = provider.createArrayBuilder();
+            causingExceptions.stream()
+                    .map(ValidationError::toJson)
+                    .forEach(arrayBuilder::add);
+
+            errorJson.add("causes", arrayBuilder);
+        }
+
+
+        return errorJson.build();
     }
 
     /**
@@ -165,36 +214,14 @@ public class ValidationError {
      *
      * @return a JSON description of the validation error
      */
-    public JsonObject toJson() {
+    public JsonArray toJsonErrors() {
         final JsonProvider provider = JsonProvider.provider();
-        var errorJson = provider.createObjectBuilder();
-        if (this.keyword != null) {
-            errorJson.add("keyword", this.keyword.key());
-        }
+        JsonArrayBuilder errorArray = provider.createArrayBuilder();
+        this.getAllMessages().stream()
+                .map(e -> e.toJson(false))
+                .forEach(errorArray::add);
 
-        if (pointerToViolation == null) {
-            errorJson.add("pointerToViolation", JsonValue.NULL);
-        } else {
-            errorJson.add("pointerToViolation", getPointerToViolation());
-        }
-        errorJson.add("message", this.message);
-        if (code != null) {
-            errorJson.add("code", this.code);
-        }
-
-        JsonArray jsonModels = JsonUtils.jsonArray(this.models);
-        errorJson.add("model", jsonModels);
-
-        final JsonArrayBuilder arrayBuilder = provider.createArrayBuilder();
-        causingExceptions.stream()
-                .map(ValidationError::toJson)
-                .forEach(arrayBuilder::add);
-
-        errorJson.add("causes", arrayBuilder);
-        if (schemaLocation != null) {
-            errorJson.add("schemaLocation", schemaLocation.toString());
-        }
-        return errorJson.build();
+        return errorArray.build();
     }
 
     @Override
@@ -207,13 +234,18 @@ public class ValidationError {
                 '}';
     }
 
-    private String escapeFragment(String fragment) {
-        return fragment.replace("~", "~0").replace("/", "~1");
+    public ValidationError withKeyword(JsonSchemaKeywordType keyword, String message) {
+        checkNotNull(keyword, "keyword must not be null");
+        checkNotNull(message, "message must not be null");
+        return toBuilder()
+                .keyword(keyword)
+                .message(message)
+                .code("validation.keyword." + keyword.key())
+                .build();
     }
 
     /**
-     * Sort of static factory method. It is used by {@link ObjectKeywords} and
-     * {@link ArrayKeywordValidatorExtractor} to create {@code ValidationException}s, handling the case of multiple violations
+     * Sort of static factory method. It is used by validators to create {@code ValidationError}s, handling the case of multiple violations
      * occuring during validation.
      * <p>
      * <ul>
@@ -244,32 +276,20 @@ public class ValidationError {
                             .code("validation.multipleFailures")
                             .causingExceptions(unmodifiableList(failures))
                             .keyword(null)
-                            .schemaLocation(rootFailingSchema.getLocation().getJsonPointerFragment())
                             .build()
             );
         }
     }
 
-    public ValidationError withKeyword(JsonSchemaKeyword keyword, String message) {
-        checkNotNull(keyword, "keyword must not be null");
-        checkNotNull(message, "message must not be null");
-        return toBuilder()
-                .keyword(keyword)
-                .message(message)
-                .code("validation.keyword." + keyword.key())
-                .build();
-    }
-
-    private static List<String> getAllMessages(List<ValidationError> causes) {
-        List<String> messages = causes.stream()
+    private static List<ValidationError> getAllMessages(List<ValidationError> causes) {
+        List<ValidationError> messages = causes.stream()
                 .filter(cause -> cause.causingExceptions.isEmpty())
-                .map(ValidationError::getMessage)
                 .collect(Collectors.toList());
         messages.addAll(causes.stream()
                 .filter(cause -> !cause.causingExceptions.isEmpty())
                 .flatMap(cause -> getAllMessages(cause.getCauses()).stream())
                 .collect(Collectors.toList()));
-        return messages;
+        return unmodifiableList(messages);
     }
 
     private static int getViolationCount(List<ValidationError> causes) {
@@ -278,25 +298,30 @@ public class ValidationError {
     }
 
     public static class ValidationErrorBuilder {
-        public void addToErrorList(List<ValidationError> errors) {
-            checkNotNull(errors, "errors must not be null");
-            errors.add(this.build());
-        }
 
-        public Optional<ValidationError> buildOptional() {
-            return Optional.of(build());
-        }
+        private JsonPath pointerToViolation = JsonPath.rootPath();
 
         public ValidationErrorBuilder message(String message, Object... args) {
             this.message = String.format(message, args);
+            this.messageTemplate = message;
             for (Object arg : args) {
-                this.model(arg);
+                this.argument(arg);
             }
             return this;
         }
 
-        public ValidationErrorBuilder uriFragmentPointerToViolation(String uriFragment) {
-            this.pointerToViolation = JsonPath.parseFromURIFragment(uriFragment);
+        public ValidationErrorBuilder message(String message) {
+            this.message = message;
+            this.messageTemplate = message;
+            return this;
+        }
+
+        public ValidationErrorBuilder pointerToViolationURI(String uriFragment) {
+            if (uriFragment == null) {
+                this.pointerToViolation = null;
+            } else {
+                this.pointerToViolation(JsonPath.parseFromURIFragment(uriFragment));
+            }
             return this;
         }
     }

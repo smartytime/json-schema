@@ -15,96 +15,31 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.JsonPath;
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.JsonPath;
+import io.sbsp.jsonschema.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.json.JsonObject;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.sbsp.jsonschema.six.Schema.jsonSchemaBuilder;
-import static io.sbsp.jsonschema.six.enums.JsonSchemaKeyword.TYPE;
+import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
+import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockBooleanSchema;
 import static io.sbsp.jsonschema.validator.ValidationMocks.mockNullSchema;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.expectSuccess;
 import static io.sbsp.jsonschema.validator.ValidationTestSupport.verifyFailure;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class ValidationErrorTest {
 
     public static final ResourceLoader loader = ResourceLoader.DEFAULT;
-    private final Schema rootSchema = jsonSchemaBuilder().build();
-
-    // @Test
-    // public void fragmentEscapingBoth() {
-    //     ValidationError subject = createDummyException("#/aaa").prepend("x~y/z");
-    //     Assert.assertEquals("#/x~0y~1z/aaa", subject.getPointerToViolation());
-    // }
-    //
-    // @Test
-    // public void fragmentEscapingSlash() {
-    //     ValidationError subject = createDummyException("#/aaa").prepend("x/y");
-    //     Assert.assertEquals("#/x~1y/aaa", subject.getPointerToViolation());
-    // }
-    //
-    // @Test
-    // public void fragmentEscapingTilde() {
-    //     ValidationError subject = createDummyException("#/aaa").prepend("x~y");
-    //     Assert.assertEquals("#/x~0y/aaa", subject.getPointerToViolation());
-    // }
-    //
-    // @Test
-    // public void getMessageAfterPrepend() {
-    //     ValidationError subject = createDummyException("#/a").prepend("obj");
-    //     Assert.assertEquals("#/obj/a: stuff went wrong", subject.getMessage());
-    // }
-    //
-    // @Test(expected = NullPointerException.class)
-    // public void nullPointerFragmentFailure() {
-    //     createTestValidationError().prepend(null,
-    //             NullSchema.NULL_SCHEMA);
-    // }
-    //
-    // @Test
-    // public void prependNoSchemaChange() {
-    //     ValidationError exc = createTestValidationError();
-    //     ValidationError changedExc = exc.prepend("frag");
-    //     Assert.assertEquals("#/frag", changedExc.getPointerToViolation());
-    //     Assert.assertEquals("type", changedExc.getKeyword());
-    //     Assert.assertEquals(mockBooleanSchema().build(), changedExc.getViolatedSchema());
-    // }
-    //
-    // @Test
-    // public void prependPointer() {
-    //     ValidationError exc = createTestValidationError();
-    //     ValidationError changedExc = exc.prepend("frag", NullSchema.NULL_SCHEMA);
-    //     Assert.assertEquals("#/frag", changedExc.getPointerToViolation());
-    //     Assert.assertEquals("type", changedExc.getKeyword());
-    //     Assert.assertEquals(NullSchema.NULL_SCHEMA, changedExc.getViolatedSchema());
-    // }
-    //
-    // @Test
-    // public void prependWithCausingExceptions() {
-    //     ValidationError cause1 = createDummyException("#/a");
-    //     ValidationError cause2 = createDummyException("#/b");
-    //     final ValidationError e = ValidationError.collectErrors(rootSchema, Arrays.asList(cause1, cause2))
-    //             .orElseThrow(() -> new AssertionError("Should have returned errors"));
-    //
-    //     ValidationError actual = e.prepend("rectangle");
-    //     Assert.assertEquals("#/rectangle", actual.getPointerToViolation());
-    //     ValidationError changedCause1 = actual.getCauses().get(0);
-    //     Assert.assertEquals("#/rectangle/a", changedCause1.getPointerToViolation());
-    //     ValidationError changedCause2 = actual.getCauses().get(1);
-    //     Assert.assertEquals("#/rectangle/b", changedCause2.getPointerToViolation());
-    // }
+    private final Schema rootSchema = jsonSchema().build();
 
     @Test
     public void testConstructor() {
@@ -116,7 +51,7 @@ public class ValidationErrorTest {
     public void testToJson() {
         ValidationError subject = ValidationError.validationBuilder().
                 violatedSchema(mockBooleanSchema().build())
-                .uriFragmentPointerToViolation("#/a/b")
+                .pointerToViolationURI("#/a/b")
                 .message("exception message")
                 .keyword(TYPE)
                 .build();
@@ -128,39 +63,39 @@ public class ValidationErrorTest {
 
     @Test
     public void testToJsonWithSchemaLocation() {
-        ValidationError subject =
-                new ValidationError(mockBooleanSchema().build(),
-                        JsonPath.parseFromURIFragment("#/a/b"),
-                        "exception message",
-                        emptyList(),
-                        TYPE,
-                        "code",
-                        URI.create("#/schema/location"),
-                        emptyList()
-                );
+        Schema failedSchema = mockBooleanSchema("#/schema/location").build();
+        ValidationError subject = ValidationError.validationBuilder()
+                .violatedSchema(failedSchema)
+                .code("code")
+                .message("exception message")
+                .keyword(TYPE)
+                .pointerToViolationURI("#/a/b")
+                .build();
+
         JsonObject expected = loader.readObj("exception-to-json-with-schema-location.json");
         JsonObject actual = subject.toJson();
-        assertThat(expected)
-                .isEqualTo(actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
     public void throwForMultipleFailures() {
-        ValidationError input1 = new ValidationError(mockNullSchema().build(),
-                JsonPath.rootPath(),
-                "msg1",
-                emptyList(),
-                TYPE,
-                "code",
-                URI.create("#"), emptyList());
+        Schema failedSchema = mockNullSchema().build();
+        ValidationError input1 =ValidationError.validationBuilder()
+                .violatedSchema(failedSchema)
+                .code("code")
+                .message("msg1")
+                .keyword(TYPE)
+                .pointerToViolationURI("#")
+                .build();
 
-        ValidationError input2 = new ValidationError(mockBooleanSchema().build(),
-                JsonPath.parseFromURIFragment("#"),
-                "msg2",
-                emptyList(),
-                TYPE,
-                "code",
-                URI.create("#"), emptyList());
+        ValidationError input2 =ValidationError.validationBuilder()
+                .violatedSchema(failedSchema)
+                .code("code")
+                .message("msg2")
+                .keyword(TYPE)
+                .pointerToViolationURI("#")
+                .build();
+
         final ValidationError e = ValidationError.collectErrors(rootSchema, JsonPath.rootPath(), Arrays.asList(input1, input2))
                 .orElseThrow(() -> new AssertionError("Should have failed"));
         Assert.assertSame(rootSchema, e.getViolatedSchema());
@@ -177,53 +112,52 @@ public class ValidationErrorTest {
     }
 
     @Test
-    public void throwForSingleFailure() {
-        ValidationError input = new ValidationError(mockNullSchema().build(),
-                JsonPath.parseFromURIFragment("#"),
-                "msg",
-                emptyList(),
-                TYPE,
-                "code",
-                URI.create("#"),
-                emptyList());
+    public void collectError_WhenSingleFailure_ThenFailureIsReturned() {
+        Schema failedSchema = mockNullSchema().build();
+        ValidationError input =ValidationError.validationBuilder()
+                .violatedSchema(failedSchema)
+                .code("code")
+                .message("msg")
+                .keyword(TYPE)
+                .pointerToViolationURI("#")
+                .build();
+
         var actual = verifyFailure(() -> ValidationError.collectErrors(rootSchema, JsonPath.rootPath(), newArrayList(input)));
         Assert.assertSame(input, actual);
     }
 
     @Test
     public void toJsonNullPointerToViolation() {
-        ValidationError subject =
-                new ValidationError(mockBooleanSchema().build(),
-                        null,
-                        "exception message",
-                        emptyList(),
-                        TYPE,
-                        "code",
-                        null,
-                        emptyList());
+        ValidationError subject = ValidationError.validationBuilder()
+                .violatedSchema(mockBooleanSchema().build())
+                .code("exception message")
+                .message("msg")
+                .keyword(null)
+                .pointerToViolationURI(null)
+                .build();
         JsonObject actual = subject.toJson();
         Assert.assertEquals(JsonObject.NULL, actual.get("pointerToViolation"));
     }
 
     @Test
     public void toJsonWithCauses() {
-        ValidationError cause =
-                new ValidationError(mockNullSchema().build(),
-                        JsonPath.parseFromURIFragment("#/a/0"),
-                        "cause msg",
-                        emptyList(),
-                        TYPE,
-                        null,
-                        null, singletonList("Joe"));
-        ValidationError subject =
-                new ValidationError(mockBooleanSchema().build(),
-                        JsonPath.parseFromURIFragment("#/a"),
-                        "exception message",
-                        Arrays.asList(cause),
-                        TYPE,
-                        "code",
-                        null,
-                        emptyList());
+        ValidationError cause = ValidationError.validationBuilder()
+                .violatedSchema(mockNullSchema().build())
+                .code("code")
+                .message("cause msg %s", "foo")
+                .keyword(TYPE)
+                .pointerToViolationURI("#/a/0")
+                .argument("bar")
+                .build();
+
+        ValidationError subject = ValidationError.validationBuilder()
+                .violatedSchema(mockNullSchema().build())
+                .message("exception message")
+                .keyword(null)
+                .causingException(cause)
+                .pointerToViolationURI("#/a")
+                .build();
+
         JsonObject expected = ResourceLoader.DEFAULT.readObj("exception-to-json-with-causes.json");
         JsonObject actual = subject.toJson();
         assertEquals(expected, actual);
@@ -260,35 +194,35 @@ public class ValidationErrorTest {
     }
 
     private ValidationError createTestValidationError() {
-        return new ValidationError(mockBooleanSchema().build(),
-                JsonPath.parseFromURIFragment("#"),
-                "Failed Validation",
-                emptyList(),
-                TYPE,
-                "code",
-                URI.create("#"), emptyList());
+        return ValidationError.validationBuilder()
+                .violatedSchema(mockBooleanSchema().build())
+                .code("code")
+                .message("Failed Validation")
+                .keyword(TYPE)
+                .pointerToViolationURI("#")
+                .build();
+
     }
 
     private ValidationError createDummyException(final String pointer) {
-        return new ValidationError(mockBooleanSchema().build(),
-                JsonPath.parseFromURIFragment(pointer),
-                "stuff went wrong",
-                emptyList(), TYPE,
-                "code",
-                URI.create("#"),
-                emptyList()
-        );
+        return ValidationError.validationBuilder()
+                .violatedSchema(mockBooleanSchema().build())
+                .code("code")
+                .message("stuff went wrong")
+                .keyword(TYPE)
+                .pointerToViolationURI(pointer)
+                .build();
     }
 
     private ValidationError subjectWithCauses(final ValidationError... causes) {
         if (causes.length == 0) {
-            return new ValidationError(mockBooleanSchema().build(),
-                    JsonPath.parseFromURIFragment("#"),
-                    "Failure",
-                    emptyList(),
-                    TYPE,
-                    "code",
-                    URI.create("#"), emptyList());
+            return ValidationError.validationBuilder()
+                    .violatedSchema(mockBooleanSchema().build())
+                    .code("code")
+                    .message("Failure")
+                    .keyword(TYPE)
+                    .pointerToViolationURI("#")
+                    .build();
         }
         return ValidationError.collectErrors(rootSchema, JsonPath.rootPath(), Arrays.asList(causes)).orElse(null);
     }

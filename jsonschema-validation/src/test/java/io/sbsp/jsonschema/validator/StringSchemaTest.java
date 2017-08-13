@@ -15,7 +15,7 @@
  */
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.six.Schema;
+import io.sbsp.jsonschema.Schema;
 import lombok.experimental.var;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import org.junit.Test;
 import javax.json.JsonObject;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.loader.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
 import static io.sbsp.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.sbsp.jsonschema.validator.ResourceLoader.DEFAULT;
@@ -47,8 +47,8 @@ public class StringSchemaTest {
     //
 
     private final SchemaValidatorFactory validatorFactory = SchemaValidatorFactory.builder()
-            .customFormatValidator("test-format-failure", sub -> Optional.of("violation"))
-            .customFormatValidator("test-format-success", sub -> Optional.empty())
+            .addCustomFormatValidator("test-format-failure", sub -> Optional.of("violation"))
+            .addCustomFormatValidator("test-format-success", sub -> Optional.empty())
             .build();
 
     @Test
