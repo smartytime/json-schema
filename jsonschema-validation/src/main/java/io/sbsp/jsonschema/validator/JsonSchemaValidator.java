@@ -2,11 +2,10 @@ package io.sbsp.jsonschema.validator;
 
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.SetMultimap;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
-import io.sbsp.jsonschema.keyword.KeywordMetadata;
-import io.sbsp.jsonschema.validator.factory.KeywordToValidatorTransformer;
+import io.sbsp.jsonschema.validator.factory.KeywordValidatorCreators;
+import io.sbsp.jsonschema.validator.factory.KeywordValidatorCreator;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.Builder;
 import lombok.NonNull;
@@ -14,6 +13,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import javax.json.JsonValue.ValueType;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -44,7 +44,7 @@ public class JsonSchemaValidator implements SchemaValidator {
     private final boolean noop;
 
     @Builder(builderMethodName = "jsonSchemaValidator")
-    public JsonSchemaValidator(SetMultimap<KeywordMetadata, KeywordToValidatorTransformer> factories, Schema schema, SchemaValidatorFactory validatorFactory) {
+    public JsonSchemaValidator(KeywordValidatorCreators factories, Schema schema, SchemaValidatorFactory validatorFactory) {
         checkNotNull(factories, "factories must not be null");
         this.schema = schema;
 
@@ -134,37 +134,38 @@ public class JsonSchemaValidator implements SchemaValidator {
     }
 
     /**
-     * Internal helper method that sorts out keyword validators based on their applicable type.
+     * Internal helper method that sorts out keyword validators based on their applicable type.  This makes it more
+     * efficient for us to run only validators that apply.
      *
      * @param schema The schema that is to be validated
      * @param validatorFactory A validatorFactory used to construct new {@link KeywordValidator} instances
-     * @param factories A list of {@link KeywordToValidatorTransformer} - these inspect the provided schema, and return the
+     * @param factories A list of {@link KeywordValidatorCreator} - these inspect the provided schema, and return the
      *                  necessary keyword validators based on the schema.
      *
      * @return A {@link ListMultimap} with the keywords sorted by their applicable types.
      */
     @SuppressWarnings("unchecked")
     private static ListMultimap<ValueType, KeywordValidator> mapValidatorsToType(Schema schema, SchemaValidatorFactory validatorFactory,
-                                                                                 SetMultimap<KeywordMetadata, KeywordToValidatorTransformer> factories) {
+                                                                                 KeywordValidatorCreators factories) {
+
         ImmutableListMultimap.Builder<ValueType, KeywordValidator> validatorsByType = ImmutableListMultimap.builder();
-        schema.getKeywords().forEach((keyword, keywordValue)->{
-            factories.get(keyword).forEach(tx-> {
-                final KeywordValidator keywordValidator = tx.getKeywordValidator(schema, keyword, keywordValue, validatorFactory);
+        schema.getKeywords().forEach((keyword, keywordValue) -> {
+            factories.get(keyword).forEach(keywordFactory -> {
+                final KeywordValidator<?> keywordValidator = keywordFactory.getKeywordValidator(keywordValue, schema, validatorFactory);
                 if (keywordValidator != null) {
-                    if (keyword.getApplicableTypes().isEmpty()) {
+                    final Set<ValueType> applicableTypes = keyword.getApplicableTypes();
+                    if (applicableTypes.isEmpty()) {
                         for (ValueType applicableType : ValueType.values()) {
                             validatorsByType.put(applicableType, keywordValidator);
                         }
                     } else {
-                        keyword.getApplicableTypes().forEach(applicableType-> {
+                        applicableTypes.forEach(applicableType -> {
                             validatorsByType.put(applicableType, keywordValidator);
                         });
                     }
-
                 }
             });
         });
-
         return validatorsByType.build();
     }
 

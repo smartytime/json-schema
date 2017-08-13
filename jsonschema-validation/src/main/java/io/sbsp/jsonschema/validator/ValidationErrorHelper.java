@@ -1,10 +1,10 @@
 package io.sbsp.jsonschema.validator;
 
 import com.google.common.base.Joiner;
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
-import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.validator.ValidationError.ValidationErrorBuilder;
 
 import java.util.Collection;

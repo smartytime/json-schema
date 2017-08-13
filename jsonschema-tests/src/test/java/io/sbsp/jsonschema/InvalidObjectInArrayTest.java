@@ -24,7 +24,7 @@ import org.junit.Test;
 import javax.json.JsonObject;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 
 public class InvalidObjectInArrayTest {
 

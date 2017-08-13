@@ -10,7 +10,7 @@ import java.net.MalformedURLException;
 import java.util.Optional;
 
 import static io.sbsp.jsonschema.ValidationMocks.createTestValidator;
-import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 

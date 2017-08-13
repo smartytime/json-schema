@@ -16,6 +16,7 @@
 package io.sbsp.jsonschema.validator;
 
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaBuilder;
 import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
@@ -33,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 
 public class CombinedKeywordValidatorTest {
 
-    private static final List<JsonSchemaBuilder> SUBSCHEMAS = asList(
+    private static final List<SchemaBuilder> SUBSCHEMAS = asList(
             mockNumberSchema().multipleOf(10),
             mockNumberSchema().multipleOf(3));
 

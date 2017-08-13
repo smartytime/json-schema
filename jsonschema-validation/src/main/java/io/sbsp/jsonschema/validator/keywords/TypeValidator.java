@@ -3,31 +3,26 @@ package io.sbsp.jsonschema.validator.keywords;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.keyword.TypeKeyword;
 import io.sbsp.jsonschema.utils.JsonUtils;
+import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationReport;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 
 import javax.json.JsonValue;
-import java.util.EnumSet;
 import java.util.Set;
 
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildTypeMismatchError;
 
 public class TypeValidator extends KeywordValidator<TypeKeyword> {
 
-    @Singular
-    @NonNull
-    private final EnumSet<JsonSchemaType> requiredTypes;
+    private final Set<JsonSchemaType> requiredTypes;
     private boolean requiresInteger;
 
-    @Builder
-    public TypeValidator(Schema schema, Set<JsonSchemaType> requiredTypes) {
-        super(SchemaKeyword.type, schema);
-        this.requiredTypes = EnumSet.copyOf(requiredTypes);
+    public TypeValidator(TypeKeyword keyword, Schema schema, SchemaValidatorFactory factory) {
+        super(Keywords.type, schema);
+        this.requiredTypes = keyword.getTypes();
         this.requiresInteger = this.requiredTypes.contains(JsonSchemaType.INTEGER) &&
                 !this.requiredTypes.contains(JsonSchemaType.NUMBER);
     }

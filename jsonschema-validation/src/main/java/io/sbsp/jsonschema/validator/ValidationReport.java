@@ -1,8 +1,8 @@
 package io.sbsp.jsonschema.validator;
 
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;

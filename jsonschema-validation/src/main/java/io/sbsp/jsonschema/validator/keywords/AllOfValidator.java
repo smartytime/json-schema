@@ -1,15 +1,15 @@
 package io.sbsp.jsonschema.validator.keywords;
 
+import com.google.common.collect.ImmutableList;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.keyword.SchemaListKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
+import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationError;
 import io.sbsp.jsonschema.validator.ValidationReport;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 
 import java.util.List;
 
@@ -18,14 +18,13 @@ import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFai
 
 public class AllOfValidator extends KeywordValidator<SchemaListKeyword> {
 
-    @Singular
-    @NonNull
     private final List<SchemaValidator> allOfValidators;
 
-    @Builder
-    public AllOfValidator(Schema schema, List<SchemaValidator> allOfValidators) {
-        super(SchemaKeyword.allOf, schema);
-        this.allOfValidators = allOfValidators;
+    public AllOfValidator(SchemaListKeyword keyword, Schema schema, SchemaValidatorFactory factory) {
+        super(Keywords.allOf, schema);
+        this.allOfValidators = keyword.getSchemas().stream()
+                .map(factory::createValidator)
+                .collect(ImmutableList.toImmutableList());
     }
 
     @Override

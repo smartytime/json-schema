@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static java.util.Objects.requireNonNull;
 
 @RunWith(Parameterized.class)

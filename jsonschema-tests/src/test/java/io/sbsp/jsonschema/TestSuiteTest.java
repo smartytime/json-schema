@@ -16,6 +16,7 @@
 package io.sbsp.jsonschema;
 
 import com.google.common.base.Preconditions;
+import io.sbsp.jsonschema.loading.LoadingReport;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationError;
 import org.eclipse.jetty.server.Server;
@@ -44,7 +45,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import static io.sbsp.jsonschema.ValidationMocks.createTestValidator;
-import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 
 @RunWith(Parameterized.class)
 public class TestSuiteTest {
@@ -116,7 +117,8 @@ public class TestSuiteTest {
     @Test
     public void test() {
         try {
-            Schema schema = schemaFactory().load(schemaJson);
+            final LoadingReport loadingReport = new LoadingReport();
+            Schema schema = schemaFactory().load(schemaJson, loadingReport);
             SchemaValidator validator = createTestValidator(schema);
             Optional<ValidationError> validationErrors = validator.validate(input);
             boolean failed = validationErrors.isPresent();

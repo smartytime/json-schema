@@ -3,6 +3,7 @@ package io.sbsp.jsonschema.validator.keywords.array;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.keyword.ItemsKeyword;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
@@ -21,7 +22,7 @@ public class ArrayItemValidator extends KeywordValidator<ItemsKeyword> {
 
     @Builder
     public ArrayItemValidator(Schema parentSchema, SchemaValidator allItemValidator) {
-        super(SchemaKeyword.items, parentSchema);
+        super(Keywords.items, parentSchema);
         this.allItemValidator = checkNotNull(allItemValidator);
     }
 

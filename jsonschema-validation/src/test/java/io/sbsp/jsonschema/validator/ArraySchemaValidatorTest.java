@@ -18,8 +18,10 @@ package io.sbsp.jsonschema.validator;
 import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaException;
+import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
+import io.sbsp.jsonschema.loading.LoadingReport;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -27,7 +29,6 @@ import org.junit.Test;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
-import java.net.URI;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -36,7 +37,7 @@ import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchemaBuilderWith
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ENUM;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.NULL;
-import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonArray;
 import static io.sbsp.jsonschema.utils.JsonUtils.readJsonObject;
 import static io.sbsp.jsonschema.validator.ResourceLoader.DEFAULT;
@@ -179,15 +180,13 @@ public class ArraySchemaValidatorTest {
         assertEquals(rawSchemaJson, readJsonObject(actual));
     }
 
-    @Test(expected = SchemaException.class)
+    @Test
     public void tupleAndListFailure() {
-        // if (itemSchemas == null) {
-        //     itemSchemas = new ArrayList<>();
-        // }
-        // itemSchemas.add(requireNonNull(itemSchema, "itemSchema cannot be null"));
-        // return this;
-        jsonSchema().itemSchema(mockBooleanSchema()).allItemSchema(mockNullSchema())
-                .build();
+        final LoadingReport report = new LoadingReport();
+        jsonSchema().schemaOfAdditionalItems(mockBooleanSchema())
+                .allItemSchema(mockNullSchema())
+                .build(SchemaLocation.hashedRoot(report), report);
+        assertThat(report.getIssues()).isNotEmpty();
     }
 
     @Test

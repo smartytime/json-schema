@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.keyword.ItemsKeyword;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
 import io.sbsp.jsonschema.validator.ValidationReport;
@@ -24,7 +25,7 @@ public class ArrayPerItemValidator extends KeywordValidator<ItemsKeyword> {
 
     @Builder
     public ArrayPerItemValidator(Schema schema, List<SchemaValidator> indexedValidators, SchemaValidator additionalItemValidator) {
-        super(SchemaKeyword.items, schema);
+        super(Keywords.items, schema);
         this.indexedValidators = ImmutableList.copyOf(indexedValidators);
         this.additionalItemValidator = additionalItemValidator;
     }

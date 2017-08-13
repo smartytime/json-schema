@@ -2,11 +2,12 @@ package io.sbsp.jsonschema.validator.keywords;
 
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.keyword.SingleSchemaKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
+import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationReport;
-import lombok.Builder;
 
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.NOT;
 import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFailure;
@@ -14,11 +15,11 @@ import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFai
 public class NotKeywordValidator extends KeywordValidator<SingleSchemaKeyword> {
     private final SchemaValidator notValidator;
     private final Schema notSchema;
-    @Builder
-    public NotKeywordValidator(Schema schema, SchemaValidator notValidator, Schema notSchema) {
-        super(SchemaKeyword.not, schema);
-        this.notValidator = notValidator;
-        this.notSchema = notSchema;
+
+    public NotKeywordValidator(SingleSchemaKeyword keyword, Schema schema, SchemaValidatorFactory factory) {
+        super(Keywords.not, schema);
+        this.notValidator = factory.createValidator(keyword.getSchema());
+        this.notSchema = schema;
     }
 
     @Override

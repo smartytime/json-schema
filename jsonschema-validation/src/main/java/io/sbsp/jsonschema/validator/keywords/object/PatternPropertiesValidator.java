@@ -3,14 +3,13 @@ package io.sbsp.jsonschema.validator.keywords.object;
 import com.google.common.collect.ImmutableList;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.keyword.SchemaMapKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
+import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 
 import java.util.List;
 import java.util.Set;
@@ -18,13 +17,17 @@ import java.util.regex.Pattern;
 
 public class PatternPropertiesValidator extends KeywordValidator<SchemaMapKeyword> {
 
-    @NonNull
     private final List<PatternPropertyValidator> patternValidators;
 
-    @Builder
-    public PatternPropertiesValidator(Schema schema, @Singular List<PatternPropertyValidator> patternValidators) {
-        super(SchemaKeyword.patternProperties, schema);
-        this.patternValidators = ImmutableList.copyOf(patternValidators);
+    public PatternPropertiesValidator(SchemaMapKeyword keyword, Schema schema, SchemaValidatorFactory factory) {
+        super(Keywords.patternProperties, schema);
+        this.patternValidators = keyword.getSchemas().entrySet().stream()
+                .map(entry -> {
+                    final Pattern pattern = Pattern.compile(entry.getKey());
+                    final SchemaValidator validator = factory.createValidator(entry.getValue());
+                    return new PatternPropertyValidator(pattern, validator);
+                })
+                .collect(ImmutableList.toImmutableList());
     }
 
     @Override
@@ -55,12 +58,6 @@ public class PatternPropertiesValidator extends KeywordValidator<SchemaMapKeywor
         public PatternPropertyValidator(Pattern pattern, SchemaValidator validator) {
             this.pattern = pattern;
             this.validator = validator;
-        }
-    }
-
-    public static class PatternPropertiesValidatorBuilder {
-        public PatternPropertiesValidatorBuilder addPatternValidator(String pattern, SchemaValidator validator) {
-            return this.patternValidator(new PatternPropertyValidator(Pattern.compile(pattern), validator));
         }
     }
 }

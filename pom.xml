@@ -28,7 +28,8 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>jsonschema-six</module>
+        <module>jsonschema-api</module>
+        <module>jsonschema-core</module>
         <module>jsonschema-loader</module>
         <module>jsonschema-validation</module>
         <module>jsonschema-tests</module>

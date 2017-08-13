@@ -34,7 +34,7 @@ import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.*;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.BOOLEAN;
-import static io.sbsp.jsonschema.extractor.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
 import static io.sbsp.jsonschema.utils.JsonUtils.blankJsonObject;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonObjectBuilder;
 import static io.sbsp.jsonschema.utils.JsonUtils.jsonStringValue;
@@ -393,7 +393,11 @@ public class ObjectKeywordsValidatorTest {
         builder.propertyDependency("a", "b");
         builder.schemaDependency("a", mockBooleanSchema());
         builder.patternProperty("aaa", mockBooleanSchema());
+
         Draft6Schema schema = builder.build().asDraft6();
+        assertThat(schema.getPatternProperties()).hasSize(1);
+        assertThat(schema.getPropertyDependencies().size()).isEqualTo(1);
+        assertThat(schema.getPropertySchemaDependencies()).hasSize(1);
         builder.propertyDependency("c", "a");
         builder.schemaDependency("b", mockBooleanSchema());
         builder.patternProperty("bbb", mockBooleanSchema());

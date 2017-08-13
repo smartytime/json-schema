@@ -3,11 +3,12 @@ package io.sbsp.jsonschema.validator.keywords.string;
 import com.google.common.base.MoreObjects;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.NumberKeyword;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
+import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
-import lombok.Builder;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_LENGTH;
@@ -16,11 +17,10 @@ import static io.sbsp.jsonschema.validator.ValidationErrorHelper.buildKeywordFai
 public class StringMinLengthValidator extends KeywordValidator<NumberKeyword> {
     private final int minLength;
 
-    @Builder
-    public StringMinLengthValidator(Schema schema, int minLength) {
-        super(SchemaKeyword.minLength, schema);
-        checkArgument(minLength >= 0, "minLength cannot be negative");
-        this.minLength = minLength;
+    public StringMinLengthValidator(NumberKeyword keyword, Schema schema, SchemaValidatorFactory factory) {
+        super(Keywords.minLength, schema);
+        checkArgument(keyword.getDouble() >= 0, "minLength cannot be negative");
+        this.minLength = keyword.getInteger();
     }
 
     @Override

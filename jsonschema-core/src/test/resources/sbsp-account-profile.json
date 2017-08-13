@@ -1,0 +1,65 @@
+{
+  "$schema": "http://schema.sbsp.io/sbsp-schema-base.json#",
+  "id": "http://schema.sbsp.io/sbsp-account-profile.json#",
+  "version": "0.0.0",
+  "title": "Profile",
+  "description": "Information about your company",
+  "properties": {
+    "name": {
+      "$ref": "/primitives.json#/definitions/name"
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "first_name": {
+          "$ref": "/primitives.json#/definitions/name"
+        },
+        "last_name": {
+          "$ref": "/primitives.json#/definitions/name"
+        },
+        "email": {
+          "$ref": "/primitives.json#/definitions/email"
+        },
+        "phone": {
+          "$ref": "/primitives.json#/definitions/phone"
+        }
+      },
+      "required": [
+        "first_name",
+        "last_name",
+        "email",
+        "phone"
+      ]
+    },
+    "company": {
+      "$ref": "/primitives.json#/definitions/fullAddress"
+    },
+    "primary_color": {
+      "allOf": [
+        {
+          "$ref": "/primitives.json#/definitions/color"
+        },
+        {
+          "title": "Primary Color",
+          "description": "Your primary color",
+          "minLuminance": 100
+        }
+      ]
+    },
+    "secondary_color": {
+      "$ref": "/primitives.json#/definitions/color"
+    },
+    "logo_url": {
+      "$ref": "/primitives.json#/definitions/imageUrl"
+    },
+    "website_url": {
+      "$ref": "/primitives.json#/definitions/url"
+    },
+    "time_zone": {
+      "$ref": "/primitives.json#/definitions/timeZone"
+    },
+    "locale": {
+      "$ref": "/primitives.json#/definitions/languageTag"
+    }
+  }
+}

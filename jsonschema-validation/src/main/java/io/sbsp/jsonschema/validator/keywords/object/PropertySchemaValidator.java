@@ -3,16 +3,16 @@ package io.sbsp.jsonschema.validator.keywords.object;
 import com.google.common.collect.ImmutableMap;
 import io.sbsp.jsonschema.JsonValueWithLocation;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.keyword.SchemaMapKeyword;
 import io.sbsp.jsonschema.validator.SchemaValidator;
+import io.sbsp.jsonschema.validator.SchemaValidatorFactory;
 import io.sbsp.jsonschema.validator.ValidationReport;
 import io.sbsp.jsonschema.validator.keywords.KeywordValidator;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,10 +27,15 @@ public class PropertySchemaValidator extends KeywordValidator<SchemaMapKeyword> 
     private final int propertyLength;
     private final Schema schema;
 
-    public PropertySchemaValidator(ImmutableMap<String, SchemaValidator> propertyValidators, Schema schema) {
-        super(SchemaKeyword.properties, schema);
-        checkNotNull(propertyValidators);
-        this.propertyValidators = Collections.unmodifiableMap(new HashMap<>(propertyValidators));
+    public PropertySchemaValidator(SchemaMapKeyword keyword, Schema schema, SchemaValidatorFactory factory) {
+        super(Keywords.properties, schema);
+
+        this.propertyValidators = keyword.getSchemas().entrySet()
+                .stream()
+                .collect(ImmutableMap.toImmutableMap(
+                        e -> e.getKey(),
+                        e -> factory.createValidator(e.getValue())));
+
         this.validatedProperties = new HashSet<>(propertyValidators.keySet());
         this.propertyLength = this.validatedProperties.size();
         this.schema = checkNotNull(schema);

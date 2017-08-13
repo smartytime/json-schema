@@ -17,5 +17,4 @@ public abstract class KeywordValidator<K extends SchemaKeyword> implements Schem
         this.schema = checkNotNull(schema);
         this.keyword = checkNotNull(keyword);
     }
-
 }
