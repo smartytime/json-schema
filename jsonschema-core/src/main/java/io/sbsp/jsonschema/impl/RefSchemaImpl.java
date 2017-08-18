@@ -5,11 +5,12 @@ import io.sbsp.jsonschema.Draft4Schema;
 import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.RefSchema;
 import io.sbsp.jsonschema.Schema;
-import io.sbsp.jsonschema.SchemaFactory;
+import io.sbsp.jsonschema.loading.SchemaFactory;
 import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
 import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.loading.LoadingReport;
+import io.sbsp.jsonschema.loading.SchemaLoader;
 import lombok.Builder;
 
 import javax.json.JsonObject;
@@ -23,7 +24,7 @@ public class RefSchemaImpl extends RefSchema {
     }
 
     @Builder(builderMethodName = "refSchemaBuilder", builderClassName = "RefSchemaBuilder")
-    private RefSchemaImpl(SchemaFactory factory, SchemaLocation location, URI refURI, JsonObject currentDocument, LoadingReport report) {
+    private RefSchemaImpl(SchemaLoader factory, SchemaLocation location, URI refURI, JsonObject currentDocument, LoadingReport report) {
         super(factory, location, refURI, currentDocument, report);
     }
 
@@ -32,9 +33,14 @@ public class RefSchemaImpl extends RefSchema {
     }
 
     @Override
+    public JsonSchemaVersion getVersion() {
+        return JsonSchemaVersion.Draft6;
+    }
+
+    @Override
     public JsonGenerator toJson(JsonGenerator writer, JsonSchemaVersion version) {
         return writer.writeStartObject()
-                .write(Keywords.$ref.getKey(), getRefURI().toString())
+                .write(Keywords.$REF.key(), getRefURI().toString())
                 .writeEnd();
     }
 

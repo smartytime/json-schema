@@ -15,24 +15,25 @@
  */
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.utils.JsonUtils;
-import io.sbsp.jsonschema.validator.SchemaValidator;
-import io.sbsp.jsonschema.validator.ValidationError;
+import io.sbsp.jsonschema.loading.SchemaLoaderImpl;
+import io.sbsp.jsonschema.validation.SchemaValidator;
+import io.sbsp.jsonschema.validation.ValidationError;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
-import static io.sbsp.jsonschema.validator.ValidationMocks.createTestValidator;
+import static io.sbsp.jsonschema.ResourceLoader.resourceLoader;
+import static io.sbsp.jsonschema.loading.SchemaLoaderImpl.schemaLoader;
+import static io.sbsp.jsonschema.validation.ValidationMocks.createTestValidator;
 
 public class MetaSchemaTest {
 
     @Test
     public void validateMetaSchema() {
-        JsonObject jsonSchema = JsonUtils.readResourceAsJson("/io/sbsp/jsonschema/json-schema-draft-06.json", JsonObject.class);
-        Schema schema = schemaFactory().load(jsonSchema);
+        JsonObject jsonSchema = resourceLoader().readJsonObject("json-schema-draft-06.json");
+        Schema schema = SchemaLoaderImpl.schemaLoader().readSchema(jsonSchema);
         final SchemaValidator testValidator = createTestValidator(schema);
         final Optional<ValidationError> error = testValidator.validate(jsonSchema);
         if (error.isPresent()) {

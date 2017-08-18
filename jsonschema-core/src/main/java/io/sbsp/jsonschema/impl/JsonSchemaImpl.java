@@ -3,7 +3,6 @@ package io.sbsp.jsonschema.impl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
 import io.sbsp.jsonschema.Draft3Schema;
 import io.sbsp.jsonschema.Draft4Schema;
 import io.sbsp.jsonschema.Draft6Schema;
@@ -15,7 +14,7 @@ import io.sbsp.jsonschema.enums.JsonSchemaVersion;
 import io.sbsp.jsonschema.keyword.DependenciesKeyword;
 import io.sbsp.jsonschema.keyword.ItemsKeyword;
 import io.sbsp.jsonschema.keyword.JsonArrayKeyword;
-import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
 import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.LimitKeyword;
 import io.sbsp.jsonschema.keyword.NumberKeyword;
@@ -31,6 +30,7 @@ import io.sbsp.jsonschema.utils.JsonSchemaGenerator;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nullable;
 import javax.json.JsonArray;
@@ -38,25 +38,25 @@ import javax.json.JsonValue;
 import javax.json.stream.JsonGenerator;
 import java.net.URI;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Custom;
+import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft6;
 
 @EqualsAndHashCode(of = "keywords")
+@Slf4j
 public abstract class JsonSchemaImpl<D extends DraftSchema> implements DraftSchema<D> {
 
     @NonNull
     private final SchemaLocation location;
 
-    private final Map<KeywordMetadata<?>, SchemaKeyword> keywords;
+    private final Map<KeywordInfo<?>, SchemaKeyword> keywords;
     private final JsonSchemaVersion version;
 
-    public JsonSchemaImpl(SchemaLocation location, Map<KeywordMetadata<?>, SchemaKeyword> keywords, JsonSchemaVersion version) {
+    public JsonSchemaImpl(SchemaLocation location, Map<KeywordInfo<?>, SchemaKeyword> keywords, JsonSchemaVersion version) {
         this.location = checkNotNull(location, "location must not be null");
         checkNotNull(keywords, "keywords must not be null");
         this.version = checkNotNull(version, "version must not be null");
@@ -78,9 +78,10 @@ public abstract class JsonSchemaImpl<D extends DraftSchema> implements DraftSche
         }
 
         keywords.forEach((keyword, keywordValue) -> {
-            final Set<JsonSchemaVersion> versions = keyword.getAppliesToVersions();
-            if (Sets.intersection(versions, EnumSet.of(version, Custom)).size() > 0) {
+            if (keyword.getTypeVariant().contains(version)) {
                 keywordValue.writeToGenerator(keyword, schemaGenerator, version);
+            } else {
+                log.warn("Keyword {} does not apply to version: [{}], only for {}", keyword.key(), version, keyword.getTypeVariant());
             }
         });
 
@@ -89,7 +90,7 @@ public abstract class JsonSchemaImpl<D extends DraftSchema> implements DraftSche
     }
 
     @Override
-    public Map<KeywordMetadata<?>, SchemaKeyword> getKeywords() {
+    public Map<KeywordInfo<?>, SchemaKeyword> getKeywords() {
         return keywords;
     }
 
@@ -130,22 +131,22 @@ public abstract class JsonSchemaImpl<D extends DraftSchema> implements DraftSche
 
     @Override
     public URI getId() {
-        return uri(Keywords.$id);
+        return uri(Keywords.$ID);
     }
 
     @Override
     public URI getSchemaURI() {
-        return uri(Keywords.$schema);
+        return uri(Keywords.$SCHEMA);
     }
 
     @Override
     public String getTitle() {
-        return string(Keywords.title);
+        return string(Keywords.TITLE);
     }
 
     @Override
     public String getDescription() {
-        return string(Keywords.description);
+        return string(Keywords.DESCRIPTION);
     }
 
     @Override
@@ -250,212 +251,212 @@ public abstract class JsonSchemaImpl<D extends DraftSchema> implements DraftSche
 
     @Override
     public String toString() {
-        return toString(false);
+        return toString(false, Draft6);
     }
 
     // ######################################################
     // ###### Helper methods for subclasses (accessing keywords) ########
     // ######################################################
 
-    protected Map<KeywordMetadata<?>, SchemaKeyword> keywords() {
+    protected Map<KeywordInfo<?>, SchemaKeyword> keywords() {
         return keywords;
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
-    protected URI uri(KeywordMetadata<URIKeyword> keywordType) {
+    protected URI uri(KeywordInfo<URIKeyword> keywordType) {
         return keywordValue(keywordType).orElse(null);
     }
 
     @SuppressWarnings("unchecked")
     @Nullable
-    protected String string(KeywordMetadata<StringKeyword> stringKeyword) {
+    protected String string(KeywordInfo<StringKeyword> stringKeyword) {
         checkNotNull(stringKeyword, "stringKeyword must not be null");
         return keywordValue(stringKeyword).orElse(null);
     }
 
     @SuppressWarnings("unchecked")
-    protected <X extends SchemaKeyword> Optional<X> keyword(KeywordMetadata<X> keyword) {
+    protected <X extends SchemaKeyword> Optional<X> keyword(KeywordInfo<X> keyword) {
         checkNotNull(keyword, "keyword must not be null");
         return Optional.ofNullable((X) keywords.get(keyword));
     }
 
-    protected List<Schema> schemaList(KeywordMetadata<? extends SchemaListKeyword> keyword) {
+    protected List<Schema> schemaList(KeywordInfo<? extends SchemaListKeyword> keyword) {
         checkNotNull(keyword, "keyword must not be null");
         return keyword(keyword).map(SchemaListKeyword::getSchemas).orElse(Collections.emptyList());
     }
 
-    protected Map<String, Schema> schemaMap(KeywordMetadata<SchemaMapKeyword> keyword) {
+    protected Map<String, Schema> schemaMap(KeywordInfo<SchemaMapKeyword> keyword) {
         checkNotNull(keyword, "keyword must not be null");
         return keyword(keyword).map(SchemaMapKeyword::getSchemas).orElse(Collections.emptyMap());
     }
 
     @SuppressWarnings("unchecked")
-    protected <X> Optional<X> keywordValue(KeywordMetadata<? extends SchemaKeywordImpl<X>> keyword) {
+    protected <X> Optional<X> keywordValue(KeywordInfo<? extends SchemaKeywordImpl<X>> keyword) {
         checkNotNull(keyword, "keyword must not be null");
         final SchemaKeywordImpl<X> keywordValue = (SchemaKeywordImpl<X>) keywords.get(keyword);
         return keywordValue == null ? Optional.empty() : Optional.ofNullable(keywordValue.getKeywordValue());
     }
 
     protected JsonArray examples() {
-        return keyword(Keywords.examples)
+        return keyword(Keywords.EXAMPLES)
                 .map(JsonArrayKeyword::getKeywordValue)
                 .orElse(JsonUtils.emptyJsonArray());
     }
 
     protected Map<String, Schema> definitions() {
-        return schemaMap(Keywords.definitions);
+        return schemaMap(Keywords.DEFINITIONS);
     }
 
     protected Set<JsonSchemaType> types() {
-        return keyword(Keywords.type)
+        return keyword(Keywords.TYPE)
                 .map(TypeKeyword::getTypes)
                 .orElse(Collections.emptySet());
     }
 
     protected Optional<JsonArray> enumValues() {
-        return keywordValue(Keywords.$enum);
+        return keywordValue(Keywords.ENUM);
     }
 
     protected Optional<JsonValue> defaultValue() {
-        return keywordValue(Keywords.$default);
+        return keywordValue(Keywords.DEFAULT);
     }
 
     protected Optional<Schema> notSchema() {
-        return keywordValue(Keywords.not);
+        return keywordValue(Keywords.NOT);
     }
 
     protected Optional<JsonValue> constValue() {
-        return keywordValue(Keywords.$const);
+        return keywordValue(Keywords.CONST);
     }
 
     protected List<Schema> allOfSchemas() {
-        return schemaList(Keywords.allOf);
+        return schemaList(Keywords.ALL_OF);
     }
 
     protected List<Schema> anyOfSchemas() {
-        return schemaList(Keywords.anyOf);
+        return schemaList(Keywords.ANY_OF);
     }
 
     protected List<Schema> oneOfSchemas() {
-        return schemaList(Keywords.oneOf);
+        return schemaList(Keywords.ONE_OF);
     }
 
     protected String format() {
-        return string(Keywords.format);
+        return string(Keywords.FORMAT);
     }
 
     protected Integer minLength() {
-        return keywordValue(Keywords.minLength)
+        return keywordValue(Keywords.MIN_LENGTH)
                 .map(Number::intValue)
                 .orElse(null);
     }
 
     protected Integer maxLength() {
-        return keywordValue(Keywords.maxLength)
+        return keywordValue(Keywords.MAX_LENGTH)
                 .map(Number::intValue)
                 .orElse(null);
     }
 
     protected String pattern() {
-        return string(Keywords.pattern);
+        return string(Keywords.PATTERN);
     }
 
     protected Number multipleOf() {
-        return keywordValue(Keywords.multipleOf).orElse(null);
+        return keywordValue(Keywords.MULTIPLE_OF).orElse(null);
     }
 
     protected Number maximum() {
-        return keyword(Keywords.maximum).map(LimitKeyword::getLimit).orElse(null);
+        return keyword(Keywords.MAXIMUM).map(LimitKeyword::getLimit).orElse(null);
     }
 
     protected Number minimum() {
-        return keyword(Keywords.minimum).map(LimitKeyword::getLimit).orElse(null);
+        return keyword(Keywords.MINIMUM).map(LimitKeyword::getLimit).orElse(null);
     }
 
     protected Number exclusiveMinimum() {
-        return keyword(Keywords.minimum).map(LimitKeyword::getExclusiveLimit).orElse(null);
+        return keyword(Keywords.MINIMUM).map(LimitKeyword::getExclusiveLimit).orElse(null);
     }
 
     protected Number exclusiveMaximum() {
-        return keyword(Keywords.maximum).map(LimitKeyword::getExclusiveLimit).orElse(null);
+        return keyword(Keywords.MAXIMUM).map(LimitKeyword::getExclusiveLimit).orElse(null);
     }
 
     protected Integer minItems() {
-        return getInteger(Keywords.minItems);
+        return getInteger(Keywords.MIN_ITEMS);
     }
 
-    protected Integer getInteger(KeywordMetadata<NumberKeyword> keyword) {
+    protected Integer getInteger(KeywordInfo<NumberKeyword> keyword) {
         checkNotNull(keyword, "keyword must not be null");
         return keywordValue(keyword).map(Number::intValue).orElse(null);
     }
 
     protected Integer maxItems() {
-        return getInteger(Keywords.maxItems);
+        return getInteger(Keywords.MAX_ITEMS);
     }
 
     protected Optional<Schema> allItemSchema() {
-        return keyword(Keywords.items)
+        return keyword(Keywords.ITEMS)
                 .flatMap(ItemsKeyword::getAllItemSchema);
     }
 
     protected List<Schema> itemSchemas() {
-        return keyword(Keywords.items)
+        return keyword(Keywords.ITEMS)
                 .map(ItemsKeyword::getIndexedSchemas)
                 .orElse(Collections.emptyList());
     }
 
     protected Optional<Schema> additionalItemsSchema() {
-        return keyword(Keywords.items).flatMap(ItemsKeyword::getAdditionalItemSchema);
+        return keyword(Keywords.ITEMS).flatMap(ItemsKeyword::getAdditionalItemSchema);
     }
 
     protected Optional<Schema> containsSchema() {
-        return keywordValue(Keywords.contains);
+        return keywordValue(Keywords.CONTAINS);
     }
 
     protected boolean uniqueItems() {
-        return keywordValue(Keywords.uniqueItems).orElse(false);
+        return keywordValue(Keywords.UNIQUE_ITEMS).orElse(false);
     }
 
     protected Map<String, Schema> properties() {
-        return schemaMap(Keywords.properties);
+        return schemaMap(Keywords.PROPERTIES);
     }
 
     protected Map<String, Schema> patternProperties() {
-        return schemaMap(Keywords.patternProperties);
+        return schemaMap(Keywords.PATTERN_PROPERTIES);
     }
 
     protected Optional<Schema> additionalPropertiesSchema() {
-        return keywordValue(Keywords.additionalProperties);
+        return keywordValue(Keywords.ADDITIONAL_PROPERTIES);
     }
 
     protected Optional<Schema> propertyNameSchema() {
-        return keywordValue(Keywords.propertyNames);
+        return keywordValue(Keywords.PROPERTY_NAMES);
     }
 
     protected SetMultimap<String, String> propertyDependencies() {
-        return keyword(Keywords.dependencies)
+        return keyword(Keywords.DEPENDENCIES)
                 .map(DependenciesKeyword::getPropertyDependencies)
                 .orElse(ImmutableSetMultimap.of());
     }
 
     protected Map<String, Schema> propertySchemaDependencies() {
-        return keyword(Keywords.dependencies)
+        return keyword(Keywords.DEPENDENCIES)
                 .map(DependenciesKeyword::getDependencySchemas)
                 .map(SchemaMapKeyword::getSchemas)
                 .orElse(ImmutableMap.of());
     }
 
     protected Integer maxProperties() {
-        return getInteger(Keywords.maxProperties);
+        return getInteger(Keywords.MAX_PROPERTIES);
     }
 
     protected Integer minProperties() {
-        return getInteger(Keywords.minProperties);
+        return getInteger(Keywords.MIN_PROPERTIES);
     }
 
     protected Set<String> requiredProperties() {
-        return keyword(Keywords.required)
+        return keyword(Keywords.REQUIRED)
                 .map(StringSetKeyword::getKeywordValue)
                 .orElse(Collections.emptySet());
     }

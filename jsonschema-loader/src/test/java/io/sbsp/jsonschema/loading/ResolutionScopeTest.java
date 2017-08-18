@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.sbsp.jsonschema.loading.JsonSchemaFactory.*;
+import static io.sbsp.jsonschema.loading.SchemaLoaderImpl.*;
 
 public class ResolutionScopeTest extends BaseLoaderTest {
 
@@ -30,6 +30,6 @@ public class ResolutionScopeTest extends BaseLoaderTest {
     @Test
     public void resolutionScopeTest() {
         JsonObject schemaJson = getJsonObjectForKey("resolutionScopeTest");
-        schemaFactory().load(schemaJson);
+        schemaLoader().readSchema(schemaJson);
     }
 }

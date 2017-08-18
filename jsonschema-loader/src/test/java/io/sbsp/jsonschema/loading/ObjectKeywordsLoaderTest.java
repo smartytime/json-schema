@@ -11,7 +11,7 @@ import org.junit.rules.ExpectedException;
 import java.util.Map;
 import java.util.Optional;
 
-import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
+import static io.sbsp.jsonschema.JsonSchemaProvider.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ObjectKeywordsLoaderTest extends BaseLoaderTest {
 
-    public static final Draft6Schema BOOLEAN_SCHEMA = jsonSchema().type(JsonSchemaType.BOOLEAN)
+    public static final Draft6Schema BOOLEAN_SCHEMA = schemaBuilder().type(JsonSchemaType.BOOLEAN)
             .build()
             .asDraft6();
 

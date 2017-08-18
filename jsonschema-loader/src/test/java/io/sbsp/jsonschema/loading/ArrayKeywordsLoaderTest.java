@@ -1,13 +1,13 @@
 package io.sbsp.jsonschema.loading;
 
 import io.sbsp.jsonschema.Draft6Schema;
+import io.sbsp.jsonschema.JsonSchemaProvider;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
 import org.junit.Assert;
 import org.junit.Test;
 
 import javax.json.JsonObject;
 
-import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
 import static io.sbsp.jsonschema.loading.LoadingTestSupport.failWith;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.junit.Assert.assertNotNull;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class ArrayKeywordsLoaderTest extends BaseLoaderTest {
 
-    private static final Draft6Schema NULL_SCHEMA = jsonSchema()
+    private static final Draft6Schema NULL_SCHEMA = JsonSchemaProvider.schemaBuilder()
             .type(JsonSchemaType.NULL)
             .build()
             .asDraft6();

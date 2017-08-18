@@ -2,10 +2,12 @@ package io.sbsp.jsonschema.builder;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
+import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaBuilder;
 import io.sbsp.jsonschema.SchemaLocation;
-import io.sbsp.jsonschema.keyword.KeywordMetadata;
 import io.sbsp.jsonschema.keyword.Keywords;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
+import io.sbsp.jsonschema.keyword.SchemaMapKeyword.SchemaMapKeywordBuilder;
 import io.sbsp.jsonschema.loading.LoadingReport;
 import io.sbsp.jsonschema.keyword.DependenciesKeyword;
 import io.sbsp.jsonschema.keyword.SchemaMapKeyword;
@@ -17,10 +19,28 @@ import java.util.stream.Stream;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @EqualsAndHashCode
-public class DependenciesKeywordBuilder implements SchemaKeywordBuilder<DependenciesKeyword> {
+public class DependenciesKeywordBuilder {
 
-    private SetMultimap<String, String> propertyDependencies = HashMultimap.create();
-    private final SchemaMapKeywordBuilder dependencySchemas = new SchemaMapKeywordBuilder();
+    private final SetMultimap<String, String> propertyDependencies;
+    private final SchemaMapKeywordBuilder dependencySchemas;
+
+    public DependenciesKeywordBuilder() {
+        propertyDependencies = HashMultimap.create();
+        dependencySchemas = SchemaMapKeyword.builder();
+    }
+
+    public DependenciesKeywordBuilder(SetMultimap<String, String> propertyDependencies, SchemaMapKeyword dependencySchemas) {
+        checkNotNull(propertyDependencies, "propertyDependencies must not be null");
+        checkNotNull(dependencySchemas, "dependencySchemas must not be null");
+
+        this.propertyDependencies = HashMultimap.create(propertyDependencies);
+        this.dependencySchemas = dependencySchemas.toBuilder();
+    }
+
+    public DependenciesKeywordBuilder(DependenciesKeyword keyword) {
+        this.propertyDependencies = HashMultimap.create(keyword.getPropertyDependencies());
+        this.dependencySchemas = keyword.getDependencySchemas().toBuilder();
+    }
 
     public DependenciesKeywordBuilder propertyDependency(String ifThisProperty, String thenExpectThisProperty) {
         checkNotNull(thenExpectThisProperty, "thenExpectThisProperty must not be null");
@@ -29,25 +49,14 @@ public class DependenciesKeywordBuilder implements SchemaKeywordBuilder<Dependen
         return this;
     }
 
-    public Map<String, SchemaBuilder> getSchemas() {
-        return dependencySchemas.getSchemas();
-    }
-
-    public DependenciesKeywordBuilder addDependencySchema(String key, SchemaBuilder anotherValue) {
+    public DependenciesKeywordBuilder addDependencySchema(String key, Schema anotherValue) {
         checkNotNull(key, "key must not be null");
         checkNotNull(anotherValue, "anotherValue must not be null");
-        dependencySchemas.addSchema(key, anotherValue);
+        dependencySchemas.schema(key, anotherValue);
         return this;
     }
 
-    @Override
-    public DependenciesKeyword build(SchemaLocation parentLocation, KeywordMetadata keyword, LoadingReport report) {
-        final SchemaMapKeyword builtDependencySchemas = dependencySchemas.build(parentLocation, Keywords.dependencies, report);
-        return new DependenciesKeyword(builtDependencySchemas, propertyDependencies);
-    }
-
-    @Override
-    public Stream<SchemaBuilder> getAllSchemas() {
-        return dependencySchemas.getAllSchemas();
+    public DependenciesKeyword build() {
+        return new DependenciesKeyword(dependencySchemas.build(), propertyDependencies);
     }
 }

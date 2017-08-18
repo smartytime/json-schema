@@ -1,9 +1,11 @@
 package io.sbsp.jsonschema;
 
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
-import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.loading.LoadingReport;
+import io.sbsp.jsonschema.loading.SchemaFactory;
+import io.sbsp.jsonschema.loading.SchemaLoader;
 import io.sbsp.jsonschema.utils.JsonSchemaGenerator;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -38,7 +40,7 @@ public abstract class RefSchema implements Schema {
     @NonNull
     private final URI refURI;
 
-    public RefSchema(SchemaFactory factory, SchemaLocation location, URI refURI, JsonObject currentDocument, LoadingReport report) {
+    public RefSchema(SchemaLoader factory, SchemaLocation location, URI refURI, JsonObject currentDocument, LoadingReport report) {
         checkNotNull(report, "report must not be null");
         this.location = location;
         this.refURI = refURI;
@@ -73,7 +75,7 @@ public abstract class RefSchema implements Schema {
     }
 
     @Override
-    public Map<KeywordMetadata<?>, SchemaKeyword> getKeywords() {
+    public Map<KeywordInfo<?>, SchemaKeyword> getKeywords() {
         return requireRefSchema().getKeywords();
     }
 
@@ -131,11 +133,6 @@ public abstract class RefSchema implements Schema {
     @Override
     public String getDescription() {
         return refSchema.getDescription();
-    }
-
-    @Override
-    public JsonSchemaVersion getVersion() {
-        return refSchema.getVersion();
     }
 
     @Override

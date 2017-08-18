@@ -12,11 +12,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class URIUtilsTest {
     @Test
+    public void withNewFragment_FromURN_FragmentAppended() throws Exception {
+        final URI uriToTest = URI.create("urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:Person");
+        assertThat(URIUtils.withNewFragment(uriToTest, URI.create("#/some/pointer")))
+                .isEqualTo(URI.create("urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:Person#/some/pointer"));
+    }
+
+    @Test
+    public void resolve_AgainstURN_WithFragmentOnly() throws Exception {
+        final URI uriToTest = URI.create("urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:Person");
+        assertThat(URIUtils.resolve(uriToTest, URI.create("#/some/pointer")))
+                .isEqualTo(URI.create("urn:jsonschema:com:zzzzz:tests:commons:jsonschema:models:Person#/some/pointer"));
+    }
+
+    @Test
+    public void withNewFragment_FromURI_FragmentAppended() throws Exception {
+        final URI uriToTest = URI.create("https://www.mysite.com/some/url.html#/oldpath/to/stuff");
+        assertThat(URIUtils.withNewFragment(uriToTest, URI.create("#/new/path")))
+                .isEqualTo(URI.create("https://www.mysite.com/some/url.html#/new/path"));
+    }
+
+    @Test
     public void withoutFragment_WithFragment_FragmentRemoved() throws Exception {
         final URI uriToTest = URI.create("http://www.coolsite.com/items?foo=bob#/some/pointer");
         assertThat(URIUtils.withoutFragment(uriToTest))
                 .isEqualTo(URI.create("http://www.coolsite.com/items?foo=bob"));
     }
+
+
 
     @Test
     public void withoutFragment_EmptyFragment() throws Exception {

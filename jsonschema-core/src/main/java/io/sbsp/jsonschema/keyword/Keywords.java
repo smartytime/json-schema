@@ -1,54 +1,13 @@
 package io.sbsp.jsonschema.keyword;
 
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
 
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$REF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$SCHEMA;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_ITEMS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ADDITIONAL_PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ALL_OF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ANY_OF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.CONST;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.CONTAINS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DEFAULT;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DEFINITIONS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DEPENDENCIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.DESCRIPTION;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ENUM;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.EXAMPLES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.EXCLUSIVE_MAXIMUM;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.EXCLUSIVE_MINIMUM;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.EXTENDS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.FORMAT;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ID;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ITEMS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAXIMUM;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_ITEMS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_LENGTH;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MAX_PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MINIMUM;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_ITEMS;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_LENGTH;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MIN_PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.MULTIPLE_OF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.NOT;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.ONE_OF;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PATTERN_PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PROPERTIES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.PROPERTY_NAMES;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.REQUIRED;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.REQUIRED_PROPERTY;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TITLE;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.TYPE;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.UNIQUE_ITEMS;
+import static io.sbsp.jsonschema.enums.JsonSchemaType.INTEGER;
 import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft3;
 import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft4;
 import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft5;
 import static io.sbsp.jsonschema.enums.JsonSchemaVersion.Draft6;
-import static io.sbsp.jsonschema.keyword.KeywordMetadata.KeywordMetadataBuilder;
+import static io.sbsp.jsonschema.keyword.KeywordInfo.KeywordInfoBuilder;
 import static javax.json.JsonValue.ValueType.ARRAY;
 import static javax.json.JsonValue.ValueType.FALSE;
 import static javax.json.JsonValue.ValueType.NULL;
@@ -59,7 +18,10 @@ import static javax.json.JsonValue.ValueType.TRUE;
 
 public interface Keywords {
 
-    KeywordMetadata<URIKeyword> $schema = uriKeyword($SCHEMA).expects(STRING).build();
+    String $ID_KEY = "$id";
+    String ID_KEY = "id";
+
+    KeywordInfo<URIKeyword> $SCHEMA = uriKeyword("$schema").expects(STRING).build();
     /**
      * From draft-06
      * <p>
@@ -77,10 +39,10 @@ public interface Keywords {
      * <p>
      * A schema MUST NOT be run into an infinite loop against a schema. For example, if two
      * schemas "#alice" and "#bob" both have an "allOf" property that refers to the other, a naive
-     * validator might get stuck in an infinite recursive loop trying to validate the instance. Schemas
+     * validation might get stuck in an infinite recursive loop trying to validate the instance. Schemas
      * SHOULD NOT make use of infinite recursive nesting like this; the behavior is undefined.
      */
-    KeywordMetadata<URIKeyword> $ref = uriKeyword($REF).expects(STRING).build();
+    KeywordInfo<URIKeyword> $REF = uriKeyword("$ref").expects(STRING).build();
     /**
      * From draft-06
      * <p>
@@ -102,7 +64,8 @@ public interface Keywords {
      * The effect of defining an "$id" that neither matches the above requirements nor is a valid JSON pointer
      * is not defined.
      */
-    KeywordMetadata<URIKeyword> $id = uriKeyword($ID).expects(STRING).since(Draft6).build();
+    KeywordInfo<URIKeyword> $ID = uriKeyword("$id").expects(STRING).since(Draft6).build();
+
     /**
      * From draft-03
      * <p>
@@ -116,7 +79,8 @@ public interface Keywords {
      * The current URI of the schema is also used to construct relative
      * references such as for $ref.
      */
-    KeywordMetadata<URIKeyword> id = uriKeyword(ID).expects(STRING).since(Draft3).until(Draft5).build();
+    KeywordInfo<URIKeyword> ID = uriKeyword("id").expects(STRING).since(Draft6).build();
+
     /**
      * From draft-06
      * <p>
@@ -126,7 +90,8 @@ public interface Keywords {
      * produced by this user interface. A title will preferably be short, whereas a description will
      * provide explanation about the purpose of the instance described by this schema.
      */
-    KeywordMetadata<StringKeyword> title = stringKeyword(TITLE).expects(STRING).build();
+    KeywordInfo<StringKeyword> TITLE = stringKeyword("title").expects(STRING).build();
+
     /**
      * From draft-06
      * <p>
@@ -151,7 +116,7 @@ public interface Keywords {
      * As an example, here is a schema describing an array of positive integers, where the positive integer
      * constraint is a subschema in "definitions":
      */
-    KeywordMetadata<SchemaMapKeyword> definitions = schemaMapKeyword(DEFINITIONS).expects(OBJECT).since(Draft6).build();
+    KeywordInfo<SchemaMapKeyword> DEFINITIONS = schemaMapKeyword("definitions").expects(OBJECT).since(Draft6).build();
     /**
      * From draft-06
      * <p>
@@ -161,7 +126,7 @@ public interface Keywords {
      * produced by this user interface. A title will preferably be short, whereas a description will
      * provide explanation about the purpose of the instance described by this schema.
      */
-    KeywordMetadata<StringKeyword> description = stringKeyword(DESCRIPTION).expects(STRING).build();
+    KeywordInfo<StringKeyword> DESCRIPTION = stringKeyword("description").expects(STRING).build();
     /**
      * From draft-06
      * <p>
@@ -171,7 +136,14 @@ public interface Keywords {
      * particular schema. It is RECOMMENDED that a default value be valid against
      * the associated schema.
      */
-    KeywordMetadata<JsonValueKeyword> $default = jsonValueKeyword(DEFAULT).expects(ARRAY, OBJECT, NUMBER, TRUE, FALSE, STRING, NULL).build();
+    KeywordInfo<JsonValueKeyword> DEFAULT = jsonValueKeyword("default").expects(ARRAY)
+        .additionalDefinition().expects(OBJECT)
+            .additionalDefinition().expects(NUMBER)
+            .additionalDefinition().expects(TRUE)
+            .additionalDefinition().expects(FALSE)
+            .additionalDefinition().expects(STRING)
+            .additionalDefinition().expects(NULL)
+            .build();
     /**
      * The value of "properties" MUST be an object.
      * Each value of this object MUST be a valid JSON Schema.
@@ -186,7 +158,7 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as an empty object.
      */
-    KeywordMetadata<SchemaMapKeyword> properties = schemaMapKeyword(PROPERTIES).expects(OBJECT).validates(JsonSchemaType.OBJECT).build();
+    KeywordInfo<SchemaMapKeyword> PROPERTIES = schemaMapKeyword("properties").expects(OBJECT).validates(JsonSchemaType.OBJECT).build();
     /**
      * The value of this keyword MUST be a non-negative integer.
      * <p>
@@ -194,7 +166,7 @@ public interface Keywords {
      * number of properties is less than, or equal to, the value of this
      * keyword.
      */
-    KeywordMetadata<NumberKeyword> maxProperties = numberKeyword(MAX_PROPERTIES).expects(NUMBER).validates(JsonSchemaType.OBJECT).since(Draft4).build();
+    KeywordInfo<NumberKeyword> MAX_PROPERTIES = numberKeyword("maxProperties").expects(NUMBER).validates(JsonSchemaType.OBJECT).since(Draft4).build();
     /**
      * The value of this keyword MUST be an array.
      * Elements of this array, if any, MUST be strings, and MUST be unique.
@@ -204,7 +176,7 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as an empty array.
      */
-    KeywordMetadata<StringSetKeyword> required = stringSetKeyword(REQUIRED).expects(ARRAY).validates(JsonSchemaType.OBJECT).since(Draft4).build();
+    KeywordInfo<StringSetKeyword> REQUIRED = stringSetKeyword("required").expects(ARRAY).validates(JsonSchemaType.OBJECT).since(Draft4).build();
     /**
      * The value of "additionalProperties" MUST be a valid JSON Schema.
      * <p>
@@ -220,7 +192,11 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as an empty schema.
      */
-    KeywordMetadata<SingleSchemaKeyword> additionalProperties = singleSchemaKeyword(ADDITIONAL_PROPERTIES).expects(OBJECT).validates(JsonSchemaType.OBJECT).since(Draft6).build();
+    KeywordInfo<SingleSchemaKeyword> ADDITIONAL_PROPERTIES = singleSchemaKeyword("additionalProperties").expects(OBJECT).validates(JsonSchemaType.OBJECT).since(Draft3)
+            .additionalDefinition().expects(FALSE).from(Draft3).until(Draft5)
+            .additionalDefinition().expects(TRUE).from(Draft3).until(Draft5)
+            .build();
+
     /**
      * The value of this keyword MUST be a non-negative integer.
      * <p>
@@ -230,7 +206,7 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as a value of 0.
      */
-    KeywordMetadata<NumberKeyword> minProperties = numberKeyword(MIN_PROPERTIES).expects(NUMBER).validates(JsonSchemaType.OBJECT).since(Draft4).build();
+    KeywordInfo<NumberKeyword> MIN_PROPERTIES = numberKeyword("minProperties").expects(NUMBER).validates(JsonSchemaType.OBJECT).since(Draft4).build();
     /**
      * This keyword specifies rules that are evaluated if the instance is an object and
      * contains a certain property.
@@ -248,7 +224,7 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as an empty object.
      */
-    KeywordMetadata<DependenciesKeyword> dependencies = keyword(DependenciesKeyword.class).key(DEPENDENCIES).expects(OBJECT).validates(JsonSchemaType.OBJECT).build();
+    KeywordInfo<DependenciesKeyword> DEPENDENCIES = keyword(DependenciesKeyword.class).key("dependencies").expects(OBJECT).validates(JsonSchemaType.OBJECT).build();
     /**
      * The value of "patternProperties" MUST be an object. Each property name
      * of this object SHOULD be a valid regular expression, according to the
@@ -267,7 +243,7 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as an empty object.
      */
-    KeywordMetadata<SchemaMapKeyword> patternProperties = schemaMapKeyword(PATTERN_PROPERTIES).expects(OBJECT).validates(JsonSchemaType.OBJECT).build();
+    KeywordInfo<SchemaMapKeyword> PATTERN_PROPERTIES = schemaMapKeyword("patternProperties").expects(OBJECT).validates(JsonSchemaType.OBJECT).build();
     /**
      * The value of "propertyNames" MUST be a valid JSON Schema.
      * <p>
@@ -277,7 +253,7 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as an empty schema.
      */
-    KeywordMetadata<SingleSchemaKeyword> propertyNames = singleSchemaKeyword(PROPERTY_NAMES).expects(ARRAY).validates(JsonSchemaType.OBJECT).since(Draft6).build();
+    KeywordInfo<SingleSchemaKeyword> PROPERTY_NAMES = singleSchemaKeyword("propertyNames").expects(ARRAY).validates(JsonSchemaType.OBJECT).since(Draft6).build();
     /**
      * The value of this keyword MUST be either a string or an array. If it is
      * an array, elements of the array MUST be strings and MUST be unique.
@@ -289,14 +265,17 @@ public interface Keywords {
      * An instance validates if and only if the instance is in any of the sets listed
      * for this keyword.
      */
-    KeywordMetadata<TypeKeyword> type = keyword(TypeKeyword.class).key(TYPE).expects(STRING, ARRAY).since(Draft4).build();
+    //todo:ericm Handle "any" and "disallow"
+    KeywordInfo<TypeKeyword> TYPE = keyword(TypeKeyword.class).key("type").expects(STRING)
+            .additionalDefinition().expects(ARRAY)
+            .build();
     /**
      * The value of "multipleOf" MUST be a number, strictly greater than 0.
      * <p>
      * A numeric instance is valid only if division by this keyword's value results in
      * an integer.
      */
-    KeywordMetadata<NumberKeyword> multipleOf = numberKeyword(MULTIPLE_OF).expects(NUMBER).validates(JsonSchemaType.NUMBER).since(Draft4).build();
+    KeywordInfo<NumberKeyword> MULTIPLE_OF = numberKeyword("multipleOf").expects(NUMBER).validates(JsonSchemaType.NUMBER, INTEGER).since(Draft4).build();
     /**
      * The value of "maximum" MUST be a number, representing an inclusive upper limit
      * for a numeric instance.
@@ -304,7 +283,7 @@ public interface Keywords {
      * If the instance is a number, then this keyword validates only if the instance is
      * less than or exactly equal to "maximum".
      */
-    KeywordMetadata<LimitKeyword> maximum = keyword(LimitKeyword.class).key(MAXIMUM).expects(NUMBER).validates(JsonSchemaType.NUMBER).build();
+    KeywordInfo<LimitKeyword> MAXIMUM = keyword(LimitKeyword.class).key("maximum").expects(NUMBER).validates(JsonSchemaType.NUMBER, JsonSchemaType.INTEGER).build();
     /**
      * The value of "exclusiveMaximum" MUST be number, representing an exclusive upper
      * limit for a numeric instance.
@@ -312,7 +291,10 @@ public interface Keywords {
      * If the instance is a number, then the instance is valid only if it has a value
      * strictly less than (not equal to) "exclusiveMaximum".
      */
-    KeywordMetadata<LimitKeyword> exclusiveMaximum = keyword(LimitKeyword.class).key(EXCLUSIVE_MAXIMUM).expects(NUMBER).validates(JsonSchemaType.NUMBER).since(Draft6).build();
+    KeywordInfo<LimitKeyword> EXCLUSIVE_MAXIMUM = keyword(LimitKeyword.class).key("exclusiveMaximum").expects(NUMBER).validates(JsonSchemaType.NUMBER, INTEGER).since(Draft6)
+            .additionalDefinition().expects(TRUE).from(Draft3).until(Draft5)
+            .additionalDefinition().expects(FALSE).from(Draft3).until(Draft5)
+            .build();
     /**
      * The value of "minimum" MUST be a number, representing an inclusive lower limit
      * for a numeric instance.
@@ -320,7 +302,7 @@ public interface Keywords {
      * If the instance is a number, then this keyword validates only if the instance is
      * greater than or exactly equal to "minimum".
      */
-    KeywordMetadata<LimitKeyword> minimum = keyword(LimitKeyword.class).key(MINIMUM).validates(JsonSchemaType.NUMBER).expects(NUMBER).build();
+    KeywordInfo<LimitKeyword> MINIMUM = keyword(LimitKeyword.class).key("minimum").validates(JsonSchemaType.NUMBER, INTEGER).expects(NUMBER).build();
     /**
      * The value of "exclusiveMinimum" MUST be number, representing an exclusive lower
      * limit for a numeric instance.
@@ -328,7 +310,10 @@ public interface Keywords {
      * If the instance is a number, then the instance is valid only if it has a value
      * strictly greater than (not equal to) "exclusiveMinimum".
      */
-    KeywordMetadata<LimitKeyword> exclusiveMinimum = keyword(LimitKeyword.class).key(EXCLUSIVE_MINIMUM).expects(NUMBER).validates(JsonSchemaType.NUMBER).since(Draft6).build();
+    KeywordInfo<LimitKeyword> EXCLUSIVE_MINIMUM = keyword(LimitKeyword.class).key("exclusiveMinimum").expects(NUMBER).validates(JsonSchemaType.NUMBER, JsonSchemaType.INTEGER).since(Draft6)
+            .additionalDefinition().expects(TRUE).from(Draft3).until(Draft5)
+            .additionalDefinition().expects(FALSE).from(Draft3).until(Draft5)
+            .build();
     /**
      * Structural validation alone may be insufficient to validate that an instance
      * meets all the requirements of an application. The "format" keyword is defined to
@@ -343,7 +328,7 @@ public interface Keywords {
      * format attribute and instance SHOULD succeed.
      * a href
      */
-    KeywordMetadata<StringKeyword> format = stringKeyword(FORMAT).expects(STRING).validates(JsonSchemaType.STRING).build();
+    KeywordInfo<StringKeyword> FORMAT = stringKeyword("format").expects(STRING).validates(JsonSchemaType.STRING).build();
     /**
      * The value of this keyword MUST be a non-negative integer.
      * A string instance is valid against this keyword if its
@@ -352,7 +337,7 @@ public interface Keywords {
      * The length of a string instance is defined as the number of its
      * characters as defined by <a href="https://tools.ietf.org/html/RFC7159">RFC 7159</a>.
      */
-    KeywordMetadata<NumberKeyword> maxLength = numberKeyword(MAX_LENGTH).expects(NUMBER).validates(JsonSchemaType.STRING).build();
+    KeywordInfo<NumberKeyword> MAX_LENGTH = numberKeyword("maxLength").expects(NUMBER).validates(JsonSchemaType.STRING).build();
     /**
      * The value of this keyword MUST be a non-negative integer.
      * <p>
@@ -365,7 +350,7 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as a value of 0.
      */
-    KeywordMetadata<NumberKeyword> minLength = numberKeyword(MIN_LENGTH).expects(NUMBER).validates(JsonSchemaType.STRING).build();
+    KeywordInfo<NumberKeyword> MIN_LENGTH = numberKeyword("minLength").expects(NUMBER).validates(JsonSchemaType.STRING).build();
     /**
      * The value of this keyword MUST be a string. This string SHOULD be a
      * valid regular expression, according to the ECMA 262 regular expression
@@ -375,7 +360,7 @@ public interface Keywords {
      * expression matches the instance successfully. Recall: regular
      * expressions are not implicitly anchored.
      */
-    KeywordMetadata<StringKeyword> pattern = stringKeyword(PATTERN).expects(STRING).validates(JsonSchemaType.STRING).build();
+    KeywordInfo<StringKeyword> PATTERN = stringKeyword("pattern").expects(STRING).validates(JsonSchemaType.STRING).build();
     /**
      * The value of "items" MUST be either a valid JSON Schema or an array of valid
      * JSON Schemas.
@@ -392,7 +377,9 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as an empty schema.
      */
-    KeywordMetadata<ItemsKeyword> items = keyword(ItemsKeyword.class).key(ITEMS).expects(ARRAY, OBJECT).validates(JsonSchemaType.ARRAY).build();
+    KeywordInfo<ItemsKeyword> ITEMS = keyword(ItemsKeyword.class).key("items").expects(ARRAY).validates(JsonSchemaType.ARRAY)
+            .additionalDefinition().expects(OBJECT)
+            .build();
     /**
      * The value of "additionalItems" MUST be a valid JSON Schema.
      * <p>
@@ -409,14 +396,17 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as an empty schema.
      */
-    KeywordMetadata<ItemsKeyword> additionalItems = keyword(ItemsKeyword.class).key(ADDITIONAL_ITEMS).expects(OBJECT).validates(JsonSchemaType.ARRAY).since(Draft6).build();
+    KeywordInfo<ItemsKeyword> ADDITIONAL_ITEMS = keyword(ItemsKeyword.class).key("additionalItems").expects(OBJECT).validates(JsonSchemaType.ARRAY).since(Draft3)
+            .additionalDefinition().expects(TRUE).validates(JsonSchemaType.ARRAY).from(Draft3).until(Draft5)
+            .additionalDefinition().expects(FALSE).validates(JsonSchemaType.ARRAY).from(Draft3).until(Draft5)
+            .build();
     /**
      * The value of this keyword MUST be a non-negative integer.
      * <p>
      * An array instance is valid against "maxItems" if its size is
      * less than, or equal to, the value of this keyword.
      */
-    KeywordMetadata<NumberKeyword> maxItems = numberKeyword(MAX_ITEMS).expects(NUMBER).validates(JsonSchemaType.ARRAY).build();
+    KeywordInfo<NumberKeyword> MAX_ITEMS = numberKeyword("maxItems").expects(NUMBER).validates(JsonSchemaType.ARRAY).build();
     /**
      * The value of this keyword MUST be a non-negative integer.
      * <p>
@@ -425,7 +415,7 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as a value of 0.
      */
-    KeywordMetadata<NumberKeyword> minItems = numberKeyword(MIN_ITEMS).expects(NUMBER).validates(JsonSchemaType.ARRAY).build();
+    KeywordInfo<NumberKeyword> MIN_ITEMS = numberKeyword("minItems").expects(NUMBER).validates(JsonSchemaType.ARRAY).build();
     /**
      * The value of this keyword MUST be a boolean.
      * <p>
@@ -435,14 +425,16 @@ public interface Keywords {
      * <p>
      * Omitting this keyword has the same behavior as a value of false.
      */
-    KeywordMetadata<BooleanKeyword> uniqueItems = booleanKeyword(UNIQUE_ITEMS).expects(TRUE, FALSE).validates(JsonSchemaType.ARRAY).build();
+    KeywordInfo<BooleanKeyword> UNIQUE_ITEMS = booleanKeyword("uniqueItems").expects(TRUE).validates(JsonSchemaType.ARRAY)
+            .additionalDefinition().expects(FALSE)
+            .build();
     /**
      * The value of this keyword MUST be a valid JSON Schema.
      * <p>
      * An array instance is valid against "contains" if at least one of
      * its elements is valid against the given schema.
      */
-    KeywordMetadata<SingleSchemaKeyword> contains = singleSchemaKeyword(CONTAINS).expects(OBJECT).validates(JsonSchemaType.ARRAY).since(Draft6).build();
+    KeywordInfo<SingleSchemaKeyword> CONTAINS = singleSchemaKeyword("contains").expects(OBJECT).validates(JsonSchemaType.ARRAY).since(Draft6).build();
     /**
      * The value of this keyword MUST be an array. This array SHOULD have at
      * least one element. Elements in the array SHOULD be unique.
@@ -452,7 +444,7 @@ public interface Keywords {
      * <p>
      * Elements in the array might be of any value, including null.
      */
-    KeywordMetadata<JsonArrayKeyword> $enum = jsonArrayKeyword(ENUM).expects(ARRAY).build();
+    KeywordInfo<JsonArrayKeyword> ENUM = jsonArrayKeyword("enum").expects(ARRAY).build();
     /**
      * The value of this keyword MUST be an array. There are no restrictions placed on the values within the array.
      * <p>
@@ -462,21 +454,28 @@ public interface Keywords {
      * Implementations MAY use the value of "default", if present, as an additional example. If "examples" is
      * absent, "default" MAY still be used in this manner.
      */
-    KeywordMetadata<JsonArrayKeyword> examples = jsonArrayKeyword(EXAMPLES).expects(ARRAY).since(Draft6).build();
+    KeywordInfo<JsonArrayKeyword> EXAMPLES = jsonArrayKeyword("examples").expects(ARRAY).since(Draft6).build();
     /**
      * The value of this keyword MAY be of any type, including null.
      * <p>
      * An instance validates successfully against this keyword if its value is
      * equal to the value of the keyword.
      */
-    KeywordMetadata<JsonValueKeyword> $const = jsonValueKeyword(CONST).expects(OBJECT, ARRAY, STRING, NUMBER, TRUE, FALSE, NULL).forAllSchemas().since(Draft6).build();
+    KeywordInfo<JsonValueKeyword> CONST = jsonValueKeyword("const").expects(OBJECT).since(Draft6)
+            .additionalDefinition().expects(ARRAY)
+            .additionalDefinition().expects(STRING)
+            .additionalDefinition().expects(NUMBER)
+            .additionalDefinition().expects(TRUE)
+            .additionalDefinition().expects(FALSE)
+            .additionalDefinition().expects(NULL)
+            .build();
     /**
      * This keyword's value MUST be a valid JSON Schema.
      * <p>
      * An instance is valid against this keyword if it fails to validate
      * successfully against the schema defined by this keyword.
      */
-    KeywordMetadata<SingleSchemaKeyword> not = singleSchemaKeyword(NOT).expects(OBJECT).validatesAnyType().since(Draft4).build();
+    KeywordInfo<SingleSchemaKeyword> NOT = singleSchemaKeyword("not").expects(OBJECT).since(Draft4).build();
     /**
      * This keyword's value MUST be a non-empty array.
      * Each item of the array MUST be a valid JSON Schema.
@@ -484,7 +483,7 @@ public interface Keywords {
      * An instance validates successfully against this keyword if it validates
      * successfully against all schemas defined by this keyword's value.
      */
-    KeywordMetadata<SchemaListKeyword> allOf = schemaListKeyword(ALL_OF).expects(ARRAY).validatesAnyType().since(Draft4).build();
+    KeywordInfo<SchemaListKeyword> ALL_OF = schemaListKeyword("allOf").expects(ARRAY).since(Draft4).build();
     /**
      * This keyword's value MUST be a non-empty array.
      * Each item of the array MUST be a valid JSON Schema.
@@ -492,7 +491,7 @@ public interface Keywords {
      * An instance validates successfully against this keyword if it validates
      * successfully against at least one schema defined by this keyword's value.
      */
-    KeywordMetadata<SchemaListKeyword> anyOf = schemaListKeyword(ANY_OF).expects(ARRAY).validatesAnyType().since(Draft4).build();
+    KeywordInfo<SchemaListKeyword> ANY_OF = schemaListKeyword("anyOf").expects(ARRAY).since(Draft4).build();
     /**
      * This keyword's value MUST be a non-empty array.
      * Each item of the array MUST be a valid JSON Schema.
@@ -500,89 +499,50 @@ public interface Keywords {
      * An instance validates successfully against this keyword if it validates
      * successfully against exactly one schema defined by this keyword's value.
      */
-    KeywordMetadata<SchemaListKeyword> oneOf = schemaListKeyword(ONE_OF).expects(ARRAY).validatesAnyType().since(Draft4).build();
-    /**
-     * From draft-3 schema
-     * <p>
-     * This attribute indicates if the instance must have a value, and not
-     * be undefined.  This is false by default, making the instance
-     * optional.
-     */
-     KeywordMetadata<BooleanKeyword> requiredDraft3 = booleanKeyword(REQUIRED_PROPERTY).expects(TRUE, FALSE).validatesAnyType().from(Draft3).until(Draft3).build();
-    /**
-     * From draft-03
-     * <p>
-     * The value of this property MUST be another schema which will provide
-     * a base schema which the current schema will inherit from.  The
-     * inheritance rules are such that any instance that is valid according
-     * to the current schema MUST be valid according to the referenced
-     * schema.  This MAY also be an array, in which case, the instance MUST
-     * be valid for all the schemas in the array.  A schema that extends
-     * another schema MAY define additional attributes, constrain existing
-     * attributes, or add other constraints.
-     * <p>
-     * Conceptually, the behavior of extends can be seen as validating an
-     * instance against all constraints in the extending schema as well as
-     * the extended schema(s).  More optimized implementations that merge
-     * schemas are possible, but are not required.  An example of using
-     * "extends":
-     * <p>
-     * {
-     * "description":"An adult",
-     * "properties":{"age":{"minimum": 21}},
-     * "extends":"person"
-     * }
-     * <p>
-     * {
-     * "description":"Extended schema",
-     * "properties":{"deprecated":{"type": "boolean"}},
-     * "extends":"http://json-schema.org/draft-03/schema"
-     * }
-     */
-    KeywordMetadata<SingleSchemaKeyword> $extends = singleSchemaKeyword(EXTENDS).expects(OBJECT).validatesAnyType().from(Draft3).until(Draft3).build();
+    KeywordInfo<SchemaListKeyword> ONE_OF = schemaListKeyword("oneOf").expects(ARRAY).since(Draft4).build();
 
-    static KeywordMetadata.KeywordMetadataBuilder<SchemaMapKeyword> schemaMapKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadata.KeywordMetadataBuilder<SchemaMapKeyword>().key(keyword);
+    static KeywordInfo.KeywordInfoBuilder<SchemaMapKeyword> schemaMapKeyword(String keyword) {
+        return new KeywordInfo.KeywordInfoBuilder<SchemaMapKeyword>().key(keyword);
     }
 
-    static KeywordMetadata.KeywordMetadataBuilder<StringKeyword> stringKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadata.KeywordMetadataBuilder<StringKeyword>().key(keyword);
+    static KeywordInfo.KeywordInfoBuilder<StringKeyword> stringKeyword(String keyword) {
+        return new KeywordInfo.KeywordInfoBuilder<StringKeyword>().key(keyword);
     }
 
-    static KeywordMetadata.KeywordMetadataBuilder<JsonValueKeyword> jsonValueKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadata.KeywordMetadataBuilder<JsonValueKeyword>().key(keyword);
+    static KeywordInfo.KeywordInfoBuilder<JsonValueKeyword> jsonValueKeyword(String keyword) {
+        return new KeywordInfo.KeywordInfoBuilder<JsonValueKeyword>().key(keyword);
     }
 
-    static KeywordMetadataBuilder<NumberKeyword> numberKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadataBuilder<NumberKeyword>().key(keyword);
+    static KeywordInfoBuilder<NumberKeyword> numberKeyword(String keyword) {
+        return new KeywordInfoBuilder<NumberKeyword>().key(keyword);
     }
 
-    static KeywordMetadataBuilder<StringSetKeyword> stringSetKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadataBuilder<StringSetKeyword>().key(keyword);
+    static KeywordInfoBuilder<StringSetKeyword> stringSetKeyword(String keyword) {
+        return new KeywordInfoBuilder<StringSetKeyword>().key(keyword);
     }
 
-    static KeywordMetadataBuilder<SingleSchemaKeyword> singleSchemaKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadataBuilder<SingleSchemaKeyword>().key(keyword);
+    static KeywordInfoBuilder<SingleSchemaKeyword> singleSchemaKeyword(String keyword) {
+        return new KeywordInfoBuilder<SingleSchemaKeyword>().key(keyword);
     }
 
-    static KeywordMetadataBuilder<SchemaListKeyword> schemaListKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadataBuilder<SchemaListKeyword>().key(keyword);
+    static KeywordInfoBuilder<SchemaListKeyword> schemaListKeyword(String keyword) {
+        return new KeywordInfoBuilder<SchemaListKeyword>().key(keyword);
     }
 
-    static KeywordMetadataBuilder<URIKeyword> uriKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadataBuilder<URIKeyword>().key(keyword);
+    static KeywordInfoBuilder<URIKeyword> uriKeyword(String keyword) {
+        return new KeywordInfoBuilder<URIKeyword>().key(keyword);
     }
 
-    static KeywordMetadataBuilder<BooleanKeyword> booleanKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadataBuilder<BooleanKeyword>().key(keyword);
+    static KeywordInfoBuilder<BooleanKeyword> booleanKeyword(String keyword) {
+        return new KeywordInfoBuilder<BooleanKeyword>().key(keyword);
     }
 
-    static KeywordMetadataBuilder<JsonArrayKeyword> jsonArrayKeyword(JsonSchemaKeywordType keyword) {
-        return new KeywordMetadataBuilder<JsonArrayKeyword>().key(keyword);
+    static KeywordInfoBuilder<JsonArrayKeyword> jsonArrayKeyword(String keyword) {
+        return new KeywordInfoBuilder<JsonArrayKeyword>().key(keyword);
     }
 
-    static <X extends SchemaKeyword> KeywordMetadataBuilder<X> keyword(Class<X> keywordClass) {
-        return new KeywordMetadataBuilder<X>().keywordClass(keywordClass);
+    static <X extends SchemaKeyword> KeywordInfoBuilder<X> keyword(Class<X> type) {
+        return new KeywordInfoBuilder<X>();
     }
 
 }

@@ -2,9 +2,13 @@ package io.sbsp.jsonschema.six;
 
 import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.Schema;
+import io.sbsp.jsonschema.SchemaBuilder;
 import io.sbsp.jsonschema.TestUtils;
 import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.utils.JsonUtils;
+import io.sbsp.jsonschema.utils.Schemas;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
@@ -12,8 +16,7 @@ import org.junit.Test;
 import java.net.URI;
 import java.util.regex.Pattern;
 
-import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
-import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchemaBuilderWithId;
+import static io.sbsp.jsonschema.JsonSchemaProvider.*;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.ARRAY;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.BOOLEAN;
 import static io.sbsp.jsonschema.enums.JsonSchemaType.INTEGER;
@@ -28,7 +31,7 @@ public class SchemaBuilderTest {
 
     @Test
     public void buildAllStringKeywords() {
-        final Draft6Schema schema = jsonSchema()
+        final Draft6Schema schema = schemaBuilder()
                 .type(STRING)
                 .minLength(3)
                 .maxLength(6)
@@ -59,7 +62,7 @@ public class SchemaBuilderTest {
 
     @Test
     public void buildAllNumberKeywords() {
-        final Draft6Schema schema = jsonSchema()
+        final Draft6Schema schema = schemaBuilder()
                 .type(NUMBER)
                 .minimum(1)
                 .maximum(9)
@@ -90,17 +93,17 @@ public class SchemaBuilderTest {
 
     @Test
     public void buildArrayKeywords_AllItemSchema() {
-        final Draft6Schema schema = jsonSchema()
+        final Draft6Schema schema = schemaBuilder()
                 .type(ARRAY)
                 .minItems(1)
                 .maxItems(10)
                 .needsUniqueItems(true)
-                .allItemSchema(jsonSchema()
+                .allItemSchema(schemaBuilder()
                         .notSchema(
-                                jsonSchema().type(NULL)
+                                schemaBuilder().type(NULL)
                         )
                 )
-                .containsSchema(jsonSchema()
+                .containsSchema(schemaBuilder()
                         .type(STRING)
                 )
                 .build()
@@ -115,7 +118,7 @@ public class SchemaBuilderTest {
                     .isEqualTo(10);
             a.assertThat(schema.getAllItemSchema())
                     .isPresent()
-                    .hasValue(jsonSchema().notSchema(jsonSchema().type(NULL))
+                    .hasValue(schemaBuilder().notSchema(schemaBuilder().type(NULL))
                             .build()
                             .asDraft6());
             final Schema allItemSchema = schema.getAllItemSchema().get();
@@ -124,7 +127,7 @@ public class SchemaBuilderTest {
 
             a.assertThat(schema.getContainsSchema())
                     .isPresent()
-                    .hasValue(jsonSchema().type(STRING).build().asDraft6());
+                    .hasValue(schemaBuilder().type(STRING).build().asDraft6());
 
             final Schema containschema = schema.getContainsSchema().get();
             a.assertThat(containschema.getLocation().getJsonPointerFragment())
@@ -134,12 +137,12 @@ public class SchemaBuilderTest {
 
     @Test
     public void buildArrayKeywords_IndexedItemSchema() {
-        final Draft6Schema draft6Schema = jsonSchema()
+        final Draft6Schema draft6Schema = schemaBuilder()
                 .type(ARRAY)
-                .itemSchema(jsonSchema().type(STRING))
-                .itemSchema(jsonSchema().type(NUMBER))
-                .itemSchema(jsonSchema().type(BOOLEAN))
-                .schemaOfAdditionalItems(jsonSchema().type(STRING))
+                .itemSchema(schemaBuilder().type(STRING))
+                .itemSchema(schemaBuilder().type(NUMBER))
+                .itemSchema(schemaBuilder().type(BOOLEAN))
+                .schemaOfAdditionalItems(schemaBuilder().type(STRING))
                 .build().asDraft6();
 
         assertSoftly(a -> {
@@ -147,14 +150,30 @@ public class SchemaBuilderTest {
                     .isNotNull()
                     .hasSize(3)
                     .element(0)
-                    .isEqualTo(jsonSchema().type(STRING).build());
+                    .isEqualTo(schemaBuilder().type(STRING).build());
             final URI fragmentIdx0 = draft6Schema.getItemSchemas().get(0).getLocation().getJsonPointerFragment();
             assertThat(fragmentIdx0)
                     .isNotNull()
                     .hasToString("#/items/0");
             a.assertThat(draft6Schema.getAdditionalItemsSchema())
                     .isPresent()
-                    .hasValue(jsonSchema().type(STRING).build().asDraft6());
+                    .hasValue(schemaBuilder().type(STRING).build().asDraft6());
+            a.assertThat(draft6Schema.getAdditionalItemsSchema().get().getLocation().getJsonPointerFragment())
+                    .hasToString("#/additionalItems");
+        });
+    }
+
+    @Test
+    public void buildArrayKeywords_NoAdditionalItems() {
+        final Draft6Schema draft6Schema = schemaBuilder()
+                .type(ARRAY)
+                .noAdditionalItems()
+                .build().asDraft6();
+
+        assertSoftly(a -> {
+            a.assertThat(draft6Schema.getAdditionalItemsSchema().get())
+                    .isNotNull()
+                    .isEqualTo(Schemas.falseSchema());
             a.assertThat(draft6Schema.getAdditionalItemsSchema().get().getLocation().getJsonPointerFragment())
                     .hasToString("#/additionalItems");
         });
@@ -164,17 +183,17 @@ public class SchemaBuilderTest {
     public void buildObjectKeywords_AllKeywords() {
         final Pattern pattern = Pattern.compile("[A-Z]*");
 
-        final Draft6Schema schema = jsonSchema()
+        final Draft6Schema schema = schemaBuilder()
                 .type(OBJECT)
-                .propertySchema("name", jsonSchema().type(STRING))
-                .propertySchema("age", jsonSchema().type(NUMBER))
-                .patternProperty(pattern, jsonSchema().type(OBJECT))
-                .schemaOfAdditionalProperties(jsonSchema().type(ARRAY))
+                .propertySchema("name", schemaBuilder().type(STRING))
+                .propertySchema("age", schemaBuilder().type(NUMBER))
+                .patternProperty(pattern, schemaBuilder().type(OBJECT))
+                .schemaOfAdditionalProperties(schemaBuilder().type(ARRAY))
                 .requiredProperty("name")
                 .requiredProperty("another")
                 .minProperties(1)
                 .maxProperties(10)
-                .schemaDependency("email", jsonSchema().maxProperties(4))
+                .schemaDependency("email", schemaBuilder().maxProperties(4))
                 .build().asDraft6();
 
         assertSoftly(a -> {
@@ -184,31 +203,31 @@ public class SchemaBuilderTest {
             a.assertThat(schema.getPatternProperties())
                     .isNotNull()
                     .hasSize(1)
-                    .containsEntry(pattern.pattern(), jsonSchema().type(OBJECT).build());
+                    .containsEntry(pattern.pattern(), schemaBuilder().type(OBJECT).build());
 
             a.assertThat(schema.getPropertySchemaDependencies())
                     .isNotNull()
                     .hasSize(1)
-                    .containsEntry("email", jsonSchema().maxProperties(4).build());
+                    .containsEntry("email", schemaBuilder().maxProperties(4).build());
         });
     }
 
     @Test
     public void buildSharedKeywords_AllKeywords() {
-        final Draft6Schema objectSchema = jsonSchemaBuilderWithId("#doopy")
+        final Draft6Schema objectSchema = schemaBuilder("#doopy")
                 .title("My Title")
                 .description("A description")
                 .defaultValue(TestUtils.jsonString("A default value"))
-                .allOfSchema(jsonSchema().enumValues(JsonUtils.jsonArray(1, 2, 3, 4)))
-                .allOfSchema(jsonSchema().enumValues(JsonUtils.jsonArray(3, 4, 5, 6)))
-                .anyOfSchema(jsonSchema().constValueDouble(4))
-                .anyOfSchema(jsonSchema().constValueDouble(46))
-                .oneOfSchema(jsonSchema().minimum(2))
-                .oneOfSchema(jsonSchema().maximum(50))
+                .allOfSchema(schemaBuilder().enumValues(JsonUtils.jsonArray(1, 2, 3, 4)))
+                .allOfSchema(schemaBuilder().enumValues(JsonUtils.jsonArray(3, 4, 5, 6)))
+                .anyOfSchema(schemaBuilder().constValueDouble(4))
+                .anyOfSchema(schemaBuilder().constValueDouble(46))
+                .oneOfSchema(schemaBuilder().minimum(2))
+                .oneOfSchema(schemaBuilder().maximum(50))
                 .propertyDependency("age", "email")
                 .type(NUMBER)
                 .type(INTEGER)
-                .notSchema(jsonSchema().constValueDouble(21))
+                .notSchema(schemaBuilder().constValueDouble(21))
                 .enumValues(JsonUtils.jsonArray(1, 2, 3, 4, 5, 6, 7, 8, 9))
                 .build().asDraft6();
 
@@ -235,7 +254,7 @@ public class SchemaBuilderTest {
                     .contains(NUMBER, INTEGER);
             a.assertThat(objectSchema.getNotSchema())
                     .isPresent()
-                    .hasValue(jsonSchema().constValueDouble(21).build());
+                    .hasValue(schemaBuilder().constValueDouble(21).build());
             a.assertThat(objectSchema.getEnumValues())
                     .isPresent()
                     .hasValue(JsonUtils.jsonArray(1, 2, 3, 4, 5, 6, 7, 8, 9));
@@ -247,36 +266,36 @@ public class SchemaBuilderTest {
         EqualsVerifier.forClass(JsonSchemaBuilder.class)
                 .suppress(Warning.STRICT_INHERITANCE)
                 .suppress(Warning.NONFINAL_FIELDS)
-                .withPrefabValues(JsonSchemaBuilder.class,
-                        jsonSchema().type(STRING),
-                        jsonSchema().type(OBJECT))
+                .withPrefabValues(KeywordInfo.class, Keywords.$ID, Keywords.$SCHEMA)
+                .withPrefabValues(SchemaBuilder.class,
+                        schemaBuilder().type(STRING),
+                        schemaBuilder().type(OBJECT))
                 .withPrefabValues(Pattern.class, Pattern.compile("[a-z]*]"), Pattern.compile("[A-Z]*]"))
                 .withOnlyTheseFields(
-                        "keywords",
-                        "keywordBuilders"
+                        "keywords"
                 )
                 .verify();
     }
 
     @Test
     public void testBuilderEqualsWithPatternProperty() {
-        JsonSchemaBuilder a = jsonSchema().patternProperty("[a-z]*", jsonSchema());
-        JsonSchemaBuilder b = jsonSchema().patternProperty("[a-z]*", jsonSchema());
+        SchemaBuilder a = schemaBuilder().patternProperty("[a-z]*", schemaBuilder());
+        SchemaBuilder b = schemaBuilder().patternProperty("[a-z]*", schemaBuilder());
         assertThat(a).isEqualTo(b);
     }
 
     @Test
     public void testBuilderHashcodeMatchesWithPatternProperty() {
-        JsonSchemaBuilder a = jsonSchema().patternProperty("[a-z]*", jsonSchema());
-        JsonSchemaBuilder b = jsonSchema().patternProperty("[a-z]*", jsonSchema());
+        SchemaBuilder a = schemaBuilder().patternProperty("[a-z]*", schemaBuilder());
+        SchemaBuilder b = schemaBuilder().patternProperty("[a-z]*", schemaBuilder());
         assertThat(a.hashCode()).isEqualTo(b.hashCode());
     }
 
     @Test
     public void testBuilderEqualsWithPattern() {
-        JsonSchemaBuilder a = jsonSchema().pattern("[a-z]*");
-        JsonSchemaBuilder b = jsonSchema().pattern("[a-z]*");
+        SchemaBuilder a = schemaBuilder().pattern("[a-z]*");
+        SchemaBuilder b = schemaBuilder().pattern("[a-z]*");
         assertThat(a).isEqualTo(b);
-        assertThat(a).isNotEqualTo(jsonSchema().pattern("[A-Z]*"));
+        assertThat(a).isNotEqualTo(schemaBuilder().pattern("[A-Z]*"));
     }
 }

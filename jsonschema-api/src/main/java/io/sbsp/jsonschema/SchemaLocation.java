@@ -1,13 +1,16 @@
 package io.sbsp.jsonschema;
 
 import com.google.common.base.MoreObjects;
-import io.sbsp.jsonschema.enums.JsonSchemaKeywordType;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
+import io.sbsp.jsonschema.utils.JsonUtils;
 import io.sbsp.jsonschema.utils.URIUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import javax.annotation.Nullable;
+import javax.json.JsonObject;
 import java.net.URI;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -114,6 +117,9 @@ public class SchemaLocation {
     }
 
     public SchemaLocation child(String... jsonPath) {
+        if (jsonPath.length == 0) {
+            return this;
+        }
         return new SchemaLocation(null, this.documentURI,
                 resolutionScope, this.jsonPath.child(jsonPath));
     }
@@ -138,7 +144,7 @@ public class SchemaLocation {
                 .build();
     }
 
-    public SchemaLocation child(JsonSchemaKeywordType keyword) {
+    public SchemaLocation child(KeywordInfo<?> keyword) {
         return child(keyword.key());
     }
 
@@ -163,22 +169,6 @@ public class SchemaLocation {
         return new SchemaLocationBuilder(documentURI, resolutionScope, jsonPath);
     }
 
-    public static SchemaLocation hashedRoot(Object builder, URI id) {
-        checkNotNull(id, "id must not be null");
-        final URI uniqueURI = generateUniqueURI(builder);
-        final URI resolvedFromUnique = resolve(uniqueURI, id);
-        final JsonPath path;
-        if (URIUtils.isJsonPointer(id)) {
-            return new SchemaLocation(resolvedFromUnique, resolvedFromUnique, resolvedFromUnique, JsonPath.parseFromURIFragment(id));
-        } else {
-            return new SchemaLocation(resolvedFromUnique, resolvedFromUnique, resolvedFromUnique, ROOT_PATH);
-        }
-    }
-
-    public static SchemaLocation hashedRoot(Object builder) {
-        // If there's not ID for a base schema, assign something unique to avoid false-positive cache-hites
-        return new SchemaLocationBuilder(generateUniqueURI(builder)).build();
-    }
 
     public static SchemaLocation documentRoot(URI $id) {
         checkNotNull($id, "$id must not be null");
@@ -207,6 +197,10 @@ public class SchemaLocation {
             resolutionScope = documentURI;
         }
         return new SchemaLocationBuilder(documentURI, resolutionScope, refPath).build();
+    }
+
+    public static SchemaLocationBuilder builderFrom$Id(URI $id) {
+        return new SchemaLocationBuilder($id);
     }
 
     public static class SchemaLocationBuilder {

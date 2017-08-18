@@ -1,7 +1,7 @@
 package io.sbsp.jsonschema;
 
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
-import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 
 import javax.json.spi.JsonProvider;
@@ -28,7 +28,7 @@ public interface Schema {
 
     JsonGenerator toJson(final JsonGenerator writer, JsonSchemaVersion version);
 
-    Map<KeywordMetadata<?>, SchemaKeyword> getKeywords();
+    Map<KeywordInfo<?>, SchemaKeyword> getKeywords();
 
     default JsonGenerator toJson(final JsonGenerator writer) {
         return toJson(writer, getVersion());
@@ -61,7 +61,7 @@ public interface Schema {
     Draft3Schema asDraft3();
     Draft4Schema asDraft4();
 
-    default String toString(boolean pretty) {
+    default String toString(boolean pretty, JsonSchemaVersion version) {
         final StringWriter stringWriter = new StringWriter();
         final JsonGenerator generator;
         if (pretty) {
@@ -69,7 +69,7 @@ public interface Schema {
         } else {
             generator = JsonProvider.provider().createGenerator(stringWriter);
         }
-        this.toJson(generator);
+        this.toJson(generator, version);
         generator.flush();
         return stringWriter.toString();
     }

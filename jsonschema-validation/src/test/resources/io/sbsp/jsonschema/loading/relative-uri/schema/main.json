@@ -1,0 +1,9 @@
+{
+  "$id": "http://localhost:1234/schema/",
+  "type": "object",
+  "properties": {
+    "rect": {
+      "$ref": "props.json#/definitions/Rectangle"
+    }
+  }
+}

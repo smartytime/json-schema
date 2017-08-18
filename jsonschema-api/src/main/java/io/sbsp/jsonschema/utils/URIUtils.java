@@ -1,13 +1,21 @@
 package io.sbsp.jsonschema.utils;
 
+import com.google.common.base.Strings;
 import com.google.common.hash.HashCode;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
+import javax.json.JsonString;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+@Slf4j
 public class URIUtils {
 
     public static final String SCHEME_AUTOASSIGN = "sbsp";
@@ -45,11 +53,10 @@ public class URIUtils {
     @SneakyThrows
     private static URI withFragment(URI uri, String fragment) {
         checkNotNull(uri, "uri must not be null");
-        if (uri.getFragment() == null) {
+        if (uri.getFragment() == null && Strings.isNullOrEmpty(fragment)) {
             return uri;
         }
-        return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(),
-                uri.getPath(), uri.getQuery(), fragment);
+        return new URI(uri.getScheme(), uri.getSchemeSpecificPart(), fragment);
     }
 
     @SneakyThrows

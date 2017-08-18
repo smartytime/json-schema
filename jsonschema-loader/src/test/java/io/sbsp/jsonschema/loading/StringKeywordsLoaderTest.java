@@ -5,7 +5,7 @@ import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
 import org.junit.Test;
 
-import static io.sbsp.jsonschema.builder.JsonSchemaBuilder.jsonSchema;
+import static io.sbsp.jsonschema.JsonSchemaProvider.schemaBuilder;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 /**
@@ -13,7 +13,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
  */
 public class StringKeywordsLoaderTest extends BaseLoaderTest {
 
-    public static final Schema NULL_SCHEMA = jsonSchema().type(JsonSchemaType.NULL).build();
+    public static final Schema NULL_SCHEMA = schemaBuilder().type(JsonSchemaType.NULL).build();
 
     public StringKeywordsLoaderTest() {
         super("stringtestschemas.json");

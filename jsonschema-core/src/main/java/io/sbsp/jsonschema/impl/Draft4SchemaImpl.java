@@ -4,7 +4,7 @@ import io.sbsp.jsonschema.Draft4Schema;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
-import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
 import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.keyword.LimitKeyword;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
@@ -17,7 +17,7 @@ import java.util.Set;
 
 public class Draft4SchemaImpl extends JsonSchemaImpl<Draft4Schema> implements Draft4Schema {
 
-    public Draft4SchemaImpl(SchemaLocation location, Map<KeywordMetadata<?>, SchemaKeyword> keywords) {
+    public Draft4SchemaImpl(SchemaLocation location, Map<KeywordInfo<?>, SchemaKeyword> keywords) {
         super(location, keywords, JsonSchemaVersion.Draft4);
     }
 
@@ -26,11 +26,11 @@ public class Draft4SchemaImpl extends JsonSchemaImpl<Draft4Schema> implements Dr
     // #####################################################
 
     public boolean isExclusiveMinimum() {
-        return keyword(Keywords.minimum).map(LimitKeyword::isExclusive).orElse(false);
+        return keyword(Keywords.MINIMUM).map(LimitKeyword::isExclusive).orElse(false);
     }
 
     public boolean isExclusiveMaximum() {
-        return keyword(Keywords.maximum).map(LimitKeyword::isExclusive).orElse(false);
+        return keyword(Keywords.MAXIMUM).map(LimitKeyword::isExclusive).orElse(false);
     }
 
     public boolean isAllowAdditionalItems() {

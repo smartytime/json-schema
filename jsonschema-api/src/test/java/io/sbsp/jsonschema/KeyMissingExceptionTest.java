@@ -1,5 +1,6 @@
 package io.sbsp.jsonschema;
 
+import io.sbsp.jsonschema.utils.SchemaPaths;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -8,7 +9,7 @@ public class KeyMissingExceptionTest {
 
     @Test(expected = NullPointerException.class)
     public void testNullMessage() {
-        new KeyMissingException(SchemaLocation.hashedRoot(this), null);
+        new KeyMissingException(SchemaPaths.fromNonSchemaSource(this), null);
 
     }
 
@@ -21,7 +22,7 @@ public class KeyMissingExceptionTest {
 
     @Test
     public void testMessage() {
-        final KeyMissingException exception = new KeyMissingException(SchemaLocation.hashedRoot(this), "bob");
+        final KeyMissingException exception = new KeyMissingException(SchemaPaths.fromNonSchemaSource(this), "bob");
         assertThat(exception.getMessage()).isEqualTo("#: Missing value at key [bob]");
     }
 

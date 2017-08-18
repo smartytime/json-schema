@@ -29,9 +29,9 @@ public abstract class SchemaKeywordImpl<T> implements SchemaKeyword {
     }
 
     @Override
-    public void writeToGenerator(KeywordMetadata<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
 
-        final String jsonKey = keyword.getKey();
+        final String jsonKey = keyword.key();
         if (keywordValue instanceof String) {
             generator.write(jsonKey, (String) keywordValue);
         } else if (keywordValue instanceof JsonValue) {
@@ -58,5 +58,10 @@ public abstract class SchemaKeywordImpl<T> implements SchemaKeyword {
 
             throw new RuntimeException("Unable to serialize JSON - unknown value type: " + keywordValue.getClass());
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(keywordValue);
     }
 }

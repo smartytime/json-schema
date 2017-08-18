@@ -1,15 +1,13 @@
 package io.sbsp.jsonschema;
 
+import io.sbsp.jsonschema.loading.SchemaFactory;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import lombok.Getter;
 
-import javax.json.JsonValue;
 import java.net.URI;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 /**
- * Thrown by {@link SchemaLoader#load()} when it encounters
+ * Thrown by {@link SchemaFactory#load()} when it encounters
  * un-parseable schema JSON definition.
  *
  * @author erosb

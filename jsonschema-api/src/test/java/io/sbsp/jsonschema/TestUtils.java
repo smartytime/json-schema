@@ -9,28 +9,28 @@ import javax.json.spi.JsonProvider;
 
 public class TestUtils {
 
-    public static JsonValueWithLocation createValue(JsonValue value) {
-        return JsonValueWithLocation.fromJsonValue(value);
+    public static JsonValueWithPath createValue(JsonValue value) {
+        return JsonValueWithPath.fromJsonValue(value);
     }
 
-    public static JsonValueWithLocation createJsonObjectWithLocation() {
+    public static JsonValueWithPath createJsonObjectWithLocation() {
         final JsonObject jsonValue = JsonProvider.provider().createObjectBuilder()
                 .add("foo", "bar")
                 .add("num", 3).build();
-        return JsonValueWithLocation.fromJsonValue(jsonValue);
+        return JsonValueWithPath.fromJsonValue(jsonValue);
     }
 
-    public static JsonValueWithLocation createJsonNumberWithLocation(Number number) {
+    public static JsonValueWithPath createJsonNumberWithLocation(Number number) {
         final JsonNumber jsonValue = JsonProvider.provider().createValue(number.doubleValue());
-        return JsonValueWithLocation.fromJsonValue(jsonValue);
+        return JsonValueWithPath.fromJsonValue(jsonValue);
     }
 
-    public static JsonValueWithLocation createJsonStringWithLocation(String string) {
+    public static JsonValueWithPath createJsonStringWithLocation(String string) {
         final JsonString jsonValue = JsonProvider.provider().createValue(string);
-        return JsonValueWithLocation.fromJsonValue(jsonValue);
+        return JsonValueWithPath.fromJsonValue(jsonValue);
     }
 
-    public static JsonValueWithLocation createJsonArrayWithLocation() {
+    public static JsonValueWithPath createJsonArrayWithLocation() {
         final JsonArray jsonValue = JsonProvider.provider().createArrayBuilder()
                 .add("foo")
                 .add("bar")
@@ -39,7 +39,7 @@ public class TestUtils {
                 .add(JsonValue.NULL)
                 .build();
 
-        return JsonValueWithLocation.fromJsonValue(jsonValue);
+        return JsonValueWithPath.fromJsonValue(jsonValue);
     }
 
     public static JsonString jsonString(String input) {

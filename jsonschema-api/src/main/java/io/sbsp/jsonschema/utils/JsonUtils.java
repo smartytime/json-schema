@@ -3,14 +3,15 @@ package io.sbsp.jsonschema.utils;
 import com.google.common.collect.ImmutableMap;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.annotation.Nullable;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonString;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import javax.json.JsonWriterFactory;
 import javax.json.spi.JsonProvider;
 import javax.json.stream.JsonGeneratorFactory;
@@ -21,18 +22,21 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
 import static javax.json.JsonValue.EMPTY_JSON_ARRAY;
 import static javax.json.JsonValue.FALSE;
 import static javax.json.JsonValue.TRUE;
 import static javax.json.spi.JsonProvider.provider;
 import static javax.json.stream.JsonGenerator.PRETTY_PRINTING;
 
+@Slf4j
 public class JsonUtils {
 
     private static final Map<String, ?> PRETTY_PRINT_OPTS = ImmutableMap.of(PRETTY_PRINTING, true);
@@ -55,16 +59,38 @@ public class JsonUtils {
         return provider().createObjectBuilder().build();
     }
 
-    @Nullable
-    public static URI extract$IdFromObject(JsonObject json) {
+    public static Optional<URI> extract$IdFromObject(JsonObject json) {
+        return extract$IdFromObject(json, "$id", "id");
+    }
+    public static Optional<URI> extract$IdFromObject(JsonObject json, String id, String... otherIdKeys) {
         checkNotNull(json, "json must not be null");
-        if (json.containsKey($ID.key())) {
-            JsonValue $idValue = json.get($ID.key());
-            if ($idValue != null && $idValue.getValueType() == JsonValue.ValueType.STRING) {
-                return URI.create(((JsonString) $idValue).getString());
+        checkNotNull(id, "idKeys must not be null");
+        if (json.containsKey(id)) {
+            return tryParseURI(json.get(id));
+        }
+        for (String $idKeyword : otherIdKeys) {
+            if (json.containsKey($idKeyword)) {
+                return tryParseURI(json.get($idKeyword));
             }
         }
-        return null;
+        return Optional.empty();
+    }
+
+    /**
+     * Safely parses URI from a JsonValue.  Logs any URI parsing failure, but will not log if the JsonValue is
+     * not a JsonString instance
+     */
+    public static Optional<URI> tryParseURI(JsonValue uriValue) {
+        if (uriValue.getValueType() != ValueType.STRING) {
+            return Optional.empty();
+        }
+        final String stringValue = JsonString.class.cast(uriValue).getString();
+        try {
+            return Optional.of(new URI(stringValue));
+        } catch (URISyntaxException e) {
+            log.warn("Failed to parse URI: {}", stringValue);
+            return Optional.empty();
+        }
     }
 
     public static Object[] prettyPrintArgs(Object... args) {
@@ -185,15 +211,15 @@ public class JsonUtils {
                 .readValue();
     }
 
-    public static JsonValue.ValueType jsonTypeForClass(Class<? extends JsonValue> clazz) {
+    public static ValueType jsonTypeForClass(Class<? extends JsonValue> clazz) {
         if (clazz.isAssignableFrom(JsonNumber.class)) {
-            return JsonValue.ValueType.NUMBER;
+            return ValueType.NUMBER;
         } else if (clazz.isAssignableFrom(JsonString.class)) {
-            return JsonValue.ValueType.STRING;
+            return ValueType.STRING;
         } else if (clazz.isAssignableFrom(JsonObject.class)) {
-            return JsonValue.ValueType.OBJECT;
+            return ValueType.OBJECT;
         } else if (clazz.isAssignableFrom(JsonArray.class)) {
-            return JsonValue.ValueType.ARRAY;
+            return ValueType.ARRAY;
         } else {
             throw new IllegalArgumentException("Unable to determine type for class: " + clazz);
         }
@@ -201,7 +227,7 @@ public class JsonUtils {
 
     public static JsonSchemaType schemaTypeFor(JsonValue jsonValue) {
         checkNotNull(jsonValue, "jsonValue must not be null");
-        JsonValue.ValueType valueType = jsonValue.getValueType();
+        ValueType valueType = jsonValue.getValueType();
         switch (valueType) {
             case ARRAY:
                 return JsonSchemaType.ARRAY;

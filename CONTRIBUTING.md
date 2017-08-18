@@ -7,14 +7,14 @@
 Though any kind of feedback, feature request and bugreport is appreciated, I would more prefer if you would send a proper
 pull request with a failing test in case you find a bug in the library.
 
-Currently there is a simple mechanism in the integration tests to make it easy to add new tests. Using this is especially
+Currently there is a simple mechanism in the integration loading to make it easy to add new loading. Using this is especially
 preferred if your bugreport is related to a complex schema or multiple schemas. There is no need to dig into the java code,
-you only have to create a few new files in the repo (but you will have to run the tests - see the build instructions below).
+you only have to create a few new files in the repo (but you will have to run the loading - see the build instructions below).
 
 ### Steps:
  * create an issue, just to get an issue number
  * fork the repository
- * in your fork, create a directory under the `jsonschema-tests/src/test/resources/io/sbsp/jsonschema/issues/` directory (for example `issue42` )
+ * in your fork, create a directory under the `jsonschema-loading/src/test/resources/io/sbsp/jsonschema/issues/` directory (for example `issue42` )
  * in this directory create a `schema.json` file with your JSON Schema document that is not handled correctly
  * in the same directory create a `subject-valid.json` file, which is a JSON document, and you expect that document to pass
 the validation, but due to a bug it fails with a `ValidationException`
@@ -30,13 +30,13 @@ If your testcase has anything to do with remote schemas, then
  * this HTTP server will listen at address `http://localhost:1234` so please change your schemas (`id` and `$ref` properties)
 to fetch the remote schemas relative from this address
 
-You can find a good example for all of these in the `jsonschema-tests/src/test/resources/io/sbsp/jsonschema/issues/issue17` testcase.
+You can find a good example for all of these in the `jsonschema-loading/src/test/resources/io/sbsp/jsonschema/issues/issue17` testcase.
 
 If you successfully created your testcase, then it will fail with an `AssertionError` with a message like
-"validation failed with: io.sbsp.jsonschema.validator.ValidationError:..." or "did not throw ValidationError for invalid subject",
+"validation failed with: io.sbsp.jsonschema.validation.ValidationError:..." or "did not throw ValidationError for invalid subject",
 and then you are ready to send a pull request.
 
-### Defining expected failures in integration tests
+### Defining expected failures in integration loading
 
 In some cases the error you want to report is not about "if a given json is valid against a schema", but instead an inproper validation failure report to be tested. In such case you can create a testcase which contains:
 * a `schema.json`
@@ -83,4 +83,4 @@ Steps for building the project:
 * clone the repository: `git clone https://github.com/smartytime/json-schema.git && cd json-schema/`
 * build it with maven: `mvn clean install`
 
-(or just `mvn clean test` if you are only interested in running the tests)
+(or just `mvn clean test` if you are only interested in running the loading)

@@ -4,7 +4,7 @@ import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
-import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 
 import javax.json.JsonArray;
@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class Draft6SchemaImpl extends JsonSchemaImpl<Draft6Schema> implements Draft6Schema {
 
-    public Draft6SchemaImpl(SchemaLocation location, Map<KeywordMetadata<?>, SchemaKeyword> keywords) {
+    public Draft6SchemaImpl(SchemaLocation location, Map<KeywordInfo<?>, SchemaKeyword> keywords) {
         super(location, keywords, JsonSchemaVersion.Draft6);
     }
 

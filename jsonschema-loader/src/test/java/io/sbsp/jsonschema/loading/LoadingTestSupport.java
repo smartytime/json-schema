@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static io.sbsp.jsonschema.loading.JsonSchemaFactory.schemaFactory;
+import static io.sbsp.jsonschema.loading.SchemaLoaderImpl.schemaLoader;
 import static io.sbsp.jsonschema.utils.JsonUtils.readJsonObject;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,8 +43,8 @@ public class LoadingTestSupport {
 
     public static <S extends Schema, E extends Exception> E expectFailure(final Failure<S, E> failure) {
         try {
-            final JsonSchemaFactory schemaFactory = failure.schemaFactory().orElse(schemaFactory());
-            schemaFactory.load(failure.input());
+            final SchemaLoaderImpl schemaFactory = failure.schemaFactory().orElse(SchemaLoaderImpl.schemaLoader());
+            schemaFactory.readSchema(failure.input());
         } catch (Throwable e) {
             failure.expectedException()
                     .ifPresent(expected -> {
@@ -92,7 +92,7 @@ public class LoadingTestSupport {
 
         private String expectedSchemaLocation = "#";
 
-        private JsonSchemaFactory schemaFactory;
+        private SchemaLoaderImpl schemaFactory;
 
         private Class<E> expectedException;
 
@@ -160,12 +160,12 @@ public class LoadingTestSupport {
             return this;
         }
 
-        public Failure schemaFactory(JsonSchemaFactory schemaFactory) {
+        public Failure schemaFactory(SchemaLoaderImpl schemaFactory) {
             this.schemaFactory = schemaFactory;
             return this;
         }
 
-        public Optional<JsonSchemaFactory> schemaFactory() {
+        public Optional<SchemaLoaderImpl> schemaFactory() {
             return Optional.ofNullable(this.schemaFactory);
         }
 

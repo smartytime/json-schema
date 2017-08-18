@@ -3,6 +3,7 @@ package io.sbsp.jsonschema.loading.reference;
 import io.sbsp.jsonschema.JsonPath;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaLocation;
+import io.sbsp.jsonschema.keyword.Keywords;
 import io.sbsp.jsonschema.utils.RecursiveJsonIterator;
 import io.sbsp.jsonschema.utils.URIUtils;
 import lombok.AllArgsConstructor;
@@ -11,8 +12,6 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.json.JsonObject;
-import javax.json.JsonString;
-import javax.json.JsonValue;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +19,7 @@ import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import static io.sbsp.jsonschema.enums.JsonSchemaKeywordType.$ID;
+import static io.sbsp.jsonschema.utils.JsonUtils.tryParseURI;
 
 /**
  * @author erosb
@@ -61,6 +60,11 @@ public class SchemaCache {
         return Optional.ofNullable(absoluteDocumentCache.get(normalizeURI(documentURI)));
     }
 
+    public void cacheSchema(Schema schema) {
+        checkNotNull(schema, "schema must not be null");
+        cacheSchema(schema.getLocation(), schema);
+    }
+
     public void cacheSchema(SchemaLocation location, Schema schema) {
         URI absoluteLocation = location.getUniqueURI();
         URI jsonPointerLocation = location.getAbsoluteJsonPointerURI();
@@ -97,12 +101,11 @@ public class SchemaCache {
         final JsonPath pathForURI = documentIdRefs.computeIfAbsent(normalizedDocumentURI, key -> {
             Map<URI, JsonPath> values = new HashMap<>();
             RecursiveJsonIterator.visitDocument(document, (keyOrIndex, val, path) -> {
-                if ($ID.key().equals(keyOrIndex)) {
-                    if (val.getValueType() == JsonValue.ValueType.STRING) {
-                        final URI $idAsURI = normalizeURI(URI.create(((JsonString) val).getString()));
-                        URI absoluteIdentifier = normalizedDocumentURI.resolve($idAsURI);
+                if (keyOrIndex.equals(Keywords.$ID_KEY) || keyOrIndex.equals(Keywords.ID_KEY)) {
+                    tryParseURI(val).ifPresent($id -> {
+                        URI absoluteIdentifier = normalizedDocumentURI.resolve(normalizeURI($id));
                         values.put(absoluteIdentifier, path);
-                    }
+                    });
                 }
             });
 

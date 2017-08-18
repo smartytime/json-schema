@@ -2,6 +2,7 @@ package io.sbsp.jsonschema.keyword;
 
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
 import io.sbsp.jsonschema.utils.JsonSchemaGenerator;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.Wither;
@@ -16,8 +17,8 @@ import static javax.json.spi.JsonProvider.provider;
 @EqualsAndHashCode
 public class LimitKeyword implements SchemaKeyword {
 
-    private final KeywordMetadata<LimitKeyword> keyword;
-    private final KeywordMetadata<LimitKeyword> exclusiveKeyword;
+    private final KeywordInfo<LimitKeyword> keyword;
+    private final KeywordInfo<LimitKeyword> exclusiveKeyword;
 
     @Wither
     private final Number limit;
@@ -28,7 +29,8 @@ public class LimitKeyword implements SchemaKeyword {
     @Wither
     private final boolean isExclusive;
 
-    protected LimitKeyword(KeywordMetadata<LimitKeyword> keyword, KeywordMetadata<LimitKeyword> exclusiveKeyword,
+    @Builder
+    protected LimitKeyword(KeywordInfo<LimitKeyword> keyword, KeywordInfo<LimitKeyword> exclusiveKeyword,
                            Number limit,
                            Number exclusiveLimit,
                            boolean isExclusive) {
@@ -44,15 +46,19 @@ public class LimitKeyword implements SchemaKeyword {
     }
 
     public static LimitKeyword minimumKeyword() {
-        return new LimitKeyword(Keywords.minimum, Keywords.exclusiveMinimum, null, null, false);
+        return new LimitKeyword(Keywords.MINIMUM, Keywords.EXCLUSIVE_MINIMUM, null, null, false);
     }
 
     public static LimitKeyword maximumKeyword() {
-        return new LimitKeyword(Keywords.maximum, Keywords.exclusiveMaximum, null, null, false);
+        return new LimitKeyword(Keywords.MAXIMUM, Keywords.EXCLUSIVE_MAXIMUM, null, null, false);
+    }
+
+    public static LimitKeywordBuilder builder(final KeywordInfo<LimitKeyword> keyword, final KeywordInfo<LimitKeyword> exclusiveKeyword) {
+        return new LimitKeywordBuilder().keyword(keyword).exclusiveKeyword(exclusiveKeyword);
     }
 
     @Override
-    public void writeToGenerator(KeywordMetadata<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
         switch (version) {
             case Draft6:
                 writeDraft6(generator);
@@ -66,19 +72,25 @@ public class LimitKeyword implements SchemaKeyword {
     }
 
     protected void writeDraft6(JsonSchemaGenerator generator) {
-        if (exclusiveLimit != null) {
-            generator.write(exclusiveKeyword.getKey(), exclusiveLimit);
+        if (limit != null) {
+            generator.write(keyword.key(), limit);
         }
 
-        if (limit != null) {
-            generator.write(keyword.getKey(), limit);
+        if (exclusiveLimit != null) {
+            generator.write(exclusiveKeyword.key(), exclusiveLimit);
         }
     }
 
     protected void writeDraft3And4(JsonSchemaGenerator generator) {
-        generator.write(keyword.getKey(), limit);
+        if (limit != null && exclusiveLimit != null) {
+            throw new IllegalStateException(String.format("Versions to loading do not support number values for %s and %s",
+                    keyword.key(), exclusiveKeyword.key()));
+        }
         if (isExclusive) {
-            generator.write(exclusiveKeyword.getKey(), true);
+            generator.write(keyword.key(), exclusiveLimit);
+            generator.write(exclusiveKeyword.key(), true);
+        } else {
+            generator.write(keyword.key(), limit);
         }
     }
 

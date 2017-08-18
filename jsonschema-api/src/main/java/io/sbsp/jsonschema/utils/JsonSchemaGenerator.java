@@ -1,6 +1,7 @@
 package io.sbsp.jsonschema.utils;
 
-import io.sbsp.jsonschema.keyword.KeywordMetadata;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
+import io.sbsp.jsonschema.keyword.KeywordInfo;
 import lombok.experimental.Delegate;
 
 import javax.json.JsonValue;
@@ -29,8 +30,8 @@ public class JsonSchemaGenerator implements JsonGenerator {
         return this;
     }
 
-    public JsonSchemaGenerator writeKey(KeywordMetadata<?> keyword) {
-        wrapped.writeKey(keyword.getKey());
+    public JsonSchemaGenerator writeKey(KeywordInfo<?> keyword) {
+        wrapped.writeKey(keyword.key());
         return this;
     }
 }
