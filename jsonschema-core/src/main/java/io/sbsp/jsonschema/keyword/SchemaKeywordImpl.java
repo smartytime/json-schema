@@ -29,7 +29,7 @@ public abstract class SchemaKeywordImpl<T> implements SchemaKeyword {
     }
 
     @Override
-    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeJson(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
 
         final String jsonKey = keyword.key();
         if (keywordValue instanceof String) {

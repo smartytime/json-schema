@@ -4,7 +4,6 @@ import io.sbsp.jsonschema.enums.JsonSchemaVersion;
 import io.sbsp.jsonschema.keyword.KeywordInfo;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.loading.LoadingReport;
-import io.sbsp.jsonschema.loading.SchemaFactory;
 import io.sbsp.jsonschema.loading.SchemaLoader;
 import io.sbsp.jsonschema.utils.JsonSchemaGenerator;
 import lombok.EqualsAndHashCode;

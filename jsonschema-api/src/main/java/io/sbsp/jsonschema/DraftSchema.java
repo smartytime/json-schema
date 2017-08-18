@@ -12,6 +12,12 @@ import java.util.Set;
 
 import static io.sbsp.jsonschema.KeyMissingException.missingProperty;
 
+/**
+ * This interface provides convenience methods for retrieving subschemas in the same version as the
+ * current schema.  This is specified by the type parameter D
+ *
+ * @param <D> The version of the schema that should be returned.
+ */
 public interface DraftSchema<D extends DraftSchema> extends Schema {
 
     Set<JsonSchemaType> getTypes();
@@ -74,5 +80,4 @@ public interface DraftSchema<D extends DraftSchema> extends Schema {
     default D getPatternSchema(String pattern) {
         return findPatternSchema(pattern).orElseThrow(missingProperty(this, pattern));
     }
-
 }

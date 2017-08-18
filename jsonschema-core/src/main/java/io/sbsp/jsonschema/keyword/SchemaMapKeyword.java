@@ -32,7 +32,7 @@ public class SchemaMapKeyword implements SchemaKeyword {
     }
 
     @Override
-    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeJson(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
         generator.writeKey(keyword);
         generator.writeStartObject();
         for (Map.Entry<String, Schema> entry : schemas.entrySet()) {

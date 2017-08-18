@@ -1,17 +1,10 @@
 package io.sbsp.jsonschema;
 
-import io.sbsp.jsonschema.loading.SchemaFactory;
 import io.sbsp.jsonschema.utils.JsonUtils;
 import lombok.Getter;
 
 import java.net.URI;
 
-/**
- * Thrown by {@link SchemaFactory#load()} when it encounters
- * un-parseable schema JSON definition.
- *
- * @author erosb
- */
 @Getter
 public class SchemaException extends RuntimeException {
 

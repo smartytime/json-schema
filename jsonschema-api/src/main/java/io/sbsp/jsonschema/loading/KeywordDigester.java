@@ -26,47 +26,17 @@ public interface KeywordDigester<K extends SchemaKeyword> {
      */
     List<KeywordInfo<K>> getIncludedKeywords();
 
+    /**
+     * Extracts the specified keyword(s) from the source json document.  This method can either a) return the keywords
+     * as a digest object (return value), or load them directly into the provided builder.
+     *
+     * It's recommended to return the values as a digest.
+     *
+     * @param jsonObject The source document to retrieve keyword for
+     * @param builder The target schema builder
+     * @param schemaLoader A loader that can be used to load subschemas or ref schemas
+     * @param report A loading report object that stores any errors
+     * @return Optionally, a keyword digest that contains the results of the processing.
+     */
     Optional<KeywordDigest<K>> extractKeyword(JsonValueWithPath jsonObject, SchemaBuilder builder, SchemaLoader schemaLoader, LoadingReport report);
-
-    // @SuppressWarnings("unchecked")
-    // default <V extends JsonValue> Optional<V> validateType(KeywordInfo<?> keyword, JsonValueWithLocation from, LoadingReport report, Class<V> type) {
-    //     checkNotNull(keyword, "keyword must not be null");
-    //     checkNotNull(from, "from must not be null");
-    //     final JsonValue jsonValue = from.getOrDefault(keyword.key(), JsonValue.NULL);
-    //     if (keyword.getExpects().isEmpty()) {
-    //         return Optional.of((V) jsonValue);
-    //     } else if(keyword.getExpects().contains(jsonValue.getValueType())) {
-    //         return Optional.of((V) jsonValue);
-    //     } else {
-    //         if (!JsonValue.NULL.equals(jsonValue)) {
-    //             final SchemaLocation issueLocation = from.getLocation().child(keyword.key());
-    //             report.error(typeMismatch(keyword, jsonValue, issueLocation));
-    //         }
-    //         return Optional.empty();
-    //     }
-    // }
-
-    // default Optional<String> validateString(KeywordInfo<StringKeyword> keyword, JsonValueWithLocation from, LoadingReport report) {
-    //     return validateType(keyword, from, report, JsonString.class).map(JsonString::getString);
-    // }
-    //
-    // default boolean appliesTo(JsonSchemaVersion version) {
-    //     return getKeyword().getVersionInfo(version).isPresent();
-    // }
-    //
-    // default Optional<JsonObject> validateObject(KeywordInfo<SchemaMapKeyword> keyword, JsonValueWithLocation from, LoadingReport report) {
-    //     return validateType(keyword, from, report, JsonObject.class);
-    // }
-    //
-    // default Optional<JsonArray> validateArray(KeywordInfo<? extends SchemaListKeyword> keyword, JsonValueWithLocation from, LoadingReport report) {
-    //     return validateType(keyword, from, report, JsonArray.class);
-    // }
-    //
-    // default Optional<Boolean> validateBoolean(KeywordInfo<?> keyword, JsonValueWithLocation from, LoadingReport report) {
-    //     return validateType(keyword, from, report, JsonValue.class).filter(v -> v == JsonValue.TRUE || v == JsonValue.FALSE).map(v-> v == JsonValue.TRUE);
-    // }
-    //
-    // default Optional<Number> validateNumber(KeywordInfo<NumberKeyword> keyword, JsonValueWithLocation from, LoadingReport report) {
-    //     return validateType(keyword, from, report, JsonNumber.class).map(JsonNumber::doubleValue);
-    // }
 }

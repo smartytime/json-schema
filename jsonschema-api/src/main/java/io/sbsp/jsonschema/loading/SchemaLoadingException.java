@@ -8,6 +8,9 @@ import java.net.URI;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Exception raised during the loading of a schema, if the provided document is invalid.
+ */
 @Getter
 public class SchemaLoadingException extends SchemaException {
 

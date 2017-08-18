@@ -359,27 +359,6 @@ public class JsonSchemaBuilder implements SchemaBuilder<JsonSchemaBuilder> {
     // @see ArrayKeywords
     // #######################################################
 
-    /**
-     * Updates a keyword by providing an update function.  This method takes care of updating or pruning the appropriate keys in the
-     * {@link #keywords} map.
-     *
-     * @param keyword The keyword being updated
-     * @param newInstanceFn A supplier that produces a new blank instance of the keyword value
-     * @param updateFn A function that takes in the current keyword value, and returns an updated value.
-     * @param <K> Type parameter for the keyword in question.  Enforces that the key matches the value
-     * @return Self-reference for chaining.
-     */
-    protected <K extends SchemaKeyword> JsonSchemaBuilder updateKeyword(KeywordInfo<K> keyword, Supplier<K> newInstanceFn, UnaryOperator<K> updateFn) {
-        final K keywordValue = getKeyword(keyword, newInstanceFn);
-        final K updatedKeyword = updateFn.apply(keywordValue);
-        if (updatedKeyword == null) {
-            keywords.remove(keyword);
-        } else {
-            keywords.put(keyword, updatedKeyword);
-        }
-        return this;
-    }
-
     @Override
     public JsonSchemaBuilder allItemSchema(@Valid SchemaBuilder allItemSchema) {
         checkNotNull(allItemSchema, "allItemSchema must not be null");
@@ -653,6 +632,27 @@ public class JsonSchemaBuilder implements SchemaBuilder<JsonSchemaBuilder> {
     // #######################################################
     // HELPER FUNCTIONS
     // #######################################################
+
+    /**
+     * Updates a keyword by providing an update function.  This method takes care of updating or pruning the appropriate keys in the
+     * {@link #keywords} map.
+     *
+     * @param keyword The keyword being updated
+     * @param newInstanceFn A supplier that produces a new blank instance of the keyword value
+     * @param updateFn A function that takes in the current keyword value, and returns an updated value.
+     * @param <K> Type parameter for the keyword in question.  Enforces that the key matches the value
+     * @return Self-reference for chaining.
+     */
+    protected <K extends SchemaKeyword> JsonSchemaBuilder updateKeyword(KeywordInfo<K> keyword, Supplier<K> newInstanceFn, UnaryOperator<K> updateFn) {
+        final K keywordValue = getKeyword(keyword, newInstanceFn);
+        final K updatedKeyword = updateFn.apply(keywordValue);
+        if (updatedKeyword == null) {
+            keywords.remove(keyword);
+        } else {
+            keywords.put(keyword, updatedKeyword);
+        }
+        return this;
+    }
 
     public JsonSchemaBuilder numberLimit(KeywordInfo<LimitKeyword> keyword, Supplier<LimitKeyword> newInstance, Number limit) {
         checkNotNull(keyword, "keyword must not be null");

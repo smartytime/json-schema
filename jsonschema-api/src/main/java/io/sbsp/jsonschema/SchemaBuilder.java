@@ -4,7 +4,6 @@ import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.keyword.KeywordInfo;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
 import io.sbsp.jsonschema.loading.LoadingReport;
-import io.sbsp.jsonschema.loading.SchemaFactory;
 import io.sbsp.jsonschema.loading.SchemaLoader;
 
 import javax.annotation.Nullable;

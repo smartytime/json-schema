@@ -11,9 +11,9 @@ import java.util.Optional;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * The result of a {@link KeywordDigester} processing a json document.  Returns a keyword value that was retrieved
- * from the document, along with the keyword metadata that sourced it.
- * were found.
+ * The result of a {@link KeywordDigester} processing a json document to extract keywords.
+ *
+ * Returns a keyword value that was retrieved from the document, along with the keyword metadata that sourced it.
  */
 @Getter
 @EqualsAndHashCode

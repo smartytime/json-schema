@@ -79,7 +79,7 @@ public abstract class JsonSchemaImpl<D extends DraftSchema> implements DraftSche
 
         keywords.forEach((keyword, keywordValue) -> {
             if (keyword.getTypeVariant().contains(version)) {
-                keywordValue.writeToGenerator(keyword, schemaGenerator, version);
+                keywordValue.writeJson(keyword, schemaGenerator, version);
             } else {
                 log.warn("Keyword {} does not apply to version: [{}], only for {}", keyword.key(), version, keyword.getTypeVariant());
             }

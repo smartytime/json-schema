@@ -12,7 +12,7 @@ public class SingleSchemaKeyword extends SchemaKeywordImpl<Schema> {
     }
 
     @Override
-    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeJson(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
         checkNotNull(version, "version must not be null");
         generator.writeKey(keyword);
         //Make sure the underlying schema is going to serialize json for the correct json-schema version

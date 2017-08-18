@@ -5,7 +5,6 @@ import io.sbsp.jsonschema.Draft4Schema;
 import io.sbsp.jsonschema.Draft6Schema;
 import io.sbsp.jsonschema.RefSchema;
 import io.sbsp.jsonschema.Schema;
-import io.sbsp.jsonschema.loading.SchemaFactory;
 import io.sbsp.jsonschema.SchemaLocation;
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
 import io.sbsp.jsonschema.keyword.Keywords;

@@ -18,6 +18,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.JsonValueWithPath.fromJsonValue;
 import static java.lang.String.format;
 
+/**
+ * This class provides the simplest way into the validation and loading APIs.
+ */
 public class JsonSchemaProvider {
     private static final String DEFAULT_VALIDATOR_FACTORY = "io.sbsp.jsonschema.validation.SchemaValidatorFactoryImpl";
     private static final String DEFAULT_LOADER = "io.sbsp.jsonschema.loading.SchemaLoaderImpl";
@@ -32,14 +35,25 @@ public class JsonSchemaProvider {
     // ########  CONVENIENCE ENTRY POINT METHODS ########################
     // ##################################################################
 
+    /**
+     * Returns a new instance of a schemaBuilder.  If you want to assign an $id to your schema, use one
+     * of the other methods, {@link #schemaBuilder(URI)} or {@link #schemaBuilder(String)}
+     */
     public static SchemaBuilder schemaBuilder() {
         return createComponent(DEFAULT_BUILDER, SchemaBuilder.class);
     }
 
+    /**
+     * Creates a new instance of a schemaBuilder, using a provided URI as the $id of the schema.
+     */
     public static SchemaBuilder schemaBuilder(URI id) {
         checkNotNull(id, "id must not be null");
         return createComponent(DEFAULT_BUILDER, SchemaBuilder.class, id);
     }
+
+    /**
+     * Creates a new instance of a schemaBuilder, using a provided String as the $id of the schema.
+     */
 
     public static SchemaBuilder schemaBuilder(String id) {
         return createComponent(DEFAULT_BUILDER, SchemaBuilder.class, URI.create(id));
@@ -50,10 +64,28 @@ public class JsonSchemaProvider {
         return validatorFactory().createValidator(schema);
     }
 
+    /**
+     * Reads a schema from a {@link JsonObject} document.  This method will cache the resulting schema for future use.
+     * <p>
+     * If you want to control the cache or bypass the cache, then use the {@link #createSchemaReader()}, as each invocation
+     * creates a brand new instance of the loader with a fresh cache.
+     *
+     * @param jsonObject The document to load the schema from.
+     * @return The loaded schema instance
+     * @throws SchemaLoadingException It's unchecked, so more for documentation
+     */
     public static Schema readSchema(JsonObject jsonObject) throws SchemaLoadingException {
         return schemaReader().readSchema(jsonObject);
     }
 
+    /**
+     * Validates the provided jsonValue against a schema.  This method will cache the validator for future use.  If
+     * you don't want to cache the validator, use the {@link #createValidatorFactory()} method to get a fresh
+     * instance each time.
+     * @param schema The schema to validate against
+     * @param value The value being validated
+     * @return The validation report
+     */
     public static ValidationReport validateSchema(Schema schema, JsonValue value) {
         checkNotNull(value, "value must not be null");
         checkNotNull(schema, "schema must not be null");

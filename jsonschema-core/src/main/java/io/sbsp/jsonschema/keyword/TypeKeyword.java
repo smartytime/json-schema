@@ -54,7 +54,7 @@ public class TypeKeyword implements SchemaKeyword {
     }
 
     @Override
-    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeJson(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
         if (types.size() == 1) {
             generator.write(Keywords.TYPE.key(), types.iterator().next().toString());
         } else {

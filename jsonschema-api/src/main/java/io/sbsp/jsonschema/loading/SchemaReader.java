@@ -12,10 +12,10 @@ import java.io.StringReader;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static io.sbsp.jsonschema.JsonValueWithPath.fromJsonValue;
 
+/**
+ * Main interface for reading a schema from an input source.
+ */
 public interface SchemaReader {
-
-    JsonProvider getProvider();
-    SchemaLoader getLoader();
 
     @SneakyThrows
     default Schema readSchema(InputStream inputStream) {
@@ -46,4 +46,14 @@ public interface SchemaReader {
         final JsonObject jsonSchema = getProvider().createReader(jsonReader).readObject();
         return readSchema(jsonSchema);
     }
+
+    /**
+     * The {@link JsonProvider} to use for loading json documents
+     */
+    JsonProvider getProvider();
+
+    /**
+     * The schemaLoader to use for the lower-level loading operations.
+     */
+    SchemaLoader getLoader();
 }

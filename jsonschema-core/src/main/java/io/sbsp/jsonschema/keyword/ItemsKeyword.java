@@ -48,7 +48,7 @@ public class ItemsKeyword implements SchemaKeyword {
     }
 
     @Override
-    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeJson(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
         if (!indexedSchemas.isEmpty()) {
             generator.writeKey(Keywords.ITEMS);
             generator.writeStartArray();

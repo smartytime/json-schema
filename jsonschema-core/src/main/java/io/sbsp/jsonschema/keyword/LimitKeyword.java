@@ -58,7 +58,7 @@ public class LimitKeyword implements SchemaKeyword {
     }
 
     @Override
-    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeJson(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
         switch (version) {
             case Draft6:
                 writeDraft6(generator);
@@ -99,7 +99,7 @@ public class LimitKeyword implements SchemaKeyword {
         final StringWriter stringWriter = new StringWriter();
         final JsonGenerator generator = provider().createGenerator(stringWriter);
         generator.writeStartObject();
-        this.writeToGenerator(keyword, new JsonSchemaGenerator(generator), JsonSchemaVersion.Draft6);
+        this.writeJson(keyword, new JsonSchemaGenerator(generator), JsonSchemaVersion.Draft6);
         generator.writeEnd();
         generator.flush();
         return stringWriter.toString();

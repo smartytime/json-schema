@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import io.sbsp.jsonschema.JsonValueWithPath;
 import io.sbsp.jsonschema.Schema;
 import io.sbsp.jsonschema.SchemaBuilder;
-import io.sbsp.jsonschema.builder.JsonSchemaBuilder;
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
 import io.sbsp.jsonschema.keyword.KeywordInfo;
 import io.sbsp.jsonschema.keyword.SchemaKeyword;
@@ -67,11 +66,6 @@ public class SchemaLoaderImpl implements SchemaReader, SchemaLoader  {
     // #############################################################
 
     @Override
-    public Schema loadSchema(JsonValueWithPath schemaJson, LoadingReport loadingReport) {
-        return loadSubSchema(schemaJson, schemaJson, loadingReport);
-    }
-
-    @Override
     public Schema loadRefSchema(Schema referencedFrom, URI refURI, JsonObject currentDocument, LoadingReport report) {
         return refSchemaLoader.loadRefSchema(referencedFrom, refURI, currentDocument, report);
     }
@@ -94,16 +88,6 @@ public class SchemaLoaderImpl implements SchemaReader, SchemaLoader  {
     // #############################################################
 
     @Override
-    public SchemaBuilder schemaBuilder() {
-        return new JsonSchemaBuilder().withSchemaLoader(this);
-    }
-
-    @Override
-    public SchemaBuilder schemaBuilder(URI $id) {
-        return new JsonSchemaBuilder($id).withSchemaLoader(this);
-    }
-
-    @Override
     public SchemaBuilder subSchemaBuilder(JsonValueWithPath schemaJson, JsonObject inDocument, LoadingReport loadingReport) {
         return fragmentLoader.subSchemaBuilder(schemaJson, inDocument, loadingReport);
     }
@@ -120,11 +104,6 @@ public class SchemaLoaderImpl implements SchemaReader, SchemaLoader  {
     @Override
     public void registerLoadedSchema(Schema schema) {
         schemaCache.cacheSchema(schema);
-    }
-
-    @Override
-    public void registerLoadedDocument(URI documentURI, JsonObject document) {
-        schemaCache.cacheDocument(documentURI, document);
     }
 
     public SchemaLoaderImpl withPreloadedSchema(InputStream preloadedSchema) {

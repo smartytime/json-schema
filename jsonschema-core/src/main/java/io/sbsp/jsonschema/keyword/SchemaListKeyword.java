@@ -29,7 +29,7 @@ public class SchemaListKeyword implements SchemaKeyword {
     }
 
     @Override
-    public void writeToGenerator(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
+    public void writeJson(KeywordInfo<?> keyword, JsonSchemaGenerator generator, JsonSchemaVersion version) {
         generator.writeKey(keyword);
         generator.writeStartArray();
         for (Schema schema : schemas) {

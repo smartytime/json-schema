@@ -4,10 +4,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Streams;
 import io.sbsp.jsonschema.enums.JsonSchemaType;
 import io.sbsp.jsonschema.enums.JsonSchemaVersion;
-import io.sbsp.jsonschema.utils.Pair;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -32,21 +30,48 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableSet;
 
+/**
+ * Represents a single keyword and it's applicable versions, and acceptable input types.
+ * <p>
+ * This class is used when loading schemas to validate that the input is of the correct type,
+ * and in some cases, simplify the loading of simple values.
+ *
+ *
+ * @param <K> The type of value this keyword produces (a schema, a string, an array, etc)
+ */
 @EqualsAndHashCode(of = {"key", "expects"})
 public class KeywordInfo<K extends SchemaKeyword> {
 
     @NonNull
     private final String key;
 
+    /**
+     * Which versions this keyword applies to.  eg. additionalProperties expects a boolean or an object
+     * up until Draft6, when it requires a schema.
+     */
     @Singular
     private final EnumSet<JsonSchemaVersion> versions;
+
+    /**
+     * The most recent version this configuration applies to.
+     */
     private final JsonSchemaVersion mostRecentVersion;
 
+    /**
+     * Which types of values this keyword applies to: string, boolean, object, array
+     */
     @Singular
     private final Set<JsonSchemaType> forSchemas;
 
+    /**
+     * Which json types (correlates to {@link #forSchemas}
+     */
     private final Set<ValueType> forJsonTypes;
 
+    /**
+     * The type of json value expected for this keyword.  Each instance of the keyword can only consuem
+     * a single type of value, but they can be linked together using variants.
+     */
     private final ValueType expects;
 
     @Singular
